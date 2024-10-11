@@ -7,7 +7,7 @@
 
 .header {
     padding: 0;
-    background: var(--color-bg-container); /* Здесь можно добавить переменную для фона */
+    background: var(--color-bg-container);
 }
 
 .content {
@@ -21,8 +21,8 @@
 .innerContent {
     padding: 24px;
     min-height: 360px;
-    background: var(--color-bg-container); /* Здесь можно добавить переменную для фона */
-    border-radius: var(--border-radius-lg); /* Здесь можно добавить переменную для радиуса */
+    background: var(--color-bg-container);
+    border-radius: var(--border-radius-lg);
 }
 
 .footer {

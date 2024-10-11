@@ -1,4 +1,4 @@
-import {Link, Route, Router, Routes} from "react-router-dom";
+import {Route, Router, Routes} from "react-router-dom";
 import {MainPage} from "../pages/MainPage.tsx";
 import {LogInPage} from "../pages/LogInPage.tsx";
 

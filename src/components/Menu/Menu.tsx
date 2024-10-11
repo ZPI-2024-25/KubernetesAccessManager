@@ -1,7 +1,6 @@
 // LeftMenu.tsx
 import React, { useState } from 'react';
 import {
-    DesktopOutlined,
     FileOutlined,
     PieChartOutlined,
     TeamOutlined,
@@ -60,10 +59,6 @@ const items: MenuItem[] = [
 
 const LeftMenu: React.FC = () => {
     const [collapsed, setCollapsed] = useState(false);
-    const {
-        token: { colorBgContainer, borderRadiusLG },
-    } = theme.useToken();
-
     return (
         <Layout style={{ minHeight: '100vh' }}>
             <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
