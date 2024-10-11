@@ -19,8 +19,7 @@ func CreateClusterResource(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateNamespacedResource(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	controllers.CreateNamespacedResourceController(w, r)
 }
 
 func DeleteClusterResource(w http.ResponseWriter, r *http.Request) {
