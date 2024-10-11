@@ -24,13 +24,11 @@ func CreateNamespacedResource(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteClusterResource(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	controllers.DeleteClusterResourceController(w, r)
 }
 
 func DeleteNamespacedResource(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	controllers.DeleteNamespacedResourceController(w, r)
 }
 
 func GetClusterResource(w http.ResponseWriter, r *http.Request) {

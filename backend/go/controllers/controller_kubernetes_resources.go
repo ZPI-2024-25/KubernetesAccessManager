@@ -50,9 +50,17 @@ func CreateNamespacedResourceController(w http.ResponseWriter, r *http.Request) 
 func DeleteClusterResourceController(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+
+	params := mux.Vars(r)
+
+	cluster.DeleteClusterResource(params["resourceType"], params["resourceName"])
 }
 
 func DeleteNamespacedResourceController(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+
+	params := mux.Vars(r)
+
+	cluster.DeleteNamespacedResource(params["resourceType"], params["namespace"], params["resourceName"])
 }

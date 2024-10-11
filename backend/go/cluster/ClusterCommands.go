@@ -114,3 +114,45 @@ func ListClusterResources(resourceType string) {
 
 func ListNamespacedResources(resourceType string, namespace string) {
 }
+
+func CreateClusterResource(resourceType string, resource models.Resource) {
+}
+
+func CreateNamespacedResource(resourceType string, namespace string, resource models.Resource) {
+}
+
+func DeleteClusterResource(resourceType string, resourceName string) error {
+	gvr, _ := GetResourceGroupVersion(resourceType)
+
+	singleton, err := common.GetInstance()
+	dynamicClient := singleton.GetClientSet()
+
+	err = dynamicClient.Resource(gvr).Delete(context.TODO(), resourceName, metav1.DeleteOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return fmt.Errorf("pod not found")
+		} else {
+			return fmt.Errorf("error: %s", err.Error())
+		}
+	}
+
+	return nil
+}
+
+func DeleteNamespacedResource(resourceType string, namespace string, resourceName string) error {
+	gvr, _ := GetResourceGroupVersion(resourceType)
+
+	singleton, err := common.GetInstance()
+	dynamicClient := singleton.GetClientSet()
+
+	err = dynamicClient.Resource(gvr).Namespace(namespace).Delete(context.TODO(), resourceName, metav1.DeleteOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return fmt.Errorf("pod not found")
+		} else {
+			return fmt.Errorf("error: %s", err.Error())
+		}
+	}
+
+	return nil
+}
