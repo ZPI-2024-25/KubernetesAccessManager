@@ -1,0 +1,30 @@
+/* Menu.module.css */
+.logo {
+    height: 32px;
+    margin: 16px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.header {
+    padding: 0;
+    background: var(--color-bg-container); /* Здесь можно добавить переменную для фона */
+}
+
+.content {
+    margin: 0 16px;
+}
+
+.breadcrumb {
+    margin: 16px 0;
+}
+
+.innerContent {
+    padding: 24px;
+    min-height: 360px;
+    background: var(--color-bg-container); /* Здесь можно добавить переменную для фона */
+    border-radius: var(--border-radius-lg); /* Здесь можно добавить переменную для радиуса */
+}
+
+.footer {
+    text-align: center;
+}
