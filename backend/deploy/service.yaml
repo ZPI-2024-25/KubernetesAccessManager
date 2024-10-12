@@ -7,7 +7,7 @@ spec:
   selector:
     app: client-go-test
   ports:
-    - name: client-go-test-port
-      protocol: TCP
-      port: 8080
-      targetPort: 8080
+  - name: client-go-test-port
+    protocol: TCP
+    port: 8080
+    targetPort: 8080

@@ -15,7 +15,7 @@ spec:
         app: client-go-test
     spec:
       containers:
-        - name: app
-          image: client-go-test:v1
-          ports:
-            - containerPort: 8080
+      - name: app
+        image: client-go-test:v1
+        ports:
+        - containerPort: 8080
