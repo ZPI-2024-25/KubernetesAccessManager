@@ -9,13 +9,12 @@
 package api
 
 import (
-	"github.com/ZPI-2024-25/KubernetesUserManager/go/controllers"
+	"github.com/ZPI-2024-25/KubernetesUserManager/controllers"
 	"net/http"
 )
 
 func CreateClusterResource(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	controllers.CreateClusterResourceController(w, r)
 }
 
 func CreateNamespacedResource(w http.ResponseWriter, r *http.Request) {

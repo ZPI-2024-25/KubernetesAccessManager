@@ -10,7 +10,7 @@ package api
 
 import (
 	"fmt"
-	"github.com/ZPI-2024-25/KubernetesUserManager/go/common"
+	"github.com/ZPI-2024-25/KubernetesUserManager/common"
 	"net/http"
 	"strings"
 

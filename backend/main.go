@@ -1,7 +1,7 @@
 package main
 
 import (
-	sw "github.com/ZPI-2024-25/KubernetesUserManager/go/api"
+	sw "github.com/ZPI-2024-25/KubernetesUserManager/api"
 	"log"
 	"net/http"
 )
