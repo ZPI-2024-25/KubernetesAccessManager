@@ -226,3 +226,90 @@ func DeleteResource(resourceType string, namespace string, resourceName string) 
 
 	return nil
 }
+
+func UpdateResource(resourceType string, namespace string, name string, resource models.Resource) (models.Resource, *models.ModelError) {
+	gvr, httpErr := GetResourceGroupVersion(resourceType)
+	if httpErr != nil {
+		return models.Resource{}, httpErr
+	}
+
+	singleton, err := common.GetInstance()
+	if err != nil {
+		return models.Resource{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client instance: %s", err)}
+	}
+	dynamicClient := singleton.GetClientSet()
+
+	var currentResource *unstructured.Unstructured
+	if namespace == "" {
+		currentResource, err = dynamicClient.Resource(gvr).Get(context.TODO(), name, metav1.GetOptions{})
+	} else {
+		currentResource, err = dynamicClient.Resource(gvr).Namespace(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	}
+
+	if err != nil {
+		fmt.Println("Here 1")
+		return models.Resource{}, &models.ModelError{Code: 404, Message: fmt.Sprintf("Resource not found: %s", err)}
+	}
+
+	if resource.Metadata != nil {
+		metadataMap, ok := (*resource.Metadata).(map[string]interface{})
+		if ok {
+			currentResource.Object["metadata"] = metadataMap
+		} else {
+			return models.Resource{}, &models.ModelError{Code: 400, Message: "Invalid metadata format"}
+		}
+	} else {
+		return models.Resource{}, &models.ModelError{Code: 400, Message: "Missing metadata"}
+	}
+
+	if resource.Spec != nil {
+		specMap, ok := (*resource.Spec).(map[string]interface{})
+		if ok {
+			currentResource.Object["spec"] = specMap
+		} else {
+			return models.Resource{}, &models.ModelError{Code: 400, Message: "Invalid spec format"}
+		}
+	} else {
+		return models.Resource{}, &models.ModelError{Code: 400, Message: "Missing spec"}
+	}
+
+	var updatedResource *unstructured.Unstructured
+
+	if namespace == "" {
+		updatedResource, err = dynamicClient.Resource(gvr).Update(context.TODO(), currentResource, metav1.UpdateOptions{})
+	} else {
+		updatedResource, err = dynamicClient.Resource(gvr).Namespace(namespace).Update(context.TODO(), currentResource, metav1.UpdateOptions{})
+	}
+	if err != nil {
+		fmt.Println("Here 2")
+		return models.Resource{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Error: %s", err)}
+	}
+
+	metadata, _, err := unstructured.NestedMap(updatedResource.Object, "metadata")
+	if err != nil {
+		fmt.Println("Here 3")
+		return models.Resource{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Error: %s", err)}
+	}
+
+	spec, _, err := unstructured.NestedMap(updatedResource.Object, "spec")
+	if err != nil {
+		return models.Resource{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Error: %s", err)}
+	}
+
+	status, _, err := unstructured.NestedMap(updatedResource.Object, "status")
+	if err != nil {
+		return models.Resource{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Error: %s", err)}
+	}
+
+	var metadataSwagger interface{} = metadata
+	var specSwagger interface{} = spec
+	var statusSwagger interface{} = status
+
+	return models.Resource{
+		ApiVersion: updatedResource.GetAPIVersion(),
+		Kind:       updatedResource.GetKind(),
+		Metadata:   &metadataSwagger,
+		Spec:       &specSwagger,
+		Status:     &statusSwagger,
+	}, nil
+}

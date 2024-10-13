@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/ZPI-2024-25/KubernetesUserManager/cluster"
 	"github.com/ZPI-2024-25/KubernetesUserManager/models"
 	"github.com/gorilla/mux"
@@ -124,4 +125,29 @@ func DeleteNamespacedResourceController(w http.ResponseWriter, r *http.Request) 
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"status": "Resource deleted successfully"}`))
+}
+
+func UpdateResourceController(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	params := mux.Vars(r)
+
+	resourceType := params["resourceType"]
+	namespace := params["namespace"]
+	resourceName := params["resourceName"]
+
+	var resource models.Resource
+	jsonErr := json.NewDecoder(r.Body).Decode(&resource)
+	if jsonErr != nil {
+		http.Error(w, `{"error": "Invalid request body"}`, http.StatusBadRequest)
+		return
+	}
+
+	resource, err := cluster.UpdateResource(resourceType, namespace, resourceName, resource)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, err.Message, int(err.Code))
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resource)
 }
