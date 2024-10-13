@@ -8,7 +8,10 @@
  */
 package models
 
-type AuthCallbackBody struct {
-	// Authorization code.
-	Code string `json:"code,omitempty"`
+// Object that returns selected columns and their data.
+type ResourceList struct {
+	// List of column names that are included in this response.
+	Columns []string `json:"columns,omitempty"`
+	// List of resources, each containing the data for the specified columns.
+	ResourceList []ResourceListResourceList `json:"resource_list,omitempty"`
 }

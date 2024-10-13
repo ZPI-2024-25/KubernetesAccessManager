@@ -8,7 +8,8 @@
  */
 package models
 
-type AuthCallbackBody struct {
-	// Authorization code.
-	Code string `json:"code,omitempty"`
+// Object representing the resource details
+type ResourceDetails struct {
+	// JSON object containing details of the resource
+	ResourceDetails *interface{} `json:"resourceDetails,omitempty"`
 }

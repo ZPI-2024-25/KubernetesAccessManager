@@ -1,4 +1,4 @@
-module github.com/ZPI-2024-25/KubernetesUserManager
+module github.com/ZPI-2024-25/KubernetesAccessManager
 
 go 1.22.5
 
