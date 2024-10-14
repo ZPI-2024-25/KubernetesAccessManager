@@ -5,74 +5,10 @@ import (
 	"fmt"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/common"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/discovery"
 )
-
-func getAllowedResourceTypes() [16]string {
-	return [16]string{
-		"Pod",
-		"Service",
-		"Deployment",
-		"ConfigMap",
-		"StatefulSet",
-		"DaemonSet",
-		"Secret",
-		"Ingress",
-		"PersistentVolumeClaim",
-		"ReplicaSet",
-		"Node",
-		"Namespace",
-		"CustomResourceDefinition",
-		"PersistentVolume",
-		"CronJob",
-		"ServiceAccount",
-	}
-}
-
-func isResourceTypeAllowed(resourceType string) bool {
-	allowedResourceTypes := getAllowedResourceTypes()
-	for _, allowedResourceType := range allowedResourceTypes {
-		if allowedResourceType == resourceType {
-			return true
-		}
-	}
-	return false
-}
-
-func GetResourceGroupVersion(resourceType string) (schema.GroupVersionResource, *models.ModelError) {
-	if !isResourceTypeAllowed(resourceType) {
-		return schema.GroupVersionResource{}, &models.ModelError{Code: 400, Message: fmt.Sprintf("Resource type '%s' not allowed", resourceType)}
-	}
-
-	dynamicClientSingleton, _ := common.GetInstance()
-	config := dynamicClientSingleton.GetConfig()
-
-	discoveryClient, _ := discovery.NewDiscoveryClientForConfig(config)
-
-	apiResourceLists, _ := discoveryClient.ServerPreferredResources()
-
-	for _, apiResourceList := range apiResourceLists {
-		for _, apiResource := range apiResourceList.APIResources {
-			if apiResource.Kind == resourceType {
-				groupVersion, err := schema.ParseGroupVersion(apiResourceList.GroupVersion)
-				if err != nil {
-					return schema.GroupVersionResource{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("%s", err.Error())}
-				}
-
-				return schema.GroupVersionResource{
-					Group:    groupVersion.Group,
-					Version:  groupVersion.Version,
-					Resource: apiResource.Name,
-				}, nil
-			}
-		}
-	}
-
-	return schema.GroupVersionResource{}, &models.ModelError{Code: 400, Message: fmt.Sprintf("Resource type '%s' not found", resourceType)}
-}
 
 //func GetResource(resourceType string, namespace string, resourceName string) (models.Resource, *models.ModelError) {
 //	gvr, httpErr := GetResourceGroupVersion(resourceType)
@@ -129,12 +65,6 @@ func GetResourceGroupVersion(resourceType string) (schema.GroupVersionResource, 
 //	}, nil
 //}
 
-func ListClusterResources(resourceType string) {
-}
-
-func ListNamespacedResources(resourceType string, namespace string) {
-}
-
 func CreateResource(resourceType string, namespace string, resource models.ResourceDetails) (models.ResourceDetails, *models.ModelError) {
 	gvr, httpErr := GetResourceGroupVersion(resourceType)
 	if httpErr != nil {
@@ -173,36 +103,36 @@ func CreateResource(resourceType string, namespace string, resource models.Resou
 	}, nil
 }
 
-//func DeleteResource(resourceType string, namespace string, resourceName string) *models.ModelError {
-//	gvr, httpErr := GetResourceGroupVersion(resourceType)
-//	if httpErr != nil {
-//		return httpErr
-//	}
-//
-//	singleton, err := common.GetInstance()
-//	if err != nil {
-//		return &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client instance: %w", err)}
-//	}
-//	dynamicClient := singleton.GetClientSet()
-//
-//	if namespace != "" {
-//		err = dynamicClient.Resource(gvr).Delete(context.TODO(), resourceName, metav1.DeleteOptions{})
-//	} else {
-//		err = dynamicClient.Resource(gvr).Namespace(namespace).Delete(context.TODO(), resourceName, metav1.DeleteOptions{})
-//	}
-//	if err != nil {
-//		if errors.IsNotFound(err) {
-//			return &models.ModelError{Code: 404, Message: fmt.Sprintf("Resource not found: %w", err)}
-//		} else if errors.IsForbidden(err) {
-//			return &models.ModelError{Code: 403, Message: fmt.Sprintf("Forbidden: %w", err)}
-//		} else if errors.IsUnauthorized(err) {
-//			return &models.ModelError{Code: 401, Message: fmt.Sprintf("Unauthorized: %w", err)}
-//		}
-//		return &models.ModelError{Code: 500, Message: fmt.Sprintf("Internal server error: %w", err)}
-//	}
-//
-//	return nil
-//}
+func DeleteResource(resourceType string, namespace string, resourceName string) *models.ModelError {
+	gvr, httpErr := GetResourceGroupVersion(resourceType)
+	if httpErr != nil {
+		return httpErr
+	}
+
+	singleton, err := common.GetInstance()
+	if err != nil {
+		return &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client instance: %w", err)}
+	}
+	dynamicClient := singleton.GetClientSet()
+
+	if namespace != "" {
+		err = dynamicClient.Resource(gvr).Delete(context.TODO(), resourceName, metav1.DeleteOptions{})
+	} else {
+		err = dynamicClient.Resource(gvr).Namespace(namespace).Delete(context.TODO(), resourceName, metav1.DeleteOptions{})
+	}
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return &models.ModelError{Code: 404, Message: fmt.Sprintf("Resource not found: %w", err)}
+		} else if errors.IsForbidden(err) {
+			return &models.ModelError{Code: 403, Message: fmt.Sprintf("Forbidden: %w", err)}
+		} else if errors.IsUnauthorized(err) {
+			return &models.ModelError{Code: 401, Message: fmt.Sprintf("Unauthorized: %w", err)}
+		}
+		return &models.ModelError{Code: 500, Message: fmt.Sprintf("Internal server error: %w", err)}
+	}
+
+	return nil
+}
 
 //func UpdateResource(resourceType string, namespace string, name string, resource models.Resource) (models.Resource, *models.ModelError) {
 //	gvr, httpErr := GetResourceGroupVersion(resourceType)

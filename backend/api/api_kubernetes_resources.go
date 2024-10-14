@@ -18,8 +18,7 @@ func CreateResource(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteResource(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	controllers.DeleteClusterResourceController(w, r)
 }
 
 func GetResource(w http.ResponseWriter, r *http.Request) {
@@ -28,8 +27,7 @@ func GetResource(w http.ResponseWriter, r *http.Request) {
 }
 
 func ListResources(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	controllers.ListResourcesController(w, r)
 }
 
 func UpdateResource(w http.ResponseWriter, r *http.Request) {

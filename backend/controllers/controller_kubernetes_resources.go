@@ -35,14 +35,22 @@ import (
 //	json.NewEncoder(w).Encode(resource)
 //}
 
-func ListClusterResourcesController(w http.ResponseWriter, r *http.Request) {
+func ListResourcesController(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-}
 
-func ListNamespacedResourcesController(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	params := mux.Vars(r)
+	resourceType := params["resourceType"]
+
+	queryParams := r.URL.Query()
+	namespace := queryParams.Get("namespace")
+
+	resources, err := cluster.ListResources(resourceType, namespace)
+	if err != nil {
+		http.Error(w, err.Message, int(err.Code))
+	}
+
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resources)
 }
 
 func CreateResourceController(w http.ResponseWriter, r *http.Request) {
@@ -73,40 +81,26 @@ func CreateResourceController(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resource)
 }
 
-//func DeleteClusterResourceController(w http.ResponseWriter, r *http.Request) {
-//	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-//	w.WriteHeader(http.StatusOK)
-//
-//	params := mux.Vars(r)
-//
-//	resourceType := params["resourceType"]
-//	resourceName := params["resourceName"]
-//
-//	err := cluster.DeleteResource(resourceType, "", resourceName)
-//	if err != nil {
-//		http.Error(w, err.Message, int(err.Code))
-//	}
-//
-//	w.WriteHeader(http.StatusOK)
-//	w.Write([]byte(`{"status": "Resource deleted successfully"}`))
-//}
+func DeleteClusterResourceController(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 
-//func DeleteNamespacedResourceController(w http.ResponseWriter, r *http.Request) {
-//	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-//	params := mux.Vars(r)
-//
-//	resourceType := params["resourceType"]
-//	namespace := params["namespace"]
-//	resourceName := params["resourceName"]
-//
-//	err := cluster.DeleteResource(resourceType, namespace, resourceName)
-//	if err != nil {
-//		http.Error(w, err.Message, int(err.Code))
-//	}
-//
-//	w.WriteHeader(http.StatusOK)
-//	w.Write([]byte(`{"status": "Resource deleted successfully"}`))
-//}
+	params := mux.Vars(r)
+
+	resourceType := params["resourceType"]
+	resourceName := params["resourceName"]
+
+	queryParams := r.URL.Query()
+	namespace := queryParams.Get("namespace")
+
+	err := cluster.DeleteResource(resourceType, namespace, resourceName)
+	if err != nil {
+		http.Error(w, err.Message, int(err.Code))
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"status": "Resource deleted successfully"}`))
+}
 
 //func UpdateResourceController(w http.ResponseWriter, r *http.Request) {
 //	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
