@@ -84,8 +84,6 @@ func GetResourceListColumns(resourceType string) []string {
 			"Name",
 			"Namespace",
 			"Containers", // changed
-			"CPU",        // don't know what to put here
-			"Memory",     // don't know what to put here
 			"Restarts",   // possibly changed
 			"Controlled By",
 			"Node",
@@ -93,7 +91,7 @@ func GetResourceListColumns(resourceType string) []string {
 			"Age",
 			"Status"}
 	case "Deployment":
-		return []string{"Name", "Namespace", "Pods", "Replicas", "Age", "Conditions"} // done except conditions
+		return []string{"Name", "Namespace", "Pods", "Replicas", "Age", "Conditions"} // done, conditions not implemented
 	case "ConfigMap":
 		return []string{"Name", "Namespace", "Keys", "Age"} // done
 	case "Secret":
@@ -113,9 +111,9 @@ func GetResourceListColumns(resourceType string) []string {
 	case "Service":
 		return []string{"Name", "Namespace", "Type", "Cluster IP", "Ports", "External IP", "Selector", "Age", "Status"} // done, status unsure, external ip untested
 	case "ServiceAccount":
-		return []string{"Name", "Namespace", "Age"}
+		return []string{"Name", "Namespace", "Age"} // done
 	case "Node":
-		return []string{"Name", "CPU", "Memory", "Disk", "Taints", "Roles", "Version", "Age", "Conditions"} // done, (cpu, memory, disk) not implemented, conditions simplified
+		return []string{"Name", "Taints", "Roles", "Version", "Age", "Conditions"} // done, conditions simplified
 	case "Namespace":
 		return []string{"Name", "Labels", "Age", "Status"} // done
 	case "CustomResourceDefinition":
@@ -123,11 +121,11 @@ func GetResourceListColumns(resourceType string) []string {
 	case "PersistentVolume":
 		return []string{"Name", "Storage Class", "Capacity", "Claim", "Age", "Status"} //done
 	case "StorageClass":
-		return []string{"Name", "Provisioner", "Reclaim Policy", "Default", "Age"}
+		return []string{"Name", "Provisioner", "Reclaim Policy", "Default", "Age"} // done
 	case "ClusterRole":
-		return []string{"Name", "Age"}
+		return []string{"Name", "Age"} // done
 	case "ClusterRoleBinding":
-		return []string{"Name", "Bindings", "Age"}
+		return []string{"Name", "Bindings", "Age"} // done
 	default:
 		return []string{}
 	}

@@ -444,14 +444,16 @@ func ListResources(resourceType string, namespace string) (models.ResourceList, 
 			}
 
 			// Job: Conditions
-			if conditions, found := status["conditions"].([]interface{}); found {
-				conditionMap, ok := conditions[0].(map[string]interface{})
-				if !ok {
-					continue
-				}
+			if resourceType == "Job" {
+				if conditions, found := status["conditions"].([]interface{}); found {
+					conditionMap, ok := conditions[0].(map[string]interface{})
+					if !ok {
+						continue
+					}
 
-				conditionType, _ := conditionMap["type"].(string)
-				resourceDetails.Conditions = fmt.Sprintf("%s", conditionType)
+					conditionType, _ := conditionMap["type"].(string)
+					resourceDetails.Conditions = fmt.Sprintf("%s", conditionType)
+				}
 			}
 
 		}
@@ -473,6 +475,43 @@ func ListResources(resourceType string, namespace string) (models.ResourceList, 
 			}
 
 			resourceDetails.Completions = fmt.Sprintf("%d/%d", completionsSucceeded, completionsDesired)
+		}
+
+		// ClusterRoleBinding: Bindings
+		subjects, subjectsExists := resource.Object["subjects"].([]interface{})
+		if subjectsExists {
+			var subjectsOutput []string
+			for _, subject := range subjects {
+				subjectMap := subject.(map[string]interface{})
+				subjectName, nameExists := subjectMap["name"].(string)
+				if nameExists {
+					subjectsOutput = append(subjectsOutput, fmt.Sprintf("%s", subjectName))
+				}
+			}
+			resourceDetails.Bindings = strings.Join(subjectsOutput, ", ")
+		}
+
+		//StorageClass: Provisioner
+		if provisioner, found := resource.Object["provisioner"].(string); found {
+			resourceDetails.Provisioner = provisioner
+		}
+
+		//StorageClass: Reclaim Policy
+		if reclaimPolicy, found := resource.Object["reclaimPolicy"].(string); found {
+			resourceDetails.ReclaimPolicy = reclaimPolicy
+		}
+
+		//StorageClass: Default
+		if resourceType == "StorageClass" {
+			isDefault := "No"
+			if annotations, annotationsExists := metadata["annotations"].(map[string]interface{}); annotationsExists {
+				if value, found := annotations["storageclass.kubernetes.io/is-default-class"].(string); found && value == "true" {
+					isDefault = "Yes"
+				} else if value, found := annotations["storageclass.beta.kubernetes.io/is-default-class"].(string); found && value == "true" {
+					isDefault = "Yes"
+				}
+			}
+			resourceDetails.Default_ = isDefault
 		}
 
 		resourceList.ResourceList = append(resourceList.ResourceList, resourceDetails)
