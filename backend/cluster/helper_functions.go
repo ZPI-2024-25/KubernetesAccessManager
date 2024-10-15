@@ -8,8 +8,8 @@ import (
 	"k8s.io/client-go/discovery"
 )
 
-func getAllowedResourceTypes() [16]string {
-	return [16]string{
+func getAllowedResourceTypes() [20]string {
+	return [20]string{
 		"Pod",
 		"Service",
 		"Deployment",
@@ -24,8 +24,12 @@ func getAllowedResourceTypes() [16]string {
 		"Namespace",
 		"CustomResourceDefinition",
 		"PersistentVolume",
+		"Job",
 		"CronJob",
 		"ServiceAccount",
+		"StorageClass",
+		"ClusterRole",
+		"ClusterRoleBinding",
 	}
 }
 
@@ -102,10 +106,10 @@ func GetResourceListColumns(resourceType string) []string {
 		return []string{"Name", "Namespace", "Pods", "Replicas", "Age"} // done
 	case "DaemonSet":
 		return []string{"Name", "Namespace", "Pods", "Node Selector", "Age"} // done, node selector not implemented
-	case "Jobs":
-		return []string{"Name", "Namespace", "Completions", "Age", "Conditions"}
+	case "Job":
+		return []string{"Name", "Namespace", "Completions", "Age", "Conditions"} // done, completions untested, conditions unsure
 	case "CronJob":
-		return []string{"Name", "Namespace", "Schedule", "Suspend", "Active", "Last schedule", "Age"}
+		return []string{"Name", "Namespace", "Schedule", "Suspend", "Active", "Last schedule", "Age"} // done
 	case "Service":
 		return []string{"Name", "Namespace", "Type", "Cluster IP", "Ports", "External IP", "Selector", "Age", "Status"} // done, status unsure, external ip untested
 	case "ServiceAccount":

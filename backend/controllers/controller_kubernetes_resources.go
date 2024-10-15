@@ -64,7 +64,7 @@ func CreateResourceController(w http.ResponseWriter, r *http.Request) {
 	namespace := queryParams.Get("namespace")
 
 	var resource models.ResourceDetails
-	jsonErr := json.NewDecoder(r.Body).Decode(&resource)
+	jsonErr := json.NewDecoder(r.Body).Decode(&resource.ResourceDetails)
 	if jsonErr != nil {
 		fmt.Println(jsonErr)
 		http.Error(w, `{"error": "Invalid request body"}`, http.StatusBadRequest)

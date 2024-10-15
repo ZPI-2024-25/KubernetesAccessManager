@@ -12,7 +12,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"strconv"
 	"strings"
-	"time"
 )
 
 func ListResources(resourceType string, namespace string) (models.ResourceList, *models.ModelError) {
@@ -55,18 +54,7 @@ func ListResources(resourceType string, namespace string) (models.ResourceList, 
 
 		//Age
 		if creationTimestampStr, found := metadata["creationTimestamp"].(string); found {
-			creationTimestamp, err := time.Parse(time.RFC3339, creationTimestampStr)
-			if err != nil {
-				fmt.Println("Failed to parse creationTimestamp:", err)
-			} else {
-				ageDuration := time.Since(creationTimestamp)
-
-				if ageDuration.Hours() < 24 {
-					resourceDetails.Age = fmt.Sprintf("%.f h", ageDuration.Hours())
-				} else {
-					resourceDetails.Age = fmt.Sprintf("%.f d", ageDuration.Hours()/24)
-				}
-			}
+			resourceDetails.Age = creationTimestampStr
 		}
 
 		//ControlledBy
@@ -306,6 +294,18 @@ func ListResources(resourceType string, namespace string) (models.ResourceList, 
 			if scope, found := spec["scope"].(string); found {
 				resourceDetails.Scope = scope
 			}
+
+			// CronJob: Schedule
+			if schedule, found := spec["schedule"].(string); found {
+				resourceDetails.Schedule = schedule
+			}
+
+			// CronJob: Suspend
+			if resourceType == "CronJob" {
+				if suspend, found := spec["suspend"].(bool); found {
+					resourceDetails.Suspend = strconv.FormatBool(suspend)
+				}
+			}
 		}
 
 		if statusExists {
@@ -428,37 +428,54 @@ func ListResources(resourceType string, namespace string) (models.ResourceList, 
 				}
 			}
 
+			// CronJob: Last schedule
+			if lastSchedule, found := status["lastScheduleTime"].(string); found {
+				resourceDetails.LastSchedule = lastSchedule
+			}
+
+			// CronJob: Active
+			if resourceType == "CronJob" {
+				if activeJobs, found := status["active"].([]interface{}); found {
+					activeCount := len(activeJobs)
+					resourceDetails.Active = strconv.Itoa(activeCount)
+				} else {
+					resourceDetails.Active = "0"
+				}
+			}
+
+			// Job: Conditions
+			if conditions, found := status["conditions"].([]interface{}); found {
+				conditionMap, ok := conditions[0].(map[string]interface{})
+				if !ok {
+					continue
+				}
+
+				conditionType, _ := conditionMap["type"].(string)
+				resourceDetails.Conditions = fmt.Sprintf("%s", conditionType)
+			}
+
+		}
+
+		if resourceType == "Job" {
+			var completionsDesired int64 = 1
+			var completionsSucceeded int64 = 0
+
+			if specExists {
+				if completions, found := spec["completions"].(int64); found {
+					completionsDesired = completions
+				}
+			}
+
+			if statusExists {
+				if succeeded, found := status["succeeded"].(int64); found {
+					completionsSucceeded = succeeded
+				}
+			}
+
+			resourceDetails.Completions = fmt.Sprintf("%d/%d", completionsSucceeded, completionsDesired)
 		}
 
 		resourceList.ResourceList = append(resourceList.ResourceList, resourceDetails)
 	}
-
-	//metadata, _, err := unstructured.NestedMap(resource.Object, "metadata")
-	//if err != nil {
-	//	return models.Resource{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Error: %s", err)}
-	//}
-	//
-	//spec, _, err := unstructured.NestedMap(resource.Object, "spec")
-	//if err != nil {
-	//	return models.Resource{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Error: %s", err)}
-	//}
-	//
-	//status, _, err := unstructured.NestedMap(resource.Object, "status")
-	//if err != nil {
-	//	return models.Resource{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Error: %s", err)}
-	//}
-	//
-	//var metadataSwagger interface{} = metadata
-	//var specSwagger interface{} = spec
-	//var statusSwagger interface{} = status
-	//
-	//return models.Resource{
-	//	ApiVersion: resource.GetAPIVersion(),
-	//	Kind:       resource.GetKind(),
-	//	Metadata:   &metadataSwagger,
-	//	Spec:       &specSwagger,
-	//	Status:     &statusSwagger,
-	//}, nil
-
 	return resourceList, nil
 }
