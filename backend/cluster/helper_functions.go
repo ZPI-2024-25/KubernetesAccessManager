@@ -45,7 +45,7 @@ func isResourceTypeAllowed(resourceType string) bool {
 
 func GetResourceGroupVersion(resourceType string) (output schema.GroupVersionResource, namespaced bool, error *models.ModelError) {
 	if !isResourceTypeAllowed(resourceType) {
-		return schema.GroupVersionResource{}, false, &models.ModelError{Code: 400, Message: fmt.Sprintf("Resource type '%s' not allowed", resourceType)}
+		return schema.GroupVersionResource{}, false, &models.ModelError{Code: 400, Message: fmt.Sprintf("Invalid Resource Type")}
 	}
 
 	dynamicClientSingleton, _ := common.GetInstance()
@@ -72,7 +72,7 @@ func GetResourceGroupVersion(resourceType string) (output schema.GroupVersionRes
 		}
 	}
 
-	return schema.GroupVersionResource{}, false, &models.ModelError{Code: 400, Message: fmt.Sprintf("Resource type '%s' not found", resourceType)}
+	return schema.GroupVersionResource{}, false, &models.ModelError{Code: 400, Message: fmt.Sprintf("Invalid Resource Type")}
 }
 
 func GetResourceListColumns(resourceType string) []string {
