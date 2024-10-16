@@ -43,9 +43,9 @@ func isResourceTypeAllowed(resourceType string) bool {
 	return false
 }
 
-func GetResourceGroupVersion(resourceType string) (schema.GroupVersionResource, *models.ModelError) {
+func GetResourceGroupVersion(resourceType string) (output schema.GroupVersionResource, namespaced bool, error *models.ModelError) {
 	if !isResourceTypeAllowed(resourceType) {
-		return schema.GroupVersionResource{}, &models.ModelError{Code: 400, Message: fmt.Sprintf("Resource type '%s' not allowed", resourceType)}
+		return schema.GroupVersionResource{}, false, &models.ModelError{Code: 400, Message: fmt.Sprintf("Resource type '%s' not allowed", resourceType)}
 	}
 
 	dynamicClientSingleton, _ := common.GetInstance()
@@ -60,72 +60,72 @@ func GetResourceGroupVersion(resourceType string) (schema.GroupVersionResource, 
 			if apiResource.Kind == resourceType {
 				groupVersion, err := schema.ParseGroupVersion(apiResourceList.GroupVersion)
 				if err != nil {
-					return schema.GroupVersionResource{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("%s", err.Error())}
+					return schema.GroupVersionResource{}, false, &models.ModelError{Code: 500, Message: fmt.Sprintf("%s", err.Error())}
 				}
 
 				return schema.GroupVersionResource{
 					Group:    groupVersion.Group,
 					Version:  groupVersion.Version,
 					Resource: apiResource.Name,
-				}, nil
+				}, apiResource.Namespaced, nil
 			}
 		}
 	}
 
-	return schema.GroupVersionResource{}, &models.ModelError{Code: 400, Message: fmt.Sprintf("Resource type '%s' not found", resourceType)}
+	return schema.GroupVersionResource{}, false, &models.ModelError{Code: 400, Message: fmt.Sprintf("Resource type '%s' not found", resourceType)}
 }
 
 func GetResourceListColumns(resourceType string) []string {
 	switch resourceType {
 	case "ReplicaSet":
-		return []string{"Name", "Namespace", "Desired", "Current", "Ready", "Age"} // done
+		return []string{"name", "namespace", "desired", "current", "ready", "age"} // done
 	case "Pod":
 		return []string{ // done
-			"Name",
-			"Namespace",
-			"Containers", // changed
-			"Restarts",   // possibly changed
-			"Controlled By",
-			"Node",
-			"QoS",
-			"Age",
-			"Status"}
+			"name",
+			"namespace",
+			"containers", // changed
+			"restarts",   // possibly changed
+			"controlled_by",
+			"node",
+			"qos",
+			"age",
+			"status"}
 	case "Deployment":
-		return []string{"Name", "Namespace", "Pods", "Replicas", "Age", "Conditions"} // done, conditions not implemented
+		return []string{"name", "namespace", "pods", "replicas", "age", "conditions"} // done, conditions not implemented
 	case "ConfigMap":
-		return []string{"Name", "Namespace", "Keys", "Age"} // done
+		return []string{"name", "namespace", "keys", "age"} // done
 	case "Secret":
-		return []string{"Name", "Namespace", "Labels", "Keys", "Type", "Age"} // done, labels untested
+		return []string{"name", "namespace", "labels", "keys", "type", "age"} // done, labels untested
 	case "Ingress":
-		return []string{"Name", "Namespace", "LoadBalancers", "Rules", "Age"} // done, rules not implemented, loadbalancers untested
+		return []string{"name", "namespace", "loadBalancers", "rules", "age"} // done, rules not implemented, loadbalancers untested
 	case "PersistentVolumeClaim":
-		return []string{"Name", "Namespace", "Storage class", "Size", "Pods", "Age", "Status"} // done, pods not implemented
+		return []string{"name", "namespace", "storage_class", "size", "pods", "age", "status"} // done, pods not implemented
 	case "StatefulSet":
-		return []string{"Name", "Namespace", "Pods", "Replicas", "Age"} // done
+		return []string{"name", "namespace", "pods", "replicas", "age"} // done
 	case "DaemonSet":
-		return []string{"Name", "Namespace", "Pods", "Node Selector", "Age"} // done, node selector not implemented
+		return []string{"name", "namespace", "pods", "node_selector", "age"} // done, node selector not implemented
 	case "Job":
-		return []string{"Name", "Namespace", "Completions", "Age", "Conditions"} // done, completions untested, conditions unsure
+		return []string{"name", "namespace", "completions", "age", "conditions"} // done, completions untested, conditions unsure
 	case "CronJob":
-		return []string{"Name", "Namespace", "Schedule", "Suspend", "Active", "Last schedule", "Age"} // done
+		return []string{"name", "namespace", "schedule", "suspend", "active", "last_schedule", "age"} // done
 	case "Service":
-		return []string{"Name", "Namespace", "Type", "Cluster IP", "Ports", "External IP", "Selector", "Age", "Status"} // done, status unsure, external ip untested
+		return []string{"name", "namespace", "type", "cluster_ip", "ports", "external_ip", "selector", "age", "status"} // done, status unsure, external ip untested
 	case "ServiceAccount":
-		return []string{"Name", "Namespace", "Age"} // done
+		return []string{"name", "namespace", "age"} // done
 	case "Node":
-		return []string{"Name", "Taints", "Roles", "Version", "Age", "Conditions"} // done, conditions simplified
+		return []string{"name", "taints", "roles", "version", "age", "conditions"} // done, conditions simplified
 	case "Namespace":
-		return []string{"Name", "Labels", "Age", "Status"} // done
+		return []string{"name", "labels", "age", "status"} // done
 	case "CustomResourceDefinition":
-		return []string{"Resource", "Group", "Version", "Scope", "Age"} // done
+		return []string{"resource", "group", "version", "scope", "age"} // done
 	case "PersistentVolume":
-		return []string{"Name", "Storage Class", "Capacity", "Claim", "Age", "Status"} //done
+		return []string{"name", "storage Class", "capacity", "claim", "age", "status"} //done
 	case "StorageClass":
-		return []string{"Name", "Provisioner", "Reclaim Policy", "Default", "Age"} // done
+		return []string{"name", "provisioner", "reclaim Policy", "default", "age"} // done
 	case "ClusterRole":
-		return []string{"Name", "Age"} // done
+		return []string{"name", "age"} // done
 	case "ClusterRoleBinding":
-		return []string{"Name", "Bindings", "Age"} // done
+		return []string{"name", "bindings", "age"} // done
 	default:
 		return []string{}
 	}

@@ -22,8 +22,7 @@ func DeleteResource(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetResource(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	controllers.GetResourceController(w, r)
 }
 
 func ListResources(w http.ResponseWriter, r *http.Request) {

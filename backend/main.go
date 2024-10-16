@@ -14,7 +14,7 @@ func main() {
 
 	_, err := common.GetInstance()
 	if err != nil {
-		fmt.Printf("Błąd podczas tworzenia klienta: %v\n", err)
+		fmt.Printf("Error when loading config: %v\n", err)
 		return
 	}
 

@@ -15,7 +15,7 @@ import (
 )
 
 func ListResources(resourceType string, namespace string) (models.ResourceList, *models.ModelError) {
-	gvr, httpErr := GetResourceGroupVersion(resourceType)
+	gvr, _, httpErr := GetResourceGroupVersion(resourceType)
 	if httpErr != nil {
 		return models.ResourceList{}, httpErr
 	}

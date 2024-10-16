@@ -9,31 +9,23 @@ import (
 	"net/http"
 )
 
-//func GetClusterResourceController(w http.ResponseWriter, r *http.Request) {
-//	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-//	w.WriteHeader(http.StatusOK)
-//
-//	params := mux.Vars(r)
-//
-//	resource, err := cluster.GetResource(params["resourceType"], "", params["resourceName"])
-//	if err != nil {
-//		http.Error(w, err.Message, int(err.Code))
-//	}
-//	json.NewEncoder(w).Encode(resource)
-//}
+func GetResourceController(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 
-//func GetNamespacedResourceController(w http.ResponseWriter, r *http.Request) {
-//	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-//	w.WriteHeader(http.StatusOK)
-//
-//	params := mux.Vars(r)
-//
-//	resource, err := cluster.GetResource(params["resourceType"], params["namespace"], params["resourceName"])
-//	if err != nil {
-//		http.Error(w, err.Message, int(err.Code))
-//	}
-//	json.NewEncoder(w).Encode(resource)
-//}
+	params := mux.Vars(r)
+	resourceType := params["resourceType"]
+	resourceName := params["resourceName"]
+
+	queryParams := r.URL.Query()
+	namespace := queryParams.Get("namespace")
+
+	resource, err := cluster.GetResource(resourceType, namespace, resourceName)
+	if err != nil {
+		http.Error(w, err.Message, int(err.Code))
+	}
+	json.NewEncoder(w).Encode(resource)
+}
 
 func ListResourcesController(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")

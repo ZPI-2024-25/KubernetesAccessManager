@@ -10,63 +10,54 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
-//func GetResource(resourceType string, namespace string, resourceName string) (models.Resource, *models.ModelError) {
-//	gvr, httpErr := GetResourceGroupVersion(resourceType)
-//	if httpErr != nil {
-//		return models.Resource{}, httpErr
-//	}
-//
-//	singleton, err := common.GetInstance()
-//	if err != nil {
-//		return models.Resource{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client instance: %s", err)}
-//	}
-//	dynamicClient := singleton.GetClientSet()
-//
-//	var resource *unstructured.Unstructured
-//	if namespace == "" {
-//		resource, err = dynamicClient.Resource(gvr).Get(context.TODO(), resourceName, metav1.GetOptions{})
-//	} else {
-//		resource, err = dynamicClient.Resource(gvr).Namespace(namespace).Get(context.TODO(), resourceName, metav1.GetOptions{})
-//	}
-//
-//	if err != nil {
-//		if errors.IsNotFound(err) {
-//			return models.Resource{}, &models.ModelError{Code: 404, Message: fmt.Sprintf("Resource not found: %s", err)}
-//		} else {
-//			return models.Resource{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Error: %s", err)}
-//		}
-//	}
-//
-//	metadata, _, err := unstructured.NestedMap(resource.Object, "metadata")
-//	if err != nil {
-//		return models.Resource{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Error: %s", err)}
-//	}
-//
-//	spec, _, err := unstructured.NestedMap(resource.Object, "spec")
-//	if err != nil {
-//		return models.Resource{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Error: %s", err)}
-//	}
-//
-//	status, _, err := unstructured.NestedMap(resource.Object, "status")
-//	if err != nil {
-//		return models.Resource{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Error: %s", err)}
-//	}
-//
-//	var metadataSwagger interface{} = metadata
-//	var specSwagger interface{} = spec
-//	var statusSwagger interface{} = status
-//
-//	return models.Resource{
-//		ApiVersion: resource.GetAPIVersion(),
-//		Kind:       resource.GetKind(),
-//		Metadata:   &metadataSwagger,
-//		Spec:       &specSwagger,
-//		Status:     &statusSwagger,
-//	}, nil
-//}
+func GetResource(resourceType string, namespace string, resourceName string) (models.ResourceDetails, *models.ModelError) {
+	gvr, namespaced, httpErr := GetResourceGroupVersion(resourceType)
+	if httpErr != nil {
+		return models.ResourceDetails{}, httpErr
+	}
+
+	singleton, err := common.GetInstance()
+	if err != nil {
+		return models.ResourceDetails{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client instance: %s", err)}
+	}
+	dynamicClient := singleton.GetClientSet()
+
+	var resource *unstructured.Unstructured
+	if namespaced {
+		if namespace == "" {
+			resource, err = dynamicClient.Resource(gvr).Namespace("default").Get(context.TODO(), resourceName, metav1.GetOptions{})
+		} else {
+			resource, err = dynamicClient.Resource(gvr).Namespace(namespace).Get(context.TODO(), resourceName, metav1.GetOptions{})
+		}
+	} else {
+		resource, err = dynamicClient.Resource(gvr).Get(context.TODO(), resourceName, metav1.GetOptions{})
+	}
+
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return models.ResourceDetails{}, &models.ModelError{Code: 404, Message: fmt.Sprintf("Resource not found: %s", err)}
+		} else {
+			return models.ResourceDetails{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Error: %s", err)}
+		}
+	}
+
+	output := make(map[string]interface{})
+
+	fieldsToKeep := []string{"apiVersion", "kind", "metadata", "spec", "status"}
+
+	for _, field := range fieldsToKeep {
+		if value, found, _ := unstructured.NestedFieldCopy(resource.Object, field); found {
+			output[field] = value
+		}
+	}
+
+	var outputInterface interface{} = output
+
+	return models.ResourceDetails{ResourceDetails: &outputInterface}, nil
+}
 
 func CreateResource(resourceType string, namespace string, resource models.ResourceDetails) (models.ResourceDetails, *models.ModelError) {
-	gvr, httpErr := GetResourceGroupVersion(resourceType)
+	gvr, namespaced, httpErr := GetResourceGroupVersion(resourceType)
 	if httpErr != nil {
 		return models.ResourceDetails{}, httpErr
 	}
@@ -86,10 +77,15 @@ func CreateResource(resourceType string, namespace string, resource models.Resou
 	}
 
 	var createdResource *unstructured.Unstructured
-	if namespace == "" {
-		createdResource, err = dynamicClient.Resource(gvr).Create(context.TODO(), resourceDefinition, metav1.CreateOptions{})
+
+	if namespaced {
+		if namespace == "" {
+			createdResource, err = dynamicClient.Resource(gvr).Namespace("default").Create(context.TODO(), resourceDefinition, metav1.CreateOptions{})
+		} else {
+			createdResource, err = dynamicClient.Resource(gvr).Namespace(namespace).Create(context.TODO(), resourceDefinition, metav1.CreateOptions{})
+		}
 	} else {
-		createdResource, err = dynamicClient.Resource(gvr).Namespace(namespace).Create(context.TODO(), resourceDefinition, metav1.CreateOptions{})
+		createdResource, err = dynamicClient.Resource(gvr).Create(context.TODO(), resourceDefinition, metav1.CreateOptions{})
 	}
 
 	if err != nil {
@@ -104,7 +100,7 @@ func CreateResource(resourceType string, namespace string, resource models.Resou
 }
 
 func DeleteResource(resourceType string, namespace string, resourceName string) *models.ModelError {
-	gvr, httpErr := GetResourceGroupVersion(resourceType)
+	gvr, namespaced, httpErr := GetResourceGroupVersion(resourceType)
 	if httpErr != nil {
 		return httpErr
 	}
@@ -115,11 +111,16 @@ func DeleteResource(resourceType string, namespace string, resourceName string) 
 	}
 	dynamicClient := singleton.GetClientSet()
 
-	if namespace != "" {
-		err = dynamicClient.Resource(gvr).Delete(context.TODO(), resourceName, metav1.DeleteOptions{})
+	if namespaced {
+		if namespace != "" {
+			err = dynamicClient.Resource(gvr).Namespace("default").Delete(context.TODO(), resourceName, metav1.DeleteOptions{})
+		} else {
+			err = dynamicClient.Resource(gvr).Namespace(namespace).Delete(context.TODO(), resourceName, metav1.DeleteOptions{})
+		}
 	} else {
-		err = dynamicClient.Resource(gvr).Namespace(namespace).Delete(context.TODO(), resourceName, metav1.DeleteOptions{})
+		err = dynamicClient.Resource(gvr).Delete(context.TODO(), resourceName, metav1.DeleteOptions{})
 	}
+
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return &models.ModelError{Code: 404, Message: fmt.Sprintf("Resource not found: %w", err)}
