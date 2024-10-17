@@ -2,7 +2,6 @@ package cluster
 
 import (
 	"fmt"
-	"github.com/ZPI-2024-25/KubernetesAccessManager/common"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
@@ -48,7 +47,7 @@ func GetResourceGroupVersion(resourceType string) (output schema.GroupVersionRes
 		return schema.GroupVersionResource{}, false, &models.ModelError{Code: 400, Message: fmt.Sprintf("Invalid Resource Type")}
 	}
 
-	dynamicClientSingleton, _ := common.GetInstance()
+	dynamicClientSingleton, _ := GetInstance()
 	config := dynamicClientSingleton.GetConfig()
 
 	discoveryClient, _ := discovery.NewDiscoveryClientForConfig(config)

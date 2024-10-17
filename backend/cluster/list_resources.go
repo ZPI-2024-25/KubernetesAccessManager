@@ -3,7 +3,6 @@ package cluster
 import (
 	"context"
 	"fmt"
-	"github.com/ZPI-2024-25/KubernetesAccessManager/common"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -20,7 +19,7 @@ func ListResources(resourceType string, namespace string) (models.ResourceList, 
 		return models.ResourceList{}, httpErr
 	}
 
-	singleton, err := common.GetInstance()
+	singleton, err := GetInstance()
 	if err != nil {
 		return models.ResourceList{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client instance: %s", err)}
 	}

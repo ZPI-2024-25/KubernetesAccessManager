@@ -1,4 +1,4 @@
-package common
+package cluster
 
 import (
 	"flag"
@@ -26,11 +26,11 @@ var (
 
 func init() {
 	if home := homedir.HomeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(opcjonalnie) absolutna ścieżka do pliku kubeconfig")
+		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
 	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolutna ścieżka do pliku kubeconfig")
+		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
-	inClusterAuth = flag.Bool("in-cluster", false, "Użyj autentykacji wewnątrz klastra")
+	inClusterAuth = flag.Bool("in-cluster", false, "Use in-cluster authentication")
 }
 
 func GetInstance() (*DynamicClientSingleton, error) {
@@ -77,4 +77,12 @@ func (c *DynamicClientSingleton) GetClientSet() *dynamic.DynamicClient {
 
 func (c *DynamicClientSingleton) GetConfig() *rest.Config {
 	return c.config
+}
+
+func (c *DynamicClientSingleton) GetAuthenticationMethod() string {
+	if *inClusterAuth {
+		return "in-cluster"
+	} else {
+		return "out-of-cluster"
+	}
 }

@@ -3,7 +3,6 @@ package cluster
 import (
 	"context"
 	"fmt"
-	"github.com/ZPI-2024-25/KubernetesAccessManager/common"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,7 +15,7 @@ func GetResource(resourceType string, namespace string, resourceName string) (mo
 		return models.ResourceDetails{}, httpErr
 	}
 
-	singleton, err := common.GetInstance()
+	singleton, err := GetInstance()
 	if err != nil {
 		return models.ResourceDetails{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client instance: %s", err)}
 	}
@@ -62,7 +61,7 @@ func CreateResource(resourceType string, namespace string, resource models.Resou
 		return models.ResourceDetails{}, httpErr
 	}
 
-	singleton, err := common.GetInstance()
+	singleton, err := GetInstance()
 	if err != nil {
 		return models.ResourceDetails{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client instance: %s", err)}
 	}
@@ -105,7 +104,7 @@ func DeleteResource(resourceType string, namespace string, resourceName string) 
 		return httpErr
 	}
 
-	singleton, err := common.GetInstance()
+	singleton, err := GetInstance()
 	if err != nil {
 		return &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client instance: %s", err)}
 	}
@@ -141,7 +140,7 @@ func UpdateResource(resourceType string, namespace string, resourceName string, 
 		return models.ResourceDetails{}, httpErr
 	}
 
-	singleton, err := common.GetInstance()
+	singleton, err := GetInstance()
 	if err != nil {
 		return models.ResourceDetails{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client instance: %s", err)}
 	}
