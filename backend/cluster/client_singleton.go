@@ -47,14 +47,14 @@ func GetInstance() (*DynamicClientSingleton, error) {
 		} else {
 			config, err = clientcmd.BuildConfigFromFlags("", *kubeconfig)
 			if err != nil {
-				err = fmt.Errorf("nie udało się zbudować konfiguracji z pliku kubeconfig: %w", err)
+				err = fmt.Errorf("failed to create config from kubeconfig: %w", err)
 				return
 			}
 		}
 
 		dynamicClient, innerErr := dynamic.NewForConfig(config)
 		if innerErr != nil {
-			err = fmt.Errorf("nie udało się utworzyć dynamicznego klienta: %w", innerErr)
+			err = fmt.Errorf("failed to create dynamic client: %w", innerErr)
 			return
 		}
 
