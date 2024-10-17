@@ -9,30 +9,26 @@
 package api
 
 import (
+	"github.com/ZPI-2024-25/KubernetesAccessManager/controllers"
 	"net/http"
 )
 
 func CreateResource(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	controllers.CreateResourceController(w, r)
 }
 
 func DeleteResource(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	controllers.DeleteClusterResourceController(w, r)
 }
 
 func GetResource(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	controllers.GetResourceController(w, r)
 }
 
 func ListResources(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	controllers.ListResourcesController(w, r)
 }
 
 func UpdateResource(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	controllers.UpdateResourceController(w, r)
 }
