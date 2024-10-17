@@ -71,12 +71,22 @@ func GetInstance() (*DynamicClientSingleton, error) {
 	return instance, nil
 }
 
-func (c *DynamicClientSingleton) GetClientSet() *dynamic.DynamicClient {
-	return c.dynamicClient
+func GetClientSet() (*dynamic.DynamicClient, error) {
+	singleton, err := GetInstance()
+	if err != nil {
+		return nil, err
+	}
+
+	return singleton.dynamicClient, nil
 }
 
-func (c *DynamicClientSingleton) GetConfig() *rest.Config {
-	return c.config
+func GetConfig() (*rest.Config, error) {
+	singleton, err := GetInstance()
+	if err != nil {
+		return nil, err
+	}
+
+	return singleton.config, nil
 }
 
 func (c *DynamicClientSingleton) GetAuthenticationMethod() string {

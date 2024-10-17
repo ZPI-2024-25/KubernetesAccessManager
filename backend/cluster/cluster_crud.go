@@ -15,11 +15,10 @@ func GetResource(resourceType string, namespace string, resourceName string) (mo
 		return models.ResourceDetails{}, httpErr
 	}
 
-	singleton, err := GetInstance()
+	dynamicClient, err := GetClientSet()
 	if err != nil {
-		return models.ResourceDetails{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client instance: %s", err)}
+		return models.ResourceDetails{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client: %s", err)}
 	}
-	dynamicClient := singleton.GetClientSet()
 
 	var resource *unstructured.Unstructured
 	if namespaced {
@@ -61,11 +60,10 @@ func CreateResource(resourceType string, namespace string, resource models.Resou
 		return models.ResourceDetails{}, httpErr
 	}
 
-	singleton, err := GetInstance()
+	dynamicClient, err := GetClientSet()
 	if err != nil {
-		return models.ResourceDetails{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client instance: %s", err)}
+		return models.ResourceDetails{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client: %s", err)}
 	}
-	dynamicClient := singleton.GetClientSet()
 
 	resourceDetails := resource.ResourceDetails
 
@@ -104,11 +102,10 @@ func DeleteResource(resourceType string, namespace string, resourceName string) 
 		return httpErr
 	}
 
-	singleton, err := GetInstance()
+	dynamicClient, err := GetClientSet()
 	if err != nil {
-		return &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client instance: %s", err)}
+		return &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client: %s", err)}
 	}
-	dynamicClient := singleton.GetClientSet()
 
 	if namespaced {
 		if namespace == "" {
@@ -140,11 +137,10 @@ func UpdateResource(resourceType string, namespace string, resourceName string, 
 		return models.ResourceDetails{}, httpErr
 	}
 
-	singleton, err := GetInstance()
+	dynamicClient, err := GetClientSet()
 	if err != nil {
-		return models.ResourceDetails{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client instance: %s", err)}
+		return models.ResourceDetails{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client: %s", err)}
 	}
-	dynamicClient := singleton.GetClientSet()
 
 	var currentResource *unstructured.Unstructured
 	if namespaced {

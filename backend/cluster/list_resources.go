@@ -19,11 +19,10 @@ func ListResources(resourceType string, namespace string) (models.ResourceList, 
 		return models.ResourceList{}, httpErr
 	}
 
-	singleton, err := GetInstance()
+	dynamicClient, err := GetClientSet()
 	if err != nil {
-		return models.ResourceList{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client instance: %s", err)}
+		return models.ResourceList{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client: %s", err)}
 	}
-	dynamicClient := singleton.GetClientSet()
 
 	var resources *unstructured.UnstructuredList
 	if namespace == "" {
