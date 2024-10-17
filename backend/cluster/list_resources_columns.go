@@ -52,7 +52,7 @@ var resourceListColumns = map[string][]string{
 	"Pod":                      {nameStr, namespaceStr, containersStr, restartsStr, controlledByStr, nodeStr, qosStr, ageStr, statusStr}, // done
 	"Deployment":               {nameStr, namespaceStr, podsStr, replicasStr, ageStr, conditionsStr},                                     // done, conditions not implemented
 	"ConfigMap":                {nameStr, namespaceStr, keysStr, ageStr},                                                                 // done
-	"Secret":                   {nameStr, namespaceStr, labelsStr, keysStr, typeStr, ageStr},                                             // done, labels untested
+	"Secret":                   {nameStr, namespaceStr, labelsStr, keysStr, typeStr, ageStr},                                             // done
 	"Ingress":                  {nameStr, namespaceStr, loadbalancersStr, rulesStr, ageStr},                                              // done, rules not implemented, loadbalancers untested
 	"PersistentVolumeClaim":    {nameStr, namespaceStr, storageClassStr, sizeStr, podsStr, ageStr, statusStr},                            // done, pods not implemented
 	"StatefulSet":              {nameStr, namespaceStr, podsStr, replicasStr, ageStr},                                                    // done

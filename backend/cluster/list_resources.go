@@ -14,28 +14,18 @@ import (
 )
 
 func ListResources(resourceType string, namespace string) (models.ResourceList, *models.ModelError) {
-	gvr, _, httpErr := GetResourceGroupVersion(resourceType)
-	if httpErr != nil {
-		return models.ResourceList{}, httpErr
-	}
-
-	dynamicClient, err := GetClientSet()
+	resourceInterface, err := getResourceInterface(resourceType, namespace)
 	if err != nil {
-		return models.ResourceList{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client: %s", err)}
+		return models.ResourceList{}, err
 	}
 
-	var resources *unstructured.UnstructuredList
-	if namespace == "" {
-		resources, err = dynamicClient.Resource(gvr).List(context.TODO(), metav1.ListOptions{})
-	} else {
-		resources, err = dynamicClient.Resource(gvr).Namespace(namespace).List(context.TODO(), metav1.ListOptions{})
-	}
+	resources, listErr := resourceInterface.List(context.TODO(), metav1.ListOptions{})
 
-	if err != nil {
-		if errors.IsNotFound(err) {
-			return models.ResourceList{}, &models.ModelError{Code: 404, Message: fmt.Sprintf("Resource not found: %s", err)}
+	if listErr != nil {
+		if errors.IsNotFound(listErr) {
+			return models.ResourceList{}, &models.ModelError{Code: 404, Message: fmt.Sprintf("Resource not found: %s", listErr)}
 		} else {
-			return models.ResourceList{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Error: %s", err)}
+			return models.ResourceList{}, &models.ModelError{Code: 500, Message: fmt.Sprintf("Error: %s", listErr)}
 		}
 	}
 
@@ -63,13 +53,6 @@ func ListResources(resourceType string, namespace string) (models.ResourceList, 
 				if ownerReferenceMap["kind"].(string) == "ReplicaSet" {
 					resourceDetails.ControlledBy = ownerReferenceMap["name"].(string)
 				}
-			}
-		}
-
-		//Secret: Labels
-		if resourceType == "Secret" {
-			if labels, found := metadata["labels"].(string); found {
-				resourceDetails.Labels = labels
 			}
 		}
 
@@ -127,8 +110,8 @@ func ListResources(resourceType string, namespace string) (models.ResourceList, 
 			resourceDetails.Roles = strings.Join(roles, ", ")
 		}
 
-		// Namespace: Labels
-		if resourceType == "Namespace" {
+		// Namespace, Secret: Labels
+		if resourceType == "Namespace" || resourceType == "Secret" {
 			if labels, found := metadata["labels"].(map[string]interface{}); found {
 				var labelPairs []string
 				for key, value := range labels {

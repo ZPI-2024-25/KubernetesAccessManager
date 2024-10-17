@@ -63,7 +63,7 @@ func CreateResourceController(w http.ResponseWriter, r *http.Request) {
 	jsonErr := json.NewDecoder(r.Body).Decode(&resource.ResourceDetails)
 	if jsonErr != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(models.ModelError{Code: 404, Message: "Invalid request body"})
+		json.NewEncoder(w).Encode(models.ModelError{Code: 400, Message: "Invalid request body"})
 		return
 	}
 
@@ -120,7 +120,7 @@ func UpdateResourceController(w http.ResponseWriter, r *http.Request) {
 	jsonErr := json.NewDecoder(r.Body).Decode(&resource.ResourceDetails)
 	if jsonErr != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(models.ModelError{Code: 404, Message: "Invalid request body"})
+		json.NewEncoder(w).Encode(models.ModelError{Code: 400, Message: "Invalid request body"})
 		return
 	}
 
