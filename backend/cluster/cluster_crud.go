@@ -107,7 +107,7 @@ func DeleteResource(resourceType string, namespace string, resourceName string) 
 
 	singleton, err := common.GetInstance()
 	if err != nil {
-		return &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client instance: %w", err)}
+		return &models.ModelError{Code: 500, Message: fmt.Sprintf("Failed to get client instance: %s", err)}
 	}
 	dynamicClient := singleton.GetClientSet()
 
@@ -123,13 +123,13 @@ func DeleteResource(resourceType string, namespace string, resourceName string) 
 
 	if err != nil {
 		if errors.IsNotFound(err) {
-			return &models.ModelError{Code: 404, Message: fmt.Sprintf("Resource not found: %w", err)}
+			return &models.ModelError{Code: 404, Message: fmt.Sprintf("Resource not found: %s", err)}
 		} else if errors.IsForbidden(err) {
-			return &models.ModelError{Code: 403, Message: fmt.Sprintf("Forbidden: %w", err)}
+			return &models.ModelError{Code: 403, Message: fmt.Sprintf("Forbidden: %s", err)}
 		} else if errors.IsUnauthorized(err) {
-			return &models.ModelError{Code: 401, Message: fmt.Sprintf("Unauthorized: %w", err)}
+			return &models.ModelError{Code: 401, Message: fmt.Sprintf("Unauthorized: %s", err)}
 		}
-		return &models.ModelError{Code: 500, Message: fmt.Sprintf("Internal server error: %w", err)}
+		return &models.ModelError{Code: 500, Message: fmt.Sprintf("Internal server error: %s", err)}
 	}
 
 	return nil
