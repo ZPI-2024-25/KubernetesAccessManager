@@ -9,39 +9,35 @@ import (
 	"k8s.io/client-go/dynamic"
 )
 
-func getAllowedResourceTypes() [20]string {
-	return [20]string{
-		"Pod",
-		"Service",
-		"Deployment",
-		"ConfigMap",
-		"StatefulSet",
-		"DaemonSet",
-		"Secret",
-		"Ingress",
-		"PersistentVolumeClaim",
-		"ReplicaSet",
-		"Node",
-		"Namespace",
-		"CustomResourceDefinition",
-		"PersistentVolume",
-		"Job",
-		"CronJob",
-		"ServiceAccount",
-		"StorageClass",
-		"ClusterRole",
-		"ClusterRoleBinding",
+func getAllowedResourceTypes() map[string]struct{} {
+	return map[string]struct{}{
+		"Pod":                      {},
+		"Service":                  {},
+		"Deployment":               {},
+		"ConfigMap":                {},
+		"StatefulSet":              {},
+		"DaemonSet":                {},
+		"Secret":                   {},
+		"Ingress":                  {},
+		"PersistentVolumeClaim":    {},
+		"ReplicaSet":               {},
+		"Node":                     {},
+		"Namespace":                {},
+		"CustomResourceDefinition": {},
+		"PersistentVolume":         {},
+		"Job":                      {},
+		"CronJob":                  {},
+		"ServiceAccount":           {},
+		"StorageClass":             {},
+		"ClusterRole":              {},
+		"ClusterRoleBinding":       {},
 	}
 }
 
 func isResourceTypeAllowed(resourceType string) bool {
 	allowedResourceTypes := getAllowedResourceTypes()
-	for _, allowedResourceType := range allowedResourceTypes {
-		if allowedResourceType == resourceType {
-			return true
-		}
-	}
-	return false
+	_, exists := allowedResourceTypes[resourceType]
+	return exists
 }
 
 func GetResourceGroupVersion(resourceType string) (output schema.GroupVersionResource, namespaced bool, error *models.ModelError) {

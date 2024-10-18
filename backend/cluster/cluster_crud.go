@@ -28,8 +28,8 @@ func CreateResource(resourceType string, namespace string, resource models.Resou
 		return models.ResourceDetails{}, err
 	}
 
-	resourceDetails := resource.ResourceDetails
-	resourceMap, ok := (*resourceDetails).(map[string]interface{})
+	resourceDetails := *resource.ResourceDetails
+	resourceMap, ok := (resourceDetails).(map[string]interface{})
 	if !ok {
 		return models.ResourceDetails{}, &models.ModelError{Code: 400, Message: "Invalid resource format"}
 	}
