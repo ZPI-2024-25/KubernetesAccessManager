@@ -10,89 +10,66 @@ import (
 )
 
 func GetResourceController(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	setJSONContentType(w)
 
-	params := mux.Vars(r)
-	resourceType := params["resourceType"]
-	resourceName := params["resourceName"]
-
-	queryParams := r.URL.Query()
-	namespace := queryParams.Get("namespace")
+	resourceType := getResourceType(r)
+	resourceName := getResourceName(r)
+	namespace := getNamespace(r)
 
 	resource, err := cluster.GetResource(resourceType, namespace, resourceName)
 	if err != nil {
-		w.WriteHeader(int(err.Code))
-		json.NewEncoder(w).Encode(err)
+		writeJSONError(w, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(resource)
+	writeJSONResponse(w, http.StatusOK, resource)
 }
 
 func ListResourcesController(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	setJSONContentType(w)
 
-	params := mux.Vars(r)
-	resourceType := params["resourceType"]
-
-	queryParams := r.URL.Query()
-	namespace := queryParams.Get("namespace")
+	resourceType := getResourceType(r)
+	namespace := getNamespace(r)
 
 	resources, err := cluster.ListResources(resourceType, namespace)
 	if err != nil {
-		w.WriteHeader(int(err.Code))
-		json.NewEncoder(w).Encode(err)
+		writeJSONError(w, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(resources)
+	writeJSONResponse(w, http.StatusOK, resources)
 }
 
 func CreateResourceController(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	setJSONContentType(w)
 
-	params := mux.Vars(r)
-	resourceType := params["resourceType"]
-
-	queryParams := r.URL.Query()
-	namespace := queryParams.Get("namespace")
+	resourceType := getResourceType(r)
+	namespace := getNamespace(r)
 
 	var resource models.ResourceDetails
-	jsonErr := json.NewDecoder(r.Body).Decode(&resource.ResourceDetails)
-	if jsonErr != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(models.ModelError{Code: 400, Message: "Invalid request body"})
+	if !decodeJSONBody(w, r, &resource.ResourceDetails) {
 		return
 	}
 
 	resource, err := cluster.CreateResource(resourceType, namespace, resource)
 	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(int(err.Code))
-		json.NewEncoder(w).Encode(err)
+		writeJSONError(w, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(resource)
+	writeJSONResponse(w, http.StatusCreated, resource)
 }
 
 func DeleteClusterResourceController(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	setJSONContentType(w)
 
-	params := mux.Vars(r)
-	resourceType := params["resourceType"]
-	resourceName := params["resourceName"]
-
-	queryParams := r.URL.Query()
-	namespace := queryParams.Get("namespace")
+	resourceType := getResourceType(r)
+	resourceName := getResourceName(r)
+	namespace := getNamespace(r)
 
 	err := cluster.DeleteResource(resourceType, namespace, resourceName)
 	if err != nil {
-		w.WriteHeader(int(err.Code))
-		json.NewEncoder(w).Encode(err)
+		writeJSONError(w, err)
 		return
 	}
 
@@ -103,34 +80,62 @@ func DeleteClusterResourceController(w http.ResponseWriter, r *http.Request) {
 		Code:    http.StatusOK,
 		Message: fmt.Sprintf("Resource %s deleted successfully", resourceName),
 	}
-	json.NewEncoder(w).Encode(status)
+	writeJSONResponse(w, http.StatusOK, status)
 }
 
 func UpdateResourceController(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	params := mux.Vars(r)
+	setJSONContentType(w)
 
-	resourceType := params["resourceType"]
-	resourceName := params["resourceName"]
-
-	queryParams := r.URL.Query()
-	namespace := queryParams.Get("namespace")
+	resourceType := getResourceType(r)
+	resourceName := getResourceName(r)
+	namespace := getNamespace(r)
 
 	var resource models.ResourceDetails
-	jsonErr := json.NewDecoder(r.Body).Decode(&resource.ResourceDetails)
-	if jsonErr != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(models.ModelError{Code: 400, Message: "Invalid request body"})
+	if !decodeJSONBody(w, r, &resource.ResourceDetails) {
 		return
 	}
 
 	resource, err := cluster.UpdateResource(resourceType, namespace, resourceName, resource)
 	if err != nil {
-		w.WriteHeader(int(err.Code))
-		json.NewEncoder(w).Encode(err)
+		writeJSONError(w, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(resource)
+	writeJSONResponse(w, http.StatusOK, resource)
+}
+
+func setJSONContentType(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+}
+
+func getResourceType(r *http.Request) string {
+	return mux.Vars(r)["resourceType"]
+}
+
+func getResourceName(r *http.Request) string {
+	return mux.Vars(r)["resourceName"]
+}
+
+func getNamespace(r *http.Request) string {
+	return r.URL.Query().Get("namespace")
+}
+
+func writeJSONError(w http.ResponseWriter, err *models.ModelError) {
+	w.WriteHeader(int(err.Code))
+	json.NewEncoder(w).Encode(err)
+}
+
+func writeJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
+	w.WriteHeader(statusCode)
+	json.NewEncoder(w).Encode(data)
+}
+
+func decodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) bool {
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(dst)
+	if err != nil {
+		writeJSONError(w, &models.ModelError{Code: 400, Message: "Invalid request body"})
+		return false
+	}
+	return true
 }

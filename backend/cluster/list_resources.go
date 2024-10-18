@@ -539,8 +539,7 @@ func extractContainers(resource unstructured.Unstructured, resourceType string, 
 	if slices.Contains(transposedResourceListColumns["containers"], resourceType) {
 		status, statusExists := resource.Object["status"].(map[string]interface{})
 		if statusExists {
-			containerStatuses, found := status["containerStatuses"].([]interface{})
-			if found {
+			if containerStatuses, found := status["containerStatuses"].([]interface{}); found {
 				containers := len(containerStatuses)
 				readyContainers := 0
 				for _, containerStatus := range containerStatuses {
@@ -562,8 +561,7 @@ func extractContainers(resource unstructured.Unstructured, resourceType string, 
 func extractControlledBy(resource unstructured.Unstructured, resourceType string, resourceDetailsTruncated *models.ResourceListResourceList) {
 	if slices.Contains(transposedResourceListColumns["controlled_by"], resourceType) {
 		metadata := resource.Object["metadata"].(map[string]interface{})
-		ownerReferences, found := metadata["ownerReferences"].([]interface{})
-		if found {
+		if ownerReferences, found := metadata["ownerReferences"].([]interface{}); found {
 			var controlledBy []string
 			for _, ownerReference := range ownerReferences {
 				ownerReferenceMap := ownerReference.(map[string]interface{})
@@ -616,8 +614,7 @@ func extractLoadbalancers(resource unstructured.Unstructured, resourceType strin
 func extractName(resource unstructured.Unstructured, resourceType string, resourceDetailsTruncated *models.ResourceListResourceList) {
 	if slices.Contains(transposedResourceListColumns["name"], resourceType) {
 		metadata := resource.Object["metadata"].(map[string]interface{})
-		name, found := metadata["name"].(string)
-		if found {
+		if name, found := metadata["name"].(string); found {
 			resourceDetailsTruncated.Name = name
 		} else {
 			resourceDetailsTruncated.Name = ""
@@ -629,8 +626,7 @@ func extractName(resource unstructured.Unstructured, resourceType string, resour
 func extractNamespace(resource unstructured.Unstructured, resourceType string, resourceDetailsTruncated *models.ResourceListResourceList) {
 	if slices.Contains(transposedResourceListColumns["namespace"], resourceType) {
 		metadata := resource.Object["metadata"].(map[string]interface{})
-		namespace, found := metadata["namespace"].(string)
-		if found {
+		if namespace, found := metadata["namespace"].(string); found {
 			resourceDetailsTruncated.Namespace = namespace
 		} else {
 			resourceDetailsTruncated.Namespace = ""
@@ -642,8 +638,7 @@ func extractNode(resource unstructured.Unstructured, resourceType string, resour
 	if slices.Contains(transposedResourceListColumns["node"], resourceType) {
 		spec, specExists := resource.Object["spec"].(map[string]interface{})
 		if specExists {
-			node, found := spec["nodeName"].(string)
-			if found {
+			if node, found := spec["nodeName"].(string); found {
 				resourceDetailsTruncated.Node = node
 			} else {
 				resourceDetailsTruncated.Node = ""
@@ -674,12 +669,10 @@ func extractQos(resource unstructured.Unstructured, resourceType string, resourc
 		qosClass := "BestEffort"
 
 		if specExists {
-			containers, found := spec["containers"].([]interface{})
-			if found {
+			if containers, found := spec["containers"].([]interface{}); found {
 				for _, container := range containers {
 					containerMap := container.(map[string]interface{})
-					resources, resExists := containerMap["resources"].(map[string]interface{})
-					if resExists {
+					if resources, resExists := containerMap["resources"].(map[string]interface{}); resExists {
 						requests, reqExists := resources["requests"].(map[string]interface{})
 						limits, limExists := resources["limits"].(map[string]interface{})
 
