@@ -10,7 +10,8 @@ RUN go mod download
 COPY api/ api/
 COPY models/ models/
 COPY common/ common/
-#COPY controllers/ controllers/
+COPY controllers/ controllers/
+COPY kubernetes/ kubernetes/
 
 COPY main.go .
 # Build the Go application
