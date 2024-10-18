@@ -76,3 +76,15 @@ func GetResourceListColumns(resourceType string) []string {
 	}
 	return []string{}
 }
+
+func transposeResourceListColumns(input map[string][]string) map[string][]string {
+	result := make(map[string][]string)
+
+	for resourceType, columns := range input {
+		for _, column := range columns {
+			result[column] = append(result[column], resourceType)
+		}
+	}
+
+	return result
+}
