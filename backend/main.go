@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	sw "github.com/ZPI-2024-25/KubernetesAccessManager/api"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
@@ -10,8 +9,6 @@ import (
 )
 
 func main() {
-	flag.Parse()
-
 	singleton, err := cluster.GetInstance()
 	if err != nil {
 		fmt.Printf("Error when loading config: %v\n", err)

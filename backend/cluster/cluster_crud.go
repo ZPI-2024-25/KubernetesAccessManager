@@ -13,13 +13,13 @@ func GetResource(resourceType string, namespace string, resourceName string) (mo
 		return models.ResourceDetails{}, err
 	}
 
+	var resource interface{}
 	resource, getErr := resourceInterface.Get(context.TODO(), resourceName, metav1.GetOptions{})
 	if getErr != nil {
 		return models.ResourceDetails{}, handleKubernetesError(getErr)
 	}
 
-	var outputInterface interface{} = resource.Object
-	return models.ResourceDetails{ResourceDetails: &outputInterface}, nil
+	return models.ResourceDetails{ResourceDetails: &resource}, nil
 }
 
 func CreateResource(resourceType string, namespace string, resource models.ResourceDetails) (models.ResourceDetails, *models.ModelError) {
@@ -42,13 +42,13 @@ func CreateResource(resourceType string, namespace string, resource models.Resou
 		resourceDefinition.SetNamespace(namespace)
 	}
 
+	var createdResource interface{}
 	createdResource, createErr := resourceInterface.Create(context.TODO(), resourceDefinition, metav1.CreateOptions{})
 	if createErr != nil {
 		return models.ResourceDetails{}, handleKubernetesError(createErr)
 	}
 
-	var details interface{} = createdResource.Object
-	return models.ResourceDetails{ResourceDetails: &details}, nil
+	return models.ResourceDetails{ResourceDetails: &createdResource}, nil
 }
 
 func DeleteResource(resourceType string, namespace string, resourceName string) *models.ModelError {
@@ -71,28 +71,23 @@ func UpdateResource(resourceType string, namespace string, resourceName string, 
 		return models.ResourceDetails{}, err
 	}
 
-	currentResource, getErr := resourceInterface.Get(context.TODO(), resourceName, metav1.GetOptions{})
-	if getErr != nil {
-		return models.ResourceDetails{}, handleKubernetesError(getErr)
-	}
-
 	resourceMap, ok := (*resource.ResourceDetails).(map[string]interface{})
 	if !ok {
 		return models.ResourceDetails{}, &models.ModelError{Code: 400, Message: "Invalid resource format"}
 	}
+
+	unstructuredResource := &unstructured.Unstructured{Object: resourceMap}
 
 	updatedResourceName, _, _ := unstructured.NestedString(resourceMap, "metadata", "name")
 	if updatedResourceName != resourceName {
 		return models.ResourceDetails{}, &models.ModelError{Code: 400, Message: "Invalid Input: Different resource names"}
 	}
 
-	currentResource.Object = resourceMap
-
-	updatedResource, updateErr := resourceInterface.Update(context.TODO(), currentResource, metav1.UpdateOptions{})
+	var updatedResource interface{}
+	updatedResource, updateErr := resourceInterface.Update(context.TODO(), unstructuredResource, metav1.UpdateOptions{})
 	if updateErr != nil {
 		return models.ResourceDetails{}, handleKubernetesError(updateErr)
 	}
 
-	var details interface{} = updatedResource.Object
-	return models.ResourceDetails{ResourceDetails: &details}, nil
+	return models.ResourceDetails{ResourceDetails: &updatedResource}, nil
 }

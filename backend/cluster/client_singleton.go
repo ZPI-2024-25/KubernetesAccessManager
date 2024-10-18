@@ -6,6 +6,8 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
+	"log"
+	"os"
 	"path/filepath"
 	"sync"
 
@@ -20,17 +22,13 @@ type DynamicClientSingleton struct {
 var (
 	instance      *DynamicClientSingleton
 	once          sync.Once
-	kubeconfig    *string
-	inClusterAuth *bool
+	kubeconfig    string
+	inClusterAuth bool
 )
 
 func init() {
-	if home := homedir.HomeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-	}
-	inClusterAuth = flag.Bool("in-cluster", false, "Use in-cluster authentication")
+	flag.StringVar(&kubeconfig, "kubeconfig", "", "(optional) absolute path to the kubeconfig file")
+	flag.BoolVar(&inClusterAuth, "in-cluster", false, "Use in-cluster authentication")
 }
 
 func GetInstance() (*DynamicClientSingleton, error) {
@@ -38,14 +36,32 @@ func GetInstance() (*DynamicClientSingleton, error) {
 	once.Do(func() {
 		var config *rest.Config
 
-		if *inClusterAuth {
+		flag.Parse()
+
+		if inClusterAuth {
 			config, err = rest.InClusterConfig()
 			if err != nil {
-				err = fmt.Errorf("failed to get in-cluster config: %w", err)
+				log.Printf("Error when loading in-cluster config: %v\n", err)
 				return
 			}
 		} else {
-			config, err = clientcmd.BuildConfigFromFlags("", *kubeconfig)
+			kubeconfigPath := kubeconfig
+
+			if kubeconfigPath == "" {
+				kubeconfigEnv := os.Getenv("KUBECONFIG")
+				if kubeconfigEnv != "" {
+					kubeconfigPath = kubeconfigEnv
+				} else {
+					if home := homedir.HomeDir(); home != "" {
+						kubeconfigPath = filepath.Join(home, ".kube", "config")
+					} else {
+						err = fmt.Errorf("could not determine home directory")
+						return
+					}
+				}
+			}
+
+			config, err = clientcmd.BuildConfigFromFlags("", kubeconfigPath)
 			if err != nil {
 				err = fmt.Errorf("failed to create config from kubeconfig: %w", err)
 				return
@@ -90,7 +106,7 @@ func GetConfig() (*rest.Config, error) {
 }
 
 func (c *DynamicClientSingleton) GetAuthenticationMethod() string {
-	if *inClusterAuth {
+	if inClusterAuth {
 		return "in-cluster"
 	} else {
 		return "out-of-cluster"
