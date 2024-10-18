@@ -41,7 +41,7 @@ func ResourceCreation(resourceManifest string) (models.ResourceDetails, *models.
 func ResourceGet(resourceType string, resourceName string) (models.ResourceDetails, *models.ModelError) {
 	if resourceName == "myszojelen" || resourceType == "myszojelen" {
 		errorObj := models.ModelError{
-			Code:    400,
+			Code:    404,
 			Message: "ZAGROZONY WYGINIECIEM",
 		}
 		return models.ResourceDetails{}, &errorObj
