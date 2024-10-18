@@ -18,7 +18,13 @@ var (
 )
 
 const (
-	serviceStr = "Service"
+	serviceString               = "Service"
+	deploymentString            = "Deployment"
+	persistentVolumeClaimString = "PersistentVolumeClaim"
+	statefulSetString           = "StatefulSet"
+	daemonSetString             = "DaemonSet"
+	nodeString                  = "Node"
+	jobString                   = "Job"
 )
 
 func ListResources(resourceType string, namespace string) (models.ResourceList, *models.ModelError) {
@@ -188,17 +194,6 @@ func ListResources(resourceType string, namespace string) (models.ResourceList, 
 		}
 
 		if specExists {
-			if resourceType == "ReplicaSet" {
-				desired, found := spec["replicas"].(int64)
-				if found {
-					resourceDetailsTruncated.Desired = strconv.FormatInt(desired, 10)
-				}
-			} else {
-				if replicas, found := spec["replicas"].(int64); found {
-					resourceDetailsTruncated.Replicas = strconv.FormatInt(replicas, 10)
-				}
-			}
-
 			storageClass, found := spec["storageClassName"].(string)
 			if found {
 				resourceDetailsTruncated.StorageClass = storageClass
@@ -317,46 +312,6 @@ func ListResources(resourceType string, namespace string) (models.ResourceList, 
 		}
 
 		if statusExists {
-			//Deployment, PersistentVolumeClaim: Pods
-			if resourceType == "Deployment" || resourceType == "PersistentVolumeClaim" {
-				replicas, found := status["replicas"].(int64)
-				unavailableReplicas, found2 := status["unavailableReplicas"].(int64)
-				if found && found2 {
-					resourceDetailsTruncated.Pods = fmt.Sprintf("%d/%d", replicas-unavailableReplicas, replicas)
-				}
-			}
-
-			//StatefulSet: Pods
-			if resourceType == "StatefulSet" {
-				availableReplicas, found := status["availableReplicas"].(int64)
-				replicas, found2 := status["replicas"].(int64)
-				if found && found2 {
-					resourceDetailsTruncated.Pods = fmt.Sprintf("%d/%d", availableReplicas, replicas)
-				}
-			}
-
-			//DaemonSet: Pods
-			if resourceType == "DaemonSet" {
-				ready, found := status["numberReady"].(int64)
-				desired, found2 := status["desiredNumberScheduled"].(int64)
-				if found && found2 {
-					resourceDetailsTruncated.Pods = fmt.Sprintf("%d/%d", ready, desired)
-				}
-			}
-
-			//Replicas: Ready, Current
-			if resourceType == "ReplicaSet" {
-				if replicas, found := status["replicas"].(int64); found {
-					resourceDetailsTruncated.Current = strconv.FormatInt(replicas, 10)
-				}
-
-				if ready, found := status["readyReplicas"].(int64); found {
-					resourceDetailsTruncated.Ready = strconv.FormatInt(ready, 10)
-				} else {
-					resourceDetailsTruncated.Ready = "0"
-				}
-			}
-
 			//LoadBalancers (Ingress)
 			if lb, lbFound := status["loadBalancer"].(map[string]interface{}); lbFound {
 				if ingressList, ingressFound := lb["ingress"].([]interface{}); ingressFound {
@@ -381,30 +336,6 @@ func ListResources(resourceType string, namespace string) (models.ResourceList, 
 				}
 			}
 
-			// Node: Conditions
-			if resourceType == "Node" {
-				if conditions, found := status["conditions"].([]interface{}); found {
-					nodeReady := "Unknown"
-					for _, condition := range conditions {
-						conditionMap, ok := condition.(map[string]interface{})
-						if !ok {
-							continue
-						}
-						conditionType, _ := conditionMap["type"].(string)
-						conditionStatus, _ := conditionMap["status"].(string)
-						if conditionType == "Ready" {
-							if conditionStatus == "True" {
-								nodeReady = "Ready"
-							} else {
-								nodeReady = "NotReady"
-							}
-							break
-						}
-					}
-					resourceDetailsTruncated.Conditions = nodeReady
-				}
-			}
-
 			// CronJob: Last schedule
 			if lastSchedule, found := status["lastScheduleTime"].(string); found {
 				resourceDetailsTruncated.LastSchedule = lastSchedule
@@ -419,20 +350,6 @@ func ListResources(resourceType string, namespace string) (models.ResourceList, 
 					resourceDetailsTruncated.Active = "0"
 				}
 			}
-
-			// Job: Conditions
-			if resourceType == "Job" {
-				if conditions, found := status["conditions"].([]interface{}); found {
-					conditionMap, ok := conditions[0].(map[string]interface{})
-					if !ok {
-						continue
-					}
-
-					conditionType, _ := conditionMap["type"].(string)
-					resourceDetailsTruncated.Conditions = fmt.Sprintf("%s", conditionType)
-				}
-			}
-
 		}
 
 		if resourceType == "Job" {
@@ -532,7 +449,46 @@ func extractCompletions(resource unstructured.Unstructured, resourceType string,
 }
 
 func extractConditions(resource unstructured.Unstructured, resourceType string, resourceDetailsTruncated *models.ResourceListResourceList) {
+	if slices.Contains(transposedResourceListColumns["conditions"], resourceType) {
+		status, statusExists := resource.Object["status"].(map[string]interface{})
+		if statusExists {
+			if resourceType == deploymentString || resourceType == nodeString {
+				if conditions, found := status["conditions"].([]interface{}); found {
+					var conditionsOutput []string
+					for _, condition := range conditions {
+						conditionMap, ok := condition.(map[string]interface{})
+						if !ok {
+							continue
+						}
+						conditionType, _ := conditionMap["type"].(string)
+						conditionStatus, _ := conditionMap["status"].(string)
 
+						if conditionStatus == "True" {
+							conditionsOutput = append(conditionsOutput, conditionType)
+						}
+					}
+					resourceDetailsTruncated.Conditions = strings.Join(conditionsOutput, ", ")
+				} else {
+					resourceDetailsTruncated.Conditions = ""
+				}
+			}
+
+			if resourceType == jobString {
+				if conditions, found := status["conditions"].([]interface{}); found {
+					conditionMap, ok := conditions[0].(map[string]interface{})
+					if !ok {
+						resourceDetailsTruncated.Conditions = "Unknown"
+						return
+					}
+
+					conditionType, _ := conditionMap["type"].(string)
+					resourceDetailsTruncated.Conditions = fmt.Sprintf("%s", conditionType)
+				} else {
+					resourceDetailsTruncated.Conditions = ""
+				}
+			}
+		}
+	}
 }
 
 func extractContainers(resource unstructured.Unstructured, resourceType string, resourceDetailsTruncated *models.ResourceListResourceList) {
@@ -576,7 +532,18 @@ func extractControlledBy(resource unstructured.Unstructured, resourceType string
 }
 
 func extractCurrent(resource unstructured.Unstructured, resourceType string, resourceDetailsTruncated *models.ResourceListResourceList) {
-
+	if slices.Contains(transposedResourceListColumns["current"], resourceType) {
+		status, statusExists := resource.Object["status"].(map[string]interface{})
+		if statusExists {
+			if replicas, found := status["availableReplicas"].(int64); found {
+				resourceDetailsTruncated.Current = strconv.FormatInt(replicas, 10)
+			} else {
+				resourceDetailsTruncated.Current = "0"
+			}
+		} else {
+			resourceDetailsTruncated.Current = "0"
+		}
+	}
 }
 
 func extractDefault(resource unstructured.Unstructured, resourceType string, resourceDetailsTruncated *models.ResourceListResourceList) {
@@ -584,7 +551,16 @@ func extractDefault(resource unstructured.Unstructured, resourceType string, res
 }
 
 func extractDesired(resource unstructured.Unstructured, resourceType string, resourceDetailsTruncated *models.ResourceListResourceList) {
-
+	if slices.Contains(transposedResourceListColumns["desired"], resourceType) {
+		spec, specExists := resource.Object["spec"].(map[string]interface{})
+		if specExists {
+			if replicas, found := spec["replicas"].(int64); found {
+				resourceDetailsTruncated.Desired = strconv.FormatInt(replicas, 10)
+			} else {
+				resourceDetailsTruncated.Desired = ""
+			}
+		}
+	}
 }
 
 func extractExternalIp(resource unstructured.Unstructured, resourceType string, resourceDetailsTruncated *models.ResourceListResourceList) {
@@ -652,7 +628,46 @@ func extractNodeSelector(resource unstructured.Unstructured, resourceType string
 }
 
 func extractPods(resource unstructured.Unstructured, resourceType string, resourceDetailsTruncated *models.ResourceListResourceList) {
+	if slices.Contains(transposedResourceListColumns["pods"], resourceType) {
+		status, statusExists := resource.Object["status"].(map[string]interface{})
+		if statusExists {
+			if resourceType == deploymentString || resourceType == persistentVolumeClaimString {
+				replicas, found := status["replicas"].(int64)
+				unavailableReplicas, found2 := status["unavailableReplicas"].(int64)
+				if found && found2 {
+					resourceDetailsTruncated.Pods = fmt.Sprintf("%d/%d", replicas-unavailableReplicas, replicas)
+				} else if found {
+					resourceDetailsTruncated.Pods = fmt.Sprintf("%d/%d", replicas, replicas)
+				} else {
+					resourceDetailsTruncated.Pods = ""
+				}
+			}
 
+			if resourceType == statefulSetString {
+				availableReplicas, found := status["availableReplicas"].(int64)
+				replicas, found2 := status["replicas"].(int64)
+				if found && found2 {
+					resourceDetailsTruncated.Pods = fmt.Sprintf("%d/%d", availableReplicas, replicas)
+				} else if found2 {
+					resourceDetailsTruncated.Pods = fmt.Sprintf("0/%d", replicas)
+				} else {
+					resourceDetailsTruncated.Pods = ""
+				}
+			}
+
+			if resourceType == daemonSetString {
+				ready, found := status["numberReady"].(int64)
+				desired, found2 := status["desiredNumberScheduled"].(int64)
+				if found && found2 {
+					resourceDetailsTruncated.Pods = fmt.Sprintf("%d/%d", ready, desired)
+				} else {
+					resourceDetailsTruncated.Pods = ""
+				}
+			}
+		} else {
+			resourceDetailsTruncated.Pods = ""
+		}
+	}
 }
 
 func extractPorts(resource unstructured.Unstructured, resourceType string, resourceDetailsTruncated *models.ResourceListResourceList) {
@@ -701,7 +716,18 @@ func extractQos(resource unstructured.Unstructured, resourceType string, resourc
 }
 
 func extractReady(resource unstructured.Unstructured, resourceType string, resourceDetailsTruncated *models.ResourceListResourceList) {
-
+	if slices.Contains(transposedResourceListColumns["ready"], resourceType) {
+		status, statusExists := resource.Object["status"].(map[string]interface{})
+		if statusExists {
+			if ready, found := status["readyReplicas"].(int64); found {
+				resourceDetailsTruncated.Ready = strconv.FormatInt(ready, 10)
+			} else {
+				resourceDetailsTruncated.Ready = "0"
+			}
+		} else {
+			resourceDetailsTruncated.Ready = "0"
+		}
+	}
 }
 
 func extractReclaimPolicy(resource unstructured.Unstructured, resourceType string, resourceDetailsTruncated *models.ResourceListResourceList) {
@@ -709,7 +735,18 @@ func extractReclaimPolicy(resource unstructured.Unstructured, resourceType strin
 }
 
 func extractReplicas(resource unstructured.Unstructured, resourceType string, resourceDetailsTruncated *models.ResourceListResourceList) {
-
+	if slices.Contains(transposedResourceListColumns["replicas"], resourceType) {
+		spec, specExists := resource.Object["spec"].(map[string]interface{})
+		if specExists {
+			if replicas, found := spec["replicas"].(int64); found {
+				resourceDetailsTruncated.Replicas = strconv.FormatInt(replicas, 10)
+			} else {
+				resourceDetailsTruncated.Replicas = "0"
+			}
+		} else {
+			resourceDetailsTruncated.Replicas = "0"
+		}
+	}
 }
 
 func extractResources(resource unstructured.Unstructured, resourceType string, resourceDetailsTruncated *models.ResourceListResourceList) {
@@ -765,7 +802,7 @@ func extractStatus(resource unstructured.Unstructured, resourceType string, reso
 	if slices.Contains(transposedResourceListColumns["status"], resourceType) {
 		status, statusExists := resource.Object["status"].(map[string]interface{})
 		if statusExists {
-			if resourceType == serviceStr {
+			if resourceType == serviceString {
 				_, found := status["loadBalancer"].(map[string]interface{})
 				if found {
 					resourceDetailsTruncated.Status = "Active"

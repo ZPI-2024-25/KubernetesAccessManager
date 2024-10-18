@@ -50,7 +50,7 @@ const (
 var resourceListColumns = map[string][]string{
 	"ReplicaSet":               {nameStr, namespaceStr, desiredStr, currentStr, readyStr, ageStr},                                        // done
 	"Pod":                      {nameStr, namespaceStr, containersStr, restartsStr, controlledByStr, nodeStr, qosStr, ageStr, statusStr}, // done
-	"Deployment":               {nameStr, namespaceStr, podsStr, replicasStr, ageStr, conditionsStr},                                     // done, conditions not implemented
+	"Deployment":               {nameStr, namespaceStr, podsStr, replicasStr, ageStr, conditionsStr},                                     // done
 	"ConfigMap":                {nameStr, namespaceStr, keysStr, ageStr},                                                                 // done
 	"Secret":                   {nameStr, namespaceStr, labelsStr, keysStr, typeStr, ageStr},                                             // done
 	"Ingress":                  {nameStr, namespaceStr, loadbalancersStr, rulesStr, ageStr},                                              // done, rules not implemented, loadbalancers untested
