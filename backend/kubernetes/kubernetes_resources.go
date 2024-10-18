@@ -15,12 +15,13 @@ func ResourceListing(resourceType string) (models.ResourceList, *models.ModelErr
 	}
 	return models.ResourceList{
 		ResourceList: []models.ResourceListResourceList{
-			{Active: "MYSZO", Age: "2024-10-09T17:06:43Z"},
-			{Active: "JELEN", Age: "2005-04-02T19:37:00Z"},
+			{Active: "MYSZO", Age: "2024-10-09T17:06:43Z", Name: "myszojelen"},
+			{Active: "JELEN", Age: "2005-04-02T19:37:00Z", Name: "example-pod"},
 		},
 		Columns: []string{
 			"active",
 			"age",
+			"name",
 		},
 	}, nil
 }
