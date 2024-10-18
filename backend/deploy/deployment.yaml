@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: client-go-test
+  name: kam-backend
   labels:
-    app: client-go-test
+    app: kam-backend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: client-go-test
+      app: kam-backend
   template:
     metadata:
       labels:
-        app: client-go-test
+        app: kam-backend
     spec:
       containers:
       - name: app
-        image: client-go-test:v1
+        image: access-manager:v1
         ports:
         - containerPort: 8080
