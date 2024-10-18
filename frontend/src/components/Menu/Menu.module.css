@@ -1,0 +1,82 @@
+:root {
+    --borderRadiusLG: 10px;
+}
+
+.menuLayout {
+    min-height: 100vh;
+    width: 100vw;
+    display: flex;
+}
+
+.menuSider {
+    width: 250px;
+    position: relative;
+    background: #001529;
+}
+
+.logo {
+    padding: 16px;
+    text-align: center;
+}
+
+.logoText {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff; /* Цвет текста логотипа */
+}
+
+.ant-menu-item {
+    border-left: 3px solid transparent;
+    color: #fff;
+}
+
+.ant-menu-item-selected {
+    background: #1890ff;
+}
+
+.ant-menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.contentLayout {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    flex-grow: 1;
+}
+
+.header {
+    height: 64px;
+    line-height: 64px;
+    padding: 0 16px;
+    background: #001529;
+    color: white;
+    font-size: large;
+}
+
+.content {
+    margin: 0; /* Убираем отступы, чтобы избежать лишнего пространства */
+    padding: 24px;
+    border-radius: var(--borderRadiusLG);
+    background: #f0f2f5;
+    overflow-y: auto; /* Добавляем прокрутку для содержимого */
+    flex-grow: 1; /* Позволяет занимать оставшееся пространство */
+}
+
+.breadcrumb {
+    margin-bottom: 16px;
+    color: white;
+}
+
+.footer {
+    text-align: center;
+    color: white;
+    background: #001529;
+    height: 64px; /* Фиксированная высота для подвала */
+}
+
+.innerContent {
+    min-height: 360px;
+    border-radius: var(--borderRadiusLG);
+    background: #fff;
+}
