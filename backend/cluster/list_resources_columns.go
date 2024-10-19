@@ -31,10 +31,9 @@ const (
 	readyStr         = "ready"
 	reclaimPolicyStr = "reclaim_policy"
 	replicasStr      = "replicas"
-	resourcesStr     = "resources"
+	resourceStr      = "resource"
 	restartsStr      = "restarts"
 	rolesStr         = "roles"
-	rulesStr         = "rules"
 	scheduleStr      = "schedule"
 	scopeStr         = "scope"
 	selectorStr      = "selector"
@@ -48,26 +47,26 @@ const (
 )
 
 var resourceListColumns = map[string][]string{
-	"ReplicaSet":               {nameStr, namespaceStr, desiredStr, currentStr, readyStr, ageStr},                                        // done
-	"Pod":                      {nameStr, namespaceStr, containersStr, restartsStr, controlledByStr, nodeStr, qosStr, ageStr, statusStr}, // done
-	"Deployment":               {nameStr, namespaceStr, podsStr, replicasStr, ageStr, conditionsStr},                                     // done
-	"ConfigMap":                {nameStr, namespaceStr, keysStr, ageStr},                                                                 // done
-	"Secret":                   {nameStr, namespaceStr, labelsStr, keysStr, typeStr, ageStr},                                             // done
-	"Ingress":                  {nameStr, namespaceStr, loadbalancersStr, rulesStr, ageStr},                                              // done, rules not implemented, loadbalancers untested
-	"PersistentVolumeClaim":    {nameStr, namespaceStr, storageClassStr, sizeStr, podsStr, ageStr, statusStr},                            // done, pods not implemented
-	"StatefulSet":              {nameStr, namespaceStr, podsStr, replicasStr, ageStr},                                                    // done
-	"DaemonSet":                {nameStr, namespaceStr, podsStr, nodeSelectorStr, ageStr},                                                // done, node selector not implemented
-	"Job":                      {nameStr, namespaceStr, completionsStr, ageStr, conditionsStr},                                           // done, completions untested, conditions unsure
-	"CronJob":                  {nameStr, namespaceStr, scheduleStr, suspendStr, activeStr, lastScheduleStr, ageStr},                     // done
-	"Service":                  {nameStr, namespaceStr, typeStr, clusterIpStr, portsStr, externalIpStr, selectorStr, ageStr, statusStr},  // done, status unsure, external ip untested
-	"ServiceAccount":           {nameStr, namespaceStr, ageStr},                                                                          // done
-	"Node":                     {nameStr, taintsStr, rolesStr, versionStr, ageStr, conditionsStr},                                        // done, conditions simplified
-	"Namespace":                {nameStr, labelsStr, ageStr, statusStr},                                                                  // done
-	"CustomResourceDefinition": {resourcesStr, groupStr, versionStr, scopeStr, ageStr},                                                   // done
-	"PersistentVolume":         {nameStr, storageClassStr, capacityStr, claimStr, ageStr, statusStr},                                     //done
-	"StorageClass":             {nameStr, provisionerStr, reclaimPolicyStr, defaultStr, ageStr},                                          // done
-	"ClusterRole":              {nameStr, ageStr},                                                                                        // done
-	"ClusterRoleBinding":       {nameStr, bindingsStr, ageStr},                                                                           // done
+	"ReplicaSet":               {nameStr, namespaceStr, desiredStr, currentStr, readyStr, ageStr},
+	"Pod":                      {nameStr, namespaceStr, containersStr, restartsStr, controlledByStr, nodeStr, qosStr, ageStr, statusStr},
+	"Deployment":               {nameStr, namespaceStr, podsStr, replicasStr, ageStr, conditionsStr},
+	"ConfigMap":                {nameStr, namespaceStr, keysStr, ageStr},
+	"Secret":                   {nameStr, namespaceStr, labelsStr, keysStr, typeStr, ageStr},
+	"Ingress":                  {nameStr, namespaceStr, loadbalancersStr, ageStr}, // loadbalancers untested
+	"PersistentVolumeClaim":    {nameStr, namespaceStr, storageClassStr, sizeStr, ageStr, statusStr},
+	"StatefulSet":              {nameStr, namespaceStr, podsStr, replicasStr, ageStr},
+	"DaemonSet":                {nameStr, namespaceStr, podsStr, nodeSelectorStr, ageStr},
+	"Job":                      {nameStr, namespaceStr, completionsStr, ageStr, conditionsStr}, // completions untested, conditions unsure
+	"CronJob":                  {nameStr, namespaceStr, scheduleStr, suspendStr, activeStr, lastScheduleStr, ageStr},
+	"Service":                  {nameStr, namespaceStr, typeStr, clusterIpStr, portsStr, externalIpStr, selectorStr, ageStr, statusStr}, // status unsure, external ip untested
+	"ServiceAccount":           {nameStr, namespaceStr, ageStr},
+	"Node":                     {nameStr, taintsStr, rolesStr, versionStr, ageStr, conditionsStr},
+	"Namespace":                {nameStr, labelsStr, ageStr, statusStr},
+	"CustomResourceDefinition": {resourceStr, groupStr, versionStr, scopeStr, ageStr},
+	"PersistentVolume":         {nameStr, storageClassStr, capacityStr, claimStr, ageStr, statusStr},
+	"StorageClass":             {nameStr, provisionerStr, reclaimPolicyStr, defaultStr, ageStr},
+	"ClusterRole":              {nameStr, ageStr},
+	"ClusterRoleBinding":       {nameStr, bindingsStr, ageStr},
 }
 
 func GetResourceListColumns(resourceType string) []string {

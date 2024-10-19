@@ -13,6 +13,8 @@ spec:
       labels:
         name: fluentd-elasticsearch
     spec:
+      nodeSelector:
+        disktype: ssd
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -37,4 +39,3 @@ spec:
         - name: varlog
           hostPath:
             path: /var/log
-
