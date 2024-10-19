@@ -18,6 +18,7 @@ var (
 )
 
 const (
+	emptyNamespace    = ""
 	serviceString     = "Service"
 	deploymentString  = "Deployment"
 	statefulSetString = "StatefulSet"
@@ -28,7 +29,7 @@ const (
 )
 
 func ListResources(resourceType string, namespace string) (models.ResourceList, *models.ModelError) {
-	resourceInterface, err := getResourceInterface(resourceType, namespace)
+	resourceInterface, err := getResourceInterface(resourceType, namespace, emptyNamespace)
 	if err != nil {
 		return models.ResourceList{}, err
 	}
@@ -539,7 +540,21 @@ func extractPorts(resource unstructured.Unstructured, resourceType string, resou
 				var portStrings []string
 				for _, port := range ports {
 					portMap := port.(map[string]interface{})
-					portStrings = append(portStrings, fmt.Sprintf("%d:%d/%s", int(portMap["port"].(int64)), int(portMap["targetPort"].(int64)), portMap["protocol"]))
+
+					portNumber, found1 := portMap["port"].(int64)
+					targetPort, found2 := portMap["targetPort"].(int64)
+					nodePort, found3 := portMap["nodePort"].(int64)
+					protocol, found4 := portMap["protocol"].(string)
+
+					if found1 && found2 && found4 {
+						portStrings = append(portStrings, fmt.Sprintf("%d:%d/%s", int(portNumber), int(targetPort), protocol))
+					} else if found1 && found3 && found4 {
+						portStrings = append(portStrings, fmt.Sprintf("%d:%d/%s", int(portNumber), int(nodePort), protocol))
+					} else if found1 && found4 {
+						portStrings = append(portStrings, fmt.Sprintf("%d/%s", int(portNumber), protocol))
+					} else if found1 {
+						portStrings = append(portStrings, fmt.Sprintf("%d", int(portNumber)))
+					}
 				}
 				resourceDetailsTruncated.Ports = fmt.Sprintf("%v", portStrings)
 			}

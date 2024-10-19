@@ -53,6 +53,7 @@ func CreateResourceController(w http.ResponseWriter, r *http.Request) {
 
 	resource, err := cluster.CreateResource(resourceType, namespace, resource)
 	if err != nil {
+		fmt.Println(err)
 		writeJSONError(w, err)
 		return
 	}
