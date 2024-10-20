@@ -7,7 +7,7 @@ info:
     Some useful links:
     - [Jira](https://samuelus.atlassian.net/jira/software/projects/ZPI/boards/4)
     - [Confluence](https://samuelus.atlassian.net/wiki/spaces/ZPI/overview)
-  version: 0.0.2
+  version: 0.0.3
 servers:
   - url: http://localhost:8080/api/v1
 security:
@@ -49,6 +49,8 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         "403":
           $ref: '#/components/responses/Forbidden'
+        "500":
+          $ref: '#/components/responses/OtherErrors'
       security:
         - bearerAuth: []
     post:
@@ -93,6 +95,8 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         "403":
           $ref: '#/components/responses/Forbidden'
+        "500":
+          $ref: '#/components/responses/OtherErrors'
       security:
         - bearerAuth: []
   /k8s/{resourceType}/{resourceName}:
@@ -121,6 +125,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         "404":
           $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/OtherErrors'
       security:
         - bearerAuth: []
     put:
@@ -134,11 +140,24 @@ paths:
         - $ref: '#/components/parameters/ResourceName'
         - $ref: '#/components/parameters/NamespaceDeafult'
       requestBody:
-        description: JSON object representing the updated resource.
+        description: JSON object representing the resource to be created.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ResourceDetails'
+              type: object
+              description: JSON object containing details of the resource
+              example:
+                apiVersion: "v1"
+                kind: "Pod"
+                metadata:
+                  name: "example-pod"
+                  namespace: "default"
+                spec:
+                  containers:
+                    - name: "nginx"
+                      image: "nginx:1.14.2"
+                status:
+                  phase: "Running"
         required: true
       responses:
         "200":
@@ -155,6 +174,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         "404":
           $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/OtherErrors'
       security:
         - bearerAuth: []
     delete:
@@ -182,6 +203,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         "404":
           $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/OtherErrors'
       security:
         - bearerAuth: []
   /auth/callback:
@@ -209,6 +232,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         "401":
           $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/OtherErrors'
       security: []
   /auth/refresh:
     post:
@@ -235,6 +260,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         "401":
           $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/OtherErrors'
       security: []
   /auth/logout:
     post:
@@ -252,6 +279,8 @@ paths:
                 $ref: '#/components/schemas/Status'
         "401":
           $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/OtherErrors'
       security:
         - bearerAuth: []
   /auth/status:
@@ -271,6 +300,8 @@ paths:
                 $ref: '#/components/schemas/UserStatus'
         "401":
           $ref: '#/components/responses/Unauthorized'
+        "500":
+          $ref: '#/components/responses/OtherErrors'
       security:
         - bearerAuth: []
   /helm/releases:
@@ -296,6 +327,8 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         "403":
           $ref: '#/components/responses/Forbidden'
+        "500":
+          $ref: '#/components/responses/OtherErrors'
       security:
         - bearerAuth: []
     # This necessarily requires some deeper thinking, but as this is not an endpoint that will be implemented in the first phase, for the time I leave it commented
@@ -346,8 +379,10 @@ paths:
     #       content:
     #         application/json:
     #           schema:
-    #             $ref: '#/components/schemas/Error'
-    #   security:
+    #              $ref: '#/components/schemas/Error'
+    #     "500":
+    #       $ref: '#/components/responses/OtherErrors'
+    #    security:
     #     - bearerAuth: []
   /helm/releases/{releaseName}:
     get:
@@ -372,6 +407,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         "404":
           $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/OtherErrors'
       security:
         - bearerAuth: []
     # This necessarily requires some deeper thinking, but as this is not an endpoint that will be implemented in the first phase, for the time I leave it commented
@@ -406,6 +443,9 @@ paths:
     #       $ref: '#/components/responses/Forbidden'
     #     "404":
     #       $ref: '#/components/responses/NotFound'
+    #
+    #     "500":
+    #       $ref: '#/components/responses/OtherErrors'
     #   security:
     #     - bearerAuth: []
     delete:
@@ -430,6 +470,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         "404":
           $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/OtherErrors'
       security:
         - bearerAuth: []
   /helm/releases/{releaseName}/history:
@@ -458,6 +500,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         "404":
           $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/OtherErrors'
       security:
         - bearerAuth: []
   /helm/releases/{releaseName}/rollback:
@@ -492,6 +536,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         "404":
           $ref: '#/components/responses/NotFound'
+        "500":
+          $ref: '#/components/responses/OtherErrors'
       security:
         - bearerAuth: []
 components:
@@ -516,18 +562,15 @@ components:
               - conditions
               - containers
               - controlled_by
-              - cpu
               - current
               - default
               - desired
-              - disk
               - external_ip
               - group
               - keys
               - labels
               - last_schedule
               - loadbalancers
-              - memory
               - name
               - namespace
               - node
@@ -592,9 +635,6 @@ components:
               controlled_by:
                 type: string
                 description: "Optional value for 'controlled_by'"
-              cpu:
-                type: string
-                description: "Optional value for 'cpu'"
               current:
                 type: string
                 description: "Optional value for 'current'"
@@ -604,9 +644,6 @@ components:
               desired:
                 type: string
                 description: "Optional value for 'desired'"
-              disk:
-                type: string
-                description: "Optional value for 'disk'"
               external_ip:
                 type: string
                 description: "Optional value for 'external_ip'"
@@ -625,9 +662,6 @@ components:
               loadbalancers:
                 type: string
                 description: "Optional value for 'loadbalancers'"
-              memory:
-                type: string
-                description: "Optional value for 'memory'"
               name:
                 type: string
                 description: "Optional value for 'name'"
@@ -927,6 +961,12 @@ components:
             $ref: '#/components/schemas/Error'
     NotFound:
       description: Resource/Release not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    OtherErrors:
+      description: Other errors
       content:
         application/json:
           schema:
