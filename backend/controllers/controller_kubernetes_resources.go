@@ -18,7 +18,7 @@ func GetResourceController(w http.ResponseWriter, r *http.Request) {
 
 	resource, err := cluster.GetResource(resourceType, namespace, resourceName)
 	if err != nil {
-		writeJSONError(w, err)
+		writeJSONResponse(w, int(err.Code), err)
 		return
 	}
 
@@ -33,7 +33,7 @@ func ListResourcesController(w http.ResponseWriter, r *http.Request) {
 
 	resources, err := cluster.ListResources(resourceType, namespace)
 	if err != nil {
-		writeJSONError(w, err)
+		writeJSONResponse(w, int(err.Code), err)
 		return
 	}
 
@@ -54,7 +54,7 @@ func CreateResourceController(w http.ResponseWriter, r *http.Request) {
 	resource, err := cluster.CreateResource(resourceType, namespace, resource)
 	if err != nil {
 		fmt.Println(err)
-		writeJSONError(w, err)
+		writeJSONResponse(w, int(err.Code), err)
 		return
 	}
 
@@ -70,7 +70,7 @@ func DeleteClusterResourceController(w http.ResponseWriter, r *http.Request) {
 
 	err := cluster.DeleteResource(resourceType, namespace, resourceName)
 	if err != nil {
-		writeJSONError(w, err)
+		writeJSONResponse(w, int(err.Code), err)
 		return
 	}
 
@@ -98,7 +98,7 @@ func UpdateResourceController(w http.ResponseWriter, r *http.Request) {
 
 	resource, err := cluster.UpdateResource(resourceType, namespace, resourceName, resource)
 	if err != nil {
-		writeJSONError(w, err)
+		writeJSONResponse(w, int(err.Code), err)
 		return
 	}
 
@@ -121,11 +121,6 @@ func getNamespace(r *http.Request) string {
 	return r.URL.Query().Get("namespace")
 }
 
-func writeJSONError(w http.ResponseWriter, err *models.ModelError) {
-	w.WriteHeader(int(err.Code))
-	json.NewEncoder(w).Encode(err)
-}
-
 func writeJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(data)
@@ -135,7 +130,7 @@ func decodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) boo
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(dst)
 	if err != nil {
-		writeJSONError(w, &models.ModelError{Code: 400, Message: "Invalid request body"})
+		writeJSONResponse(w, 400, &models.ModelError{Code: 400, Message: "Invalid request body"})
 		return false
 	}
 	return true

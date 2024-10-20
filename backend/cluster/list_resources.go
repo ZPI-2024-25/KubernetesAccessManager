@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	transposedResourceListColumns map[string][]string = transposeResourceListColumns(resourceListColumns)
+	transposedResourceListColumns = transposeResourceListColumns(resourceListColumns)
 )
 
 const (
