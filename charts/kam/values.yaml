@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: kubernetes-access-manager
+  repository: ninjashadow/kubernetes-access-manager-backend
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v1"
+  tag: "v1.0.0"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -105,3 +105,10 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+rbac:
+  create: true
+  rules:
+    - apiGroups: ["*"]
+      resources: ["*"]
+      verbs: ["get", "list", "create", "update", "delete", "patch"]

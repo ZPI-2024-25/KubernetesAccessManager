@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: app
-        image: access-manager:v1
+        image: ninjashadow/kubernetes-access-manager-backend:v1.0.0
         ports:
         - containerPort: 8080
