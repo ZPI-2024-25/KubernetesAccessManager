@@ -7,7 +7,7 @@ info:
     Some useful links:
     - [Jira](https://samuelus.atlassian.net/jira/software/projects/ZPI/boards/4)
     - [Confluence](https://samuelus.atlassian.net/wiki/spaces/ZPI/overview)
-  version: 0.0.2
+  version: 0.0.3
 servers:
 - url: http://localhost:8080/api/v1
 security:
@@ -145,6 +145,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        "500":
+          description: Other errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       security:
       - bearerAuth: []
     post:
@@ -237,6 +243,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        "500":
+          description: Other errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       security:
       - bearerAuth: []
   /k8s/{resourceType}/{resourceName}:
@@ -325,6 +337,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        "500":
+          description: Other errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       security:
       - bearerAuth: []
     put:
@@ -381,11 +399,24 @@ paths:
         schema:
           type: string
       requestBody:
-        description: JSON object representing the updated resource.
+        description: JSON object representing the resource to be created.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ResourceDetails'
+              type: object
+              description: JSON object containing details of the resource
+              example:
+                apiVersion: v1
+                kind: Pod
+                metadata:
+                  name: example-pod
+                  namespace: default
+                spec:
+                  containers:
+                  - name: nginx
+                    image: nginx:1.14.2
+                status:
+                  phase: Running
         required: true
       responses:
         "200":
@@ -414,6 +445,12 @@ paths:
                 $ref: '#/components/schemas/Error'
         "404":
           description: Resource/Release not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Other errors
           content:
             application/json:
               schema:
@@ -504,6 +541,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        "500":
+          description: Other errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       security:
       - bearerAuth: []
   /auth/callback:
@@ -535,6 +578,12 @@ paths:
                 $ref: '#/components/schemas/Error'
         "401":
           description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Other errors
           content:
             application/json:
               schema:
@@ -573,6 +622,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        "500":
+          description: Other errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       security: []
   /auth/logout:
     post:
@@ -590,6 +645,12 @@ paths:
                 $ref: '#/components/schemas/Status'
         "401":
           description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Other errors
           content:
             application/json:
               schema:
@@ -613,6 +674,12 @@ paths:
                 $ref: '#/components/schemas/UserStatus'
         "401":
           description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Other errors
           content:
             application/json:
               schema:
@@ -653,6 +720,12 @@ paths:
                 $ref: '#/components/schemas/Error'
         "403":
           description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Other errors
           content:
             application/json:
               schema:
@@ -709,6 +782,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        "500":
+          description: Other errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       security:
       - bearerAuth: []
     delete:
@@ -756,6 +835,12 @@ paths:
                 $ref: '#/components/schemas/Error'
         "404":
           description: Resource/Release not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Other errors
           content:
             application/json:
               schema:
@@ -811,6 +896,12 @@ paths:
                 $ref: '#/components/schemas/Error'
         "404":
           description: Resource/Release not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Other errors
           content:
             application/json:
               schema:
@@ -880,6 +971,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        "500":
+          description: Other errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       security:
       - bearerAuth: []
 components:
@@ -907,18 +1004,15 @@ components:
             - conditions
             - containers
             - controlled_by
-            - cpu
             - current
             - default
             - desired
-            - disk
             - external_ip
             - group
             - keys
             - labels
             - last_schedule
             - loadbalancers
-            - memory
             - name
             - namespace
             - node
@@ -953,8 +1047,7 @@ components:
       description: Object that returns selected columns and their data.
       example:
         resource_list:
-        - memory: memory
-          last_schedule: last_schedule
+        - last_schedule: last_schedule
           keys: keys
           bindings: bindings
           roles: roles
@@ -981,7 +1074,6 @@ components:
           replicas: replicas
           active: active
           completions: completions
-          cpu: cpu
           taints: taints
           controlled_by: controlled_by
           restarts: restarts
@@ -989,7 +1081,6 @@ components:
           labels: labels
           node: node
           schedule: schedule
-          disk: disk
           node_selector: node_selector
           size: size
           name: name
@@ -1000,8 +1091,7 @@ components:
           conditions: conditions
           age: age
           status: status
-        - memory: memory
-          last_schedule: last_schedule
+        - last_schedule: last_schedule
           keys: keys
           bindings: bindings
           roles: roles
@@ -1028,7 +1118,6 @@ components:
           replicas: replicas
           active: active
           completions: completions
-          cpu: cpu
           taints: taints
           controlled_by: controlled_by
           restarts: restarts
@@ -1036,7 +1125,6 @@ components:
           labels: labels
           node: node
           schedule: schedule
-          disk: disk
           node_selector: node_selector
           size: size
           name: name
@@ -1286,9 +1374,6 @@ components:
         controlled_by:
           type: string
           description: Optional value for 'controlled_by'
-        cpu:
-          type: string
-          description: Optional value for 'cpu'
         current:
           type: string
           description: Optional value for 'current'
@@ -1298,9 +1383,6 @@ components:
         desired:
           type: string
           description: Optional value for 'desired'
-        disk:
-          type: string
-          description: Optional value for 'disk'
         external_ip:
           type: string
           description: Optional value for 'external_ip'
@@ -1319,9 +1401,6 @@ components:
         loadbalancers:
           type: string
           description: Optional value for 'loadbalancers'
-        memory:
-          type: string
-          description: Optional value for 'memory'
         name:
           type: string
           description: Optional value for 'name'
@@ -1398,7 +1477,6 @@ components:
           type: string
           description: Optional value for 'version'
       example:
-        memory: memory
         last_schedule: last_schedule
         keys: keys
         bindings: bindings
@@ -1426,7 +1504,6 @@ components:
         replicas: replicas
         active: active
         completions: completions
-        cpu: cpu
         taints: taints
         controlled_by: controlled_by
         restarts: restarts
@@ -1434,7 +1511,6 @@ components:
         labels: labels
         node: node
         schedule: schedule
-        disk: disk
         node_selector: node_selector
         size: size
         name: name
@@ -1466,6 +1542,12 @@ components:
             $ref: '#/components/schemas/Error'
     NotFound:
       description: Resource/Release not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    OtherErrors:
+      description: Other errors
       content:
         application/json:
           schema:

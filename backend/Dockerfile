@@ -10,7 +10,8 @@ RUN go mod download
 COPY api/ api/
 COPY models/ models/
 COPY common/ common/
-#COPY controllers/ controllers/
+COPY controllers/ controllers/
+COPY cluster/ cluster/
 
 COPY main.go .
 # Build the Go application
@@ -23,4 +24,4 @@ FROM scratch AS runtime
 WORKDIR /
 COPY --from=build /app/swagger ./
 EXPOSE 8080
-ENTRYPOINT ["./swagger"]
+ENTRYPOINT ["./swagger", "-in-cluster"]
