@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ZPI-2024-25/KubernetesAccessManager/auth"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"github.com/gorilla/mux"
@@ -28,6 +29,17 @@ func GetResourceController(w http.ResponseWriter, r *http.Request) {
 func ListResourcesController(w http.ResponseWriter, r *http.Request) {
 	setJSONContentType(w)
 
+	token, err2 := auth.GetJWTTokenFromHeader(r)
+	if err2 != nil {
+		writeJSONResponse(w, 468, map[string]string{"error": "Unauthorized"})
+		return
+	}
+
+	// Zweryfikuj token JWT
+	if !auth.IsTokenValid(token) {
+		writeJSONResponse(w, 470, map[string]string{"error": "Invalid token"})
+		return
+	}
 	resourceType := getResourceType(r)
 	namespace := getNamespace(r)
 
