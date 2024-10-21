@@ -6,7 +6,7 @@ import useAuth from "./hooks/useAuth";
 function App() {
     // eslint-disable-next-line no-unused-vars
   const [isLogin, token, client] = useAuth();
-  return isLogin ? <Pods token={token} client={client}/> : <Public />;
+  return isLogin ? <Protected token={token} client={client}/> : <Public />;
 }
 
 export default App;

@@ -11,8 +11,10 @@ import (
 )
 
 func GetResourceController(w http.ResponseWriter, r *http.Request) {
-	setJSONContentType(w)
-
+	if err := setJSONCTAndAuth(w, r); err != nil {
+		writeJSONResponse(w, int(err.Code), err)
+		return
+	}
 	resourceType := getResourceType(r)
 	resourceName := getResourceName(r)
 	namespace := getNamespace(r)
@@ -27,17 +29,8 @@ func GetResourceController(w http.ResponseWriter, r *http.Request) {
 }
 
 func ListResourcesController(w http.ResponseWriter, r *http.Request) {
-	setJSONContentType(w)
-
-	token, err2 := auth.GetJWTTokenFromHeader(r)
-	if err2 != nil {
-		writeJSONResponse(w, 468, map[string]string{"error": "Unauthorized"})
-		return
-	}
-
-	// Zweryfikuj token JWT
-	if !auth.IsTokenValid(token) {
-		writeJSONResponse(w, 470, map[string]string{"error": "Invalid token"})
+	if err := setJSONCTAndAuth(w, r); err != nil {
+		writeJSONResponse(w, int(err.Code), err)
 		return
 	}
 	resourceType := getResourceType(r)
@@ -53,8 +46,10 @@ func ListResourcesController(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateResourceController(w http.ResponseWriter, r *http.Request) {
-	setJSONContentType(w)
-
+	if err := setJSONCTAndAuth(w, r); err != nil {
+		writeJSONResponse(w, int(err.Code), err)
+		return
+	}
 	resourceType := getResourceType(r)
 	namespace := getNamespace(r)
 
@@ -74,8 +69,10 @@ func CreateResourceController(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteClusterResourceController(w http.ResponseWriter, r *http.Request) {
-	setJSONContentType(w)
-
+	if err := setJSONCTAndAuth(w, r); err != nil {
+		writeJSONResponse(w, int(err.Code), err)
+		return
+	}
 	resourceType := getResourceType(r)
 	resourceName := getResourceName(r)
 	namespace := getNamespace(r)
@@ -97,8 +94,10 @@ func DeleteClusterResourceController(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateResourceController(w http.ResponseWriter, r *http.Request) {
-	setJSONContentType(w)
-
+	if err := setJSONCTAndAuth(w, r); err != nil {
+		writeJSONResponse(w, int(err.Code), err)
+		return
+	}
 	resourceType := getResourceType(r)
 	resourceName := getResourceName(r)
 	namespace := getNamespace(r)
@@ -117,8 +116,20 @@ func UpdateResourceController(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, resource)
 }
 
-func setJSONContentType(w http.ResponseWriter) {
+func setJSONCTAndAuth(w http.ResponseWriter, r *http.Request) *models.ModelError {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	unauthorizedError := models.ModelError{
+		Code:    http.StatusUnauthorized,
+		Message: "Unauthorized",
+	}
+	token, err := auth.GetJWTTokenFromHeader(r)
+	if err != nil {
+		return &unauthorizedError
+	}
+	if !auth.IsTokenValid(token) {
+		return &unauthorizedError
+	}
+	return nil
 }
 
 func getResourceType(r *http.Request) string {

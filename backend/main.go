@@ -21,13 +21,11 @@ func main() {
 
 	router := sw.NewRouter()
 
-	// Konfiguracja CORS
 	corsHandler := handlers.CORS(
 		handlers.AllowedOrigins([]string{"*"}), // Otwiera na wszystkie domeny
 		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
 		handlers.AllowedHeaders([]string{"Authorization", "Content-Type"}),
 	)
 
-	// Uruchomienie serwera z obsługą CORS
 	log.Fatal(http.ListenAndServe(":8080", corsHandler(router)))
 }
