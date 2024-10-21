@@ -4,7 +4,7 @@ kind: ClusterRole
 metadata:
   name: {{ include "charts.fullname" . }}
   labels:
-    {{- include "charts.labels" . | nindent 4 }}
+    {{- include "charts.labelsBackend" . | nindent 4 }}
 rules:
 {{ toYaml .Values.backend.rbac.rules | indent 2 }}
 {{- end }}

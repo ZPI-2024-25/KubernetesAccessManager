@@ -1,4 +1,4 @@
-nameOverride: ""
+nameOverride: "kam"
 fullnameOverride: ""
 
 podAnnotations: {}
@@ -52,19 +52,10 @@ backend:
 frontend:
   replicaCount: 1
   image:
-    repository: ninjashadow/kubernetes-access-manager-backend
+    repository: ninjashadow/kubernetes-access-manager-frontend
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
-
-  serviceAccount:
-    create: true
-    # Automatically mount a ServiceAccount's API credentials?
-    automount: true
-    annotations: {}
-    # The name of the service account to use.
-    # If not set and create is true, a name is generated using the fullname template
-    name: ""
 
   service:
     type: LoadBalancer
@@ -76,13 +67,6 @@ frontend:
     maxReplicas: 100
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
-
-  rbac:
-    create: false
-    rules:
-      - apiGroups: [ "*" ]
-        resources: [ "*" ]
-        verbs: [ "get", "list", "create", "update", "delete", "patch" ]
 
 ingress:
   enabled: false

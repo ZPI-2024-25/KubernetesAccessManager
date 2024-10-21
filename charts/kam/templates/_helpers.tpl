@@ -33,9 +33,18 @@ Create chart name and version as used by the chart label.
 {{/*
 Common labels
 */}}
-{{- define "charts.labels" -}}
+{{- define "charts.labelsBackend" -}}
 helm.sh/chart: {{ include "charts.chart" . }}
-{{ include "charts.selectorLabels" . }}
+{{ include "charts.selectorLabelsBackend" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{- define "charts.labelsFrontend" -}}
+helm.sh/chart: {{ include "charts.chart" . }}
+{{ include "charts.selectorLabelsFrontend" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,8 +54,13 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "charts.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "charts.name" . }}
+{{- define "charts.selectorLabelsBackend" -}}
+app.kubernetes.io/name: {{ include "charts.name" . }}-backend
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{- define "charts.selectorLabelsFrontend" -}}
+app.kubernetes.io/name: {{ include "charts.name" . }}-frontend
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 

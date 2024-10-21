@@ -3,7 +3,7 @@ kind: Pod
 metadata:
   name: "{{ include "charts.fullname" . }}-test-connection"
   labels:
-    {{- include "charts.labels" . | nindent 4 }}
+    {{- include "charts.labelsBackend" . | nindent 4 }}
   annotations:
     "helm.sh/hook": test
 spec:
@@ -11,5 +11,5 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['{{ include "charts.fullname" . }}:{{ .Values.backend.service.port }}']
+      args: ['{{ include "charts.fullname" . }}-backend:{{ .Values.backend.service.port }}']
   restartPolicy: Never
