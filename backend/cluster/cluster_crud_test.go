@@ -10,14 +10,9 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	// v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/dynamic"
 )
-
-// func MockGetResourceInterface(resourceType string, namespace string, emptyNamespace string) (dynamic.ResourceInterface, *models.ModelError) {
-// 	return nil, nil
-// }
 
 type MockResourceInterface struct {
 	dynamic.ResourceInterface
