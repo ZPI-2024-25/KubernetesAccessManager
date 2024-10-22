@@ -27,12 +27,12 @@ backend:
 
   livenessProbe:
     httpGet:
-      path: /
-      port: http
+      path: /live
+      port: 8082
   readinessProbe:
     httpGet:
-      path: /
-      port: http
+      path: /ready
+      port: 8082
 
   autoscaling:
     enabled: false
