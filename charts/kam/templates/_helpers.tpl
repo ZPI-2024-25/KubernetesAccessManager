@@ -23,6 +23,32 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 {{- end }}
 
+{{- define "charts.fullnameBackend" -}}
+{{- if .Values.fullnameOverride }}
+{{- printf "%s-backend" (.Values.fullnameOverride | trunc (sub 63 8) | trimSuffix "-") -}}
+{{- else }}
+  {{- $name := default .Chart.Name .Values.nameOverride -}}
+  {{- if contains $name .Release.Name }}
+    {{- printf "%s-backend" (.Release.Name | trunc (sub 63 8) | trimSuffix "-") -}}
+  {{- else }}
+    {{- printf "%s-%s-backend" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+  {{- end }}
+{{- end }}
+{{- end }}
+
+{{- define "charts.fullnameFrontend" -}}
+{{- if .Values.fullnameOverride }}
+{{- printf "%s-frontend" (.Values.fullnameOverride | trunc (sub 63 8) | trimSuffix "-") -}}
+{{- else }}
+  {{- $name := default .Chart.Name .Values.nameOverride -}}
+  {{- if contains $name .Release.Name }}
+    {{- printf "%s-frontend" (.Release.Name | trunc (sub 63 8) | trimSuffix "-") -}}
+  {{- else }}
+    {{- printf "%s-%s-frontend" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+  {{- end }}
+{{- end }}
+{{- end }}
+
 {{/*
 Create chart name and version as used by the chart label.
 */}}
@@ -33,6 +59,15 @@ Create chart name and version as used by the chart label.
 {{/*
 Common labels
 */}}
+{{- define "charts.labels" -}}
+helm.sh/chart: {{ include "charts.chart" . }}
+{{ include "charts.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
 {{- define "charts.labelsBackend" -}}
 helm.sh/chart: {{ include "charts.chart" . }}
 {{ include "charts.selectorLabelsBackend" . }}
@@ -54,6 +89,11 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
+{{- define "charts.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "charts.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
 {{- define "charts.selectorLabelsBackend" -}}
 app.kubernetes.io/name: {{ include "charts.name" . }}-backend
 app.kubernetes.io/instance: {{ .Release.Name }}

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "charts.fullname" . }}-frontend
+  name: {{ include "charts.fullnameFrontend" . }}
   labels:
     {{- include "charts.labelsFrontend" . | nindent 4 }}
 spec:
