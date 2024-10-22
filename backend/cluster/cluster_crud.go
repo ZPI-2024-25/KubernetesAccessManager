@@ -9,10 +9,10 @@ import (
 
 const DefaultNamespace = "default"
 
-var GetResourceI = getResourceInterface
+var getResourceI = getResourceInterface
 
 func GetResource(resourceType string, namespace string, resourceName string) (models.ResourceDetails, *models.ModelError) {
-	resourceInterface, err := GetResourceI(resourceType, namespace, DefaultNamespace)
+	resourceInterface, err := getResourceI(resourceType, namespace, DefaultNamespace)
 	if err != nil {
 		return models.ResourceDetails{}, err
 	}
@@ -27,7 +27,7 @@ func GetResource(resourceType string, namespace string, resourceName string) (mo
 }
 
 func CreateResource(resourceType string, namespace string, resource models.ResourceDetails) (models.ResourceDetails, *models.ModelError) {
-	resourceInterface, err := GetResourceI(resourceType, namespace, DefaultNamespace)
+	resourceInterface, err := getResourceI(resourceType, namespace, DefaultNamespace)
 	if err != nil {
 		return models.ResourceDetails{}, err
 	}
@@ -55,7 +55,7 @@ func CreateResource(resourceType string, namespace string, resource models.Resou
 }
 
 func DeleteResource(resourceType string, namespace string, resourceName string) *models.ModelError {
-	resourceInterface, err := GetResourceI(resourceType, namespace, DefaultNamespace)
+	resourceInterface, err := getResourceI(resourceType, namespace, DefaultNamespace)
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func DeleteResource(resourceType string, namespace string, resourceName string) 
 }
 
 func UpdateResource(resourceType string, namespace string, resourceName string, resource models.ResourceDetails) (models.ResourceDetails, *models.ModelError) {
-	resourceInterface, err := GetResourceI(resourceType, namespace, DefaultNamespace)
+	resourceInterface, err := getResourceI(resourceType, namespace, DefaultNamespace)
 	if err != nil {
 		return models.ResourceDetails{}, err
 	}
