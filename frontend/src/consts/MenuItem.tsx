@@ -2,6 +2,13 @@ import React from "react";
 import {FileOutlined, PieChartOutlined, TeamOutlined, UserOutlined} from "@ant-design/icons";
 import {MenuItem} from "../types";
 
+export interface MenuItem {
+    key: string;
+    label:string;
+    icon?: React.ReactNode;
+    children?: MenuItem[];
+}
+
 function getItem(
     label: React.ReactNode,
     key: React.Key,
@@ -63,7 +70,7 @@ export const items: MenuItem[] = [
         getItem('Role Bindings', '36'),
         getItem('Pod Security Policies', '37'),
     ]),
-    getItem('Custom Resources', 'sub7')[
+    getItem('Custom Resources', 'sub7', <TeamOutlined />, [
         getItem('Definitions','38')
-        ]
+    ]),
 ];

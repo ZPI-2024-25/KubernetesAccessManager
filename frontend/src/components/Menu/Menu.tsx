@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Breadcrumb, Layout, Menu } from 'antd';
 import styles from './Menu.module.css';
-import { items } from '../../consts/MenuItem.tsx';
+import {MenuItem, items} from "../../consts/MenuItem";
 
 const { Header, Content, Footer, Sider } = Layout;
 
-const LeftMenu: React.FC = () => {
-    const [collapsed, setCollapsed] = useState(false);
-    const [currentPage, setCurrentPage] = useState('');
-    const [selectedKey, setSelectedKey] = useState('1');
 
-    const findItemByKey = (key, items) => {
+const LeftMenu: React.FC = () => {
+    const [collapsed, setCollapsed] = useState<boolean>(false);
+    const [currentPage, setCurrentPage] = useState<string>('');
+    const [selectedKey, setSelectedKey] = useState<string>('1');
+
+    const findItemByKey = (key: string, items: MenuItem[]): MenuItem | { sectionLabel: string, childLabel: string } | null => {
         for (const item of items) {
             if (item.key === key) {
                 return item;
@@ -21,7 +22,7 @@ const LeftMenu: React.FC = () => {
                 if (found) {
                     return {
                         sectionLabel: item.label,
-                        childLabel: found.label,
+                        childLabel: (found as MenuItem).label,
                     };
                 }
             }
@@ -29,33 +30,32 @@ const LeftMenu: React.FC = () => {
         return null;
     };
 
-    const setCurrentPageFromItem = (item) => {
-        if (item.childLabel) {
+    const setCurrentPageFromItem = (item: MenuItem | { sectionLabel: string, childLabel: string }) => {
+        if ('childLabel' in item) {
             setCurrentPage(`${item.sectionLabel}/${item.childLabel}`);
         } else {
             setCurrentPage(item.label);
         }
     };
 
-    const handleMenuClick = (e) => {
+    const handleMenuClick = (e: { key: string }) => {
         setSelectedKey(e.key);
         const selectedItem = findItemByKey(e.key, items);
 
         if (selectedItem) {
-            setCurrentPageFromItem(selectedItem); // Call the new function here
+            setCurrentPageFromItem(selectedItem);
         } else {
-            setCurrentPage(''); // Reset currentPage if no item is selected
+            setCurrentPage('');
         }
     };
 
-// Effect to set the default page title based on the initially selected key
+    // Effect to set the default page title based on the initially selected key
     useEffect(() => {
         const defaultItem = findItemByKey(selectedKey, items);
         if (defaultItem) {
-            setCurrentPageFromItem(defaultItem); // Call the new function here as well
+            setCurrentPageFromItem(defaultItem);
         }
     }, []); // Runs only once after the component mounts
-
 
     return (
         <Layout className={styles.menuLayout}>

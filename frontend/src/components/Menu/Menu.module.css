@@ -22,7 +22,7 @@
 .logoText {
     font-size: 1.2rem;
     font-weight: bold;
-    color: #fff; /* Цвет текста логотипа */
+    color: #fff;
 }
 
 .ant-menu-item {
@@ -46,6 +46,10 @@
 }
 
 .header {
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000; /* Zapewnia, że nagłówek będzie nad innymi elementami */
     height: 64px;
     line-height: 64px;
     padding: 0 16px;
@@ -55,12 +59,11 @@
 }
 
 .content {
-    margin: 0; /* Убираем отступы, чтобы избежать лишнего пространства */
-    padding: 24px;
+    margin: 0;
     border-radius: var(--borderRadiusLG);
     background: #f0f2f5;
-    overflow-y: auto; /* Добавляем прокрутку для содержимого */
-    flex-grow: 1; /* Позволяет занимать оставшееся пространство */
+    overflow-y: auto;
+    flex-grow: 1;
 }
 
 .breadcrumb {
@@ -72,7 +75,7 @@
     text-align: center;
     color: white;
     background: #001529;
-    height: 64px; /* Фиксированная высота для подвала */
+    height: 64px;
 }
 
 .innerContent {
