@@ -1,0 +1,79 @@
+package cluster
+
+import (
+	"context"
+	"testing"
+
+	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/dynamic"
+)
+
+// func MockGetResourceInterface(resourceType string, namespace string, emptyNamespace string) (dynamic.ResourceInterface, *models.ModelError) {
+// 	return nil, nil
+// }
+
+type MockResourceInterface struct {
+	dynamic.ResourceInterface
+}
+
+func (m *MockResourceInterface) Get(ctx context.Context, name string, options metav1.GetOptions, subresources ...string) (*unstructured.Unstructured, error) {
+	return &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"key": "value",
+		},
+	}, nil
+}
+
+func TestGetResourceError (t *testing.T) {
+
+	mockGetResourceI := new(mock.Mock)
+	mockGetResourceI.On("func1", "Pod", "default", "default").Return(&MockResourceInterface{}, &models.ModelError{Code: 404, Message: "Not found"})
+	GetResourceI = func(resourceType string, namespace string, emptyNamespace string) (dynamic.ResourceInterface, *models.ModelError) {
+		args := mockGetResourceI.Called(resourceType, namespace, emptyNamespace)
+		// return mockResourceInterface, error
+		return args.Get(0).(dynamic.ResourceInterface), args.Get(1).(*models.ModelError)
+	}
+
+
+	t.Run("Test GetResource", func(t *testing.T) {
+		_, err := GetResource("Pod", "default", "default")
+		assert.NotNil(t, err)
+		assert.Equal(t, &models.ModelError{Code: 404, Message: "Not found"}, err)
+	})
+}
+
+func TestGetResourceSuccess (t *testing.T) {
+
+	mockGetResourceI := new(mock.Mock)
+	mockGetResourceI.On("func1", "Pod", "default", "default").Return(&MockResourceInterface{}, nil)
+	GetResourceI = func(resourceType string, namespace string, emptyNamespace string) (dynamic.ResourceInterface, *models.ModelError) {
+		args := mockGetResourceI.Called(resourceType, namespace, emptyNamespace)
+		return args.Get(0).(dynamic.ResourceInterface), nil
+	}
+
+	t.Run("Test GetResource", func(t *testing.T) {
+		result, err := GetResource("Pod", "default", "default")
+		assert.Nil(t, err)
+		expectedResourceDetails := &models.ResourceDetails{
+			ResourceDetails: func() *interface{} {
+				obj := &unstructured.Unstructured{
+					Object: map[string]interface{}{
+						"key": "value",
+					},
+				}
+				var i interface{} = obj
+				return &i
+			}(),
+		}
+
+		expectedObj := (*expectedResourceDetails.ResourceDetails).(*unstructured.Unstructured)
+		resultObj := (*result.ResourceDetails).(*unstructured.Unstructured)
+		for key, value := range expectedObj.Object {
+			assert.Equal(t, value, resultObj.Object[key])
+		}
+	})
+}
