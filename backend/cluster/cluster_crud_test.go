@@ -95,6 +95,7 @@ func TestGetResourceErrorFromGet(t *testing.T) {
 
 		assert.NotNil(t, err)
 		assert.EqualValues(t, err.Code, 500)
+		assert.EqualValues(t, err.Message, "Internal server error: error")
 		assert.EqualValues(t, res, models.ResourceDetails{})
 	})
 }
