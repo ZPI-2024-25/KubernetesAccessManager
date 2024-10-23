@@ -24,29 +24,32 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 
 {{- define "charts.fullnameBackend" -}}
-{{- if .Values.fullnameOverride }}
-{{- printf "%s-backend" (.Values.fullnameOverride | trunc (sub 63 8) | trimSuffix "-") -}}
-{{- else }}
-  {{- $name := default .Chart.Name .Values.nameOverride -}}
-  {{- if contains $name .Release.Name }}
-    {{- printf "%s-backend" (.Release.Name | trunc (sub 63 8) | trimSuffix "-") -}}
+  {{- $nameLength := int (sub 63 8) -}}
+  {{- if .Values.fullnameOverride }}
+    {{- printf "%s-backend" (.Values.fullnameOverride | trunc $nameLength | trimSuffix "-") -}}
   {{- else }}
-    {{- printf "%s-%s-backend" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+    {{- $name := default .Chart.Name .Values.nameOverride -}}
+    {{- if contains $name .Release.Name }}
+      {{- printf "%s-backend" (.Release.Name | trunc $nameLength | trimSuffix "-") -}}
+    {{- else }}
+      {{- printf "%s-%s-backend" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+    {{- end }}
   {{- end }}
-{{- end }}
 {{- end }}
 
+
 {{- define "charts.fullnameFrontend" -}}
-{{- if .Values.fullnameOverride }}
-{{- printf "%s-frontend" (.Values.fullnameOverride | trunc (sub 63 8) | trimSuffix "-") -}}
-{{- else }}
-  {{- $name := default .Chart.Name .Values.nameOverride -}}
-  {{- if contains $name .Release.Name }}
-    {{- printf "%s-frontend" (.Release.Name | trunc (sub 63 8) | trimSuffix "-") -}}
+  {{- $nameLength := int (sub 63 8) -}}
+  {{- if .Values.fullnameOverride }}
+    {{- printf "%s-frontend" (.Values.fullnameOverride | trunc $nameLength | trimSuffix "-") -}}
   {{- else }}
-    {{- printf "%s-%s-frontend" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+    {{- $name := default .Chart.Name .Values.nameOverride -}}
+    {{- if contains $name .Release.Name }}
+      {{- printf "%s-frontend" (.Release.Name | trunc $nameLength | trimSuffix "-") -}}
+    {{- else }}
+      {{- printf "%s-%s-frontend" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+    {{- end }}
   {{- end }}
-{{- end }}
 {{- end }}
 
 {{/*

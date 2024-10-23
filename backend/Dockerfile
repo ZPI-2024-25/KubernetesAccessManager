@@ -12,7 +12,7 @@ COPY models/ models/
 COPY common/ common/
 COPY controllers/ controllers/
 COPY cluster/ cluster/
-COPY /health /health
+COPY /health health/
 
 COPY main.go .
 # Build the Go application
@@ -25,4 +25,5 @@ FROM scratch AS runtime
 WORKDIR /
 COPY --from=build /app/swagger ./
 EXPOSE 8080
+EXPOSE 8082
 ENTRYPOINT ["./swagger", "-in-cluster"]
