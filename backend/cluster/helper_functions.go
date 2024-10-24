@@ -74,7 +74,7 @@ func GetResourceGroupVersion(resourceType string) (output schema.GroupVersionRes
 	return schema.GroupVersionResource{}, false, &models.ModelError{Code: 400, Message: fmt.Sprintf("Invalid Resource Type")}
 }
 
-func getResourceInterface(resourceType string, namespace string, emptyNamespace string) (dynamic.ResourceInterface, *models.ModelError) {
+func GetResourceInterface(resourceType string, namespace string, emptyNamespace string) (dynamic.ResourceInterface, *models.ModelError) {
 	gvr, namespaced, httpErr := GetResourceGroupVersion(resourceType)
 	if httpErr != nil {
 		return nil, httpErr
