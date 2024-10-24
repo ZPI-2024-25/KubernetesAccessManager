@@ -3,6 +3,7 @@ module github.com/ZPI-2024-25/KubernetesAccessManager
 go 1.22.5
 
 require (
+	github.com/Icikowski/kubeprobes v1.2.0
 	github.com/gorilla/mux v1.8.1
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/text v0.16.0
