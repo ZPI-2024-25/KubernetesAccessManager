@@ -22,17 +22,17 @@ backend:
     name: ""
 
   service:
-    type: LoadBalancer
+    type: ClusterIP
     port: 8080
 
-  livenessProbe:
-    httpGet:
-      path: /live
-      port: 8082
-  readinessProbe:
-    httpGet:
-      path: /ready
-      port: 8082
+#  livenessProbe:
+#    httpGet:
+#      path: /live
+#      port: 8082
+#  readinessProbe:
+#    httpGet:
+#      path: /ready
+#      port: 8082
 
   autoscaling:
     enabled: false
@@ -58,8 +58,8 @@ frontend:
     tag: ""
 
   service:
-    type: LoadBalancer
-    port: 5173
+    type: ClusterIP
+    port: 80
 
   autoscaling:
     enabled: false
@@ -68,25 +68,47 @@ frontend:
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
 
+#ingress:
+#  enabled: true
+#  className: "nginx"
+#  annotations: {}
+##     kubernetes.io/ingress.class: nginx
+##     kubernetes.io/tls-acme: "true"
+#  hosts:
+#    - host: "kam.local"
+#      paths:
+#        - backend:
+#            - path: /api/v1/k8s
+#              pathType: Prefix
+#            - path: /api/v1/auth
+#              pathType: Prefix
+#            - path: /api/v1/helm
+#              pathType: Prefix
+#        - frontend:
+#            - path: /
+#              pathType: Prefix
+#  tls: []
+#  #  - secretName: chart-example-tls
+#  #    hosts:
+#  #      - chart-example.local
+
 ingress:
   enabled: true
   className: "nginx"
   annotations: {}
-#     kubernetes.io/ingress.class: nginx
-#     kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: "kam.local"
-      paths:
-        - backend:
-            - path: /api/v1/k8s
-              pathType: Prefix
-            - path: /api/v1/auth
-              pathType: Prefix
-            - path: /api/v1/helm
-              pathType: Prefix
-        - frontend:
-            - path: /
-              pathType: Prefix
+  #     kubernetes.io/ingress.class: nginx
+  #     kubernetes.io/tls-acme: "true"
+  paths:
+    - backend:
+      - path: /api/v1/k8s
+        pathType: Prefix
+      - path: /api/v1/auth
+        pathType: Prefix
+      - path: /api/v1/helm
+        pathType: Prefix
+    - frontend:
+      - path: /
+        pathType: Exact
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
