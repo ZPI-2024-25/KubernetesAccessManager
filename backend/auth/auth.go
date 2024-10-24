@@ -3,29 +3,29 @@ package auth
 import (
 	"fmt"
 	"github.com/MicahParks/keyfunc"
+	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/joho/godotenv"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 )
 
 var jwks *keyfunc.JWKS
 
-func init() {
-	err := godotenv.Load()
-	jwksURL := os.Getenv("KEYCLOACK_URL")
-	jwks, err = keyfunc.Get(jwksURL, keyfunc.Options{
-		RefreshInterval: time.Hour,
-	})
-	if err != nil {
-		panic(fmt.Sprintf("Failed to create JWKS: %s", err))
-	}
-}
+//func init() {
+//	err := godotenv.Load()
+//	jwksURL := os.Getenv("KEYCLOACK_URL")
+//	jwks, err = keyfunc.Get(jwksURL, keyfunc.Options{
+//		RefreshInterval: time.Hour,
+//	})
+//	if err != nil {
+//		panic(fmt.Sprintf("Failed to create JWKS: %s", err))
+//	}
+//}
 
 func GetJWTTokenFromHeader(r *http.Request) (string, error) {
+	return "aaa", nil
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
 		return "", fmt.Errorf("authorization header missing")
@@ -39,6 +39,7 @@ func GetJWTTokenFromHeader(r *http.Request) (string, error) {
 }
 
 func IsTokenValid(tokenStr string) bool {
+	return true
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		return jwks.Keyfunc(token)
 	})
@@ -66,5 +67,9 @@ func IsTokenValid(tokenStr string) bool {
 		return false
 	}
 
+	return true
+}
+
+func IsUserAuthorized(operation models.Operation) bool {
 	return true
 }

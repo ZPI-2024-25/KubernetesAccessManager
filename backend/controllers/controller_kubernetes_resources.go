@@ -11,123 +11,98 @@ import (
 )
 
 func GetResourceController(w http.ResponseWriter, r *http.Request) {
-	if err := setJSONCTAndAuth(w, r); err != nil {
-		writeJSONResponse(w, int(err.Code), err)
-		return
-	}
-	resourceType := getResourceType(r)
-	resourceName := getResourceName(r)
-	namespace := getNamespace(r)
-
-	resource, err := cluster.GetResource(resourceType, namespace, resourceName)
-	if err != nil {
-		writeJSONResponse(w, int(err.Code), err)
-		return
-	}
-
-	writeJSONResponse(w, http.StatusOK, resource)
+	handleResourceOperation(w, r, models.Read, func(resourceType, namespace, resourceName string) (interface{}, *models.ModelError) {
+		return cluster.GetResource(resourceType, namespace, resourceName)
+	})
 }
 
 func ListResourcesController(w http.ResponseWriter, r *http.Request) {
-	if err := setJSONCTAndAuth(w, r); err != nil {
-		writeJSONResponse(w, int(err.Code), err)
-		return
-	}
-	resourceType := getResourceType(r)
-	namespace := getNamespace(r)
-
-	resources, err := cluster.ListResources(resourceType, namespace)
-	if err != nil {
-		writeJSONResponse(w, int(err.Code), err)
-		return
-	}
-
-	writeJSONResponse(w, http.StatusOK, resources)
+	handleResourceOperation(w, r, models.List, func(resourceType, namespace, _ string) (interface{}, *models.ModelError) {
+		return cluster.ListResources(resourceType, namespace)
+	})
 }
 
 func CreateResourceController(w http.ResponseWriter, r *http.Request) {
-	if err := setJSONCTAndAuth(w, r); err != nil {
-		writeJSONResponse(w, int(err.Code), err)
-		return
-	}
-	resourceType := getResourceType(r)
-	namespace := getNamespace(r)
-
-	var resource models.ResourceDetails
-	if !decodeJSONBody(w, r, &resource.ResourceDetails) {
-		return
-	}
-
-	resource, err := cluster.CreateResource(resourceType, namespace, resource)
-	if err != nil {
-		fmt.Println(err)
-		writeJSONResponse(w, int(err.Code), err)
-		return
-	}
-
-	writeJSONResponse(w, http.StatusCreated, resource)
+	handleResourceOperation(w, r, models.Create, func(resourceType, namespace, _ string) (interface{}, *models.ModelError) {
+		var resource models.ResourceDetails
+		if !decodeJSONBody(w, r, &resource.ResourceDetails) {
+			return nil, &models.ModelError{Code: http.StatusBadRequest, Message: "Invalid request body"}
+		}
+		return cluster.CreateResource(resourceType, namespace, resource)
+	})
 }
 
 func DeleteClusterResourceController(w http.ResponseWriter, r *http.Request) {
-	if err := setJSONCTAndAuth(w, r); err != nil {
-		writeJSONResponse(w, int(err.Code), err)
-		return
-	}
-	resourceType := getResourceType(r)
-	resourceName := getResourceName(r)
-	namespace := getNamespace(r)
-
-	err := cluster.DeleteResource(resourceType, namespace, resourceName)
-	if err != nil {
-		writeJSONResponse(w, int(err.Code), err)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-
-	status := models.Status{
-		Status:  "Success",
-		Code:    http.StatusOK,
-		Message: fmt.Sprintf("Resource %s deleted successfully", resourceName),
-	}
-	writeJSONResponse(w, http.StatusOK, status)
+	handleResourceOperation(w, r, models.Delete, func(resourceType, namespace, resourceName string) (interface{}, *models.ModelError) {
+		if err := cluster.DeleteResource(resourceType, namespace, resourceName); err != nil {
+			return nil, err
+		}
+		return models.Status{
+			Status:  "Success",
+			Code:    http.StatusOK,
+			Message: fmt.Sprintf("Resource %s deleted successfully", resourceName),
+		}, nil
+	})
 }
 
 func UpdateResourceController(w http.ResponseWriter, r *http.Request) {
-	if err := setJSONCTAndAuth(w, r); err != nil {
-		writeJSONResponse(w, int(err.Code), err)
-		return
-	}
+	handleResourceOperation(w, r, models.Update, func(resourceType, namespace, resourceName string) (interface{}, *models.ModelError) {
+		var resource models.ResourceDetails
+		if !decodeJSONBody(w, r, &resource.ResourceDetails) {
+			return nil, &models.ModelError{Code: http.StatusBadRequest, Message: "Invalid request body"}
+		}
+		return cluster.UpdateResource(resourceType, namespace, resourceName, resource)
+	})
+}
+
+func handleResourceOperation(w http.ResponseWriter, r *http.Request, opType models.OperationType, operationFunc func(string, string, string) (interface{}, *models.ModelError)) {
 	resourceType := getResourceType(r)
 	resourceName := getResourceName(r)
 	namespace := getNamespace(r)
 
-	var resource models.ResourceDetails
-	if !decodeJSONBody(w, r, &resource.ResourceDetails) {
+	operation := models.Operation{
+		Resource:  resourceType,
+		Namespace: namespace,
+		Type:      opType,
+	}
+
+	if err := setJSONCTAndAuth(w, r, operation); err != nil {
+		writeJSONResponse(w, int(err.Code), err)
 		return
 	}
 
-	resource, err := cluster.UpdateResource(resourceType, namespace, resourceName, resource)
+	result, err := operationFunc(resourceType, namespace, resourceName)
 	if err != nil {
 		writeJSONResponse(w, int(err.Code), err)
 		return
 	}
 
-	writeJSONResponse(w, http.StatusOK, resource)
+	statusCode := http.StatusOK
+	if opType == models.Create {
+		statusCode = http.StatusCreated
+	}
+
+	writeJSONResponse(w, statusCode, result)
 }
 
-func setJSONCTAndAuth(w http.ResponseWriter, r *http.Request) *models.ModelError {
+func setJSONCTAndAuth(w http.ResponseWriter, r *http.Request, operation models.Operation) *models.ModelError {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	unauthorizedError := models.ModelError{
-		Code:    http.StatusUnauthorized,
-		Message: "Unauthorized",
+	authErrors := map[string]*models.ModelError{
+		"Authentication failed": {
+			Code:    http.StatusUnauthorized,
+			Message: "Authentication failed",
+		},
+		"Insufficient permissions": {
+			Code:    http.StatusForbidden,
+			Message: "Insufficient permissions",
+		},
 	}
 	token, err := auth.GetJWTTokenFromHeader(r)
-	if err != nil {
-		return &unauthorizedError
+	if err != nil || !auth.IsTokenValid(token) {
+		return authErrors["Authentication failed"]
 	}
-	if !auth.IsTokenValid(token) {
-		return &unauthorizedError
+	if !auth.IsUserAuthorized(operation) {
+		return authErrors["Insufficient permissions"]
 	}
 	return nil
 }
@@ -145,15 +120,22 @@ func getNamespace(r *http.Request) string {
 }
 
 func writeJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
-	w.WriteHeader(statusCode)
-	json.NewEncoder(w).Encode(data)
+	if w.Header().Get("Content-Type") == "" {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	}
+	if statusCode != http.StatusOK {
+		w.WriteHeader(statusCode)
+	}
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
 }
 
 func decodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) bool {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(dst)
 	if err != nil {
-		writeJSONResponse(w, 400, &models.ModelError{Code: 400, Message: "Invalid request body"})
+		writeJSONResponse(w, http.StatusBadRequest, &models.ModelError{Code: http.StatusBadRequest, Message: "Invalid request body"})
 		return false
 	}
 	return true
