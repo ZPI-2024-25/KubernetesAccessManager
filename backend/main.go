@@ -4,6 +4,7 @@ import (
 	"fmt"
 	sw "github.com/ZPI-2024-25/KubernetesAccessManager/api"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
+	"github.com/gorilla/handlers"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/health"
 	"log"
 	"net/http"
@@ -29,7 +30,13 @@ func main() {
 	log.Printf("Server started")
 	log.Printf("Authentication method: %s", singleton.GetAuthenticationMethod())
 	router := sw.NewRouter()
+
+	corsHandler := handlers.CORS(
+		handlers.AllowedOrigins([]string{"*"}), // Otwiera na wszystkie domeny
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
+		handlers.AllowedHeaders([]string{"Authorization", "Content-Type"}),
+	)
 	health.ServiceStatus.MarkAsUp()
 	log.Printf("marking application readiness as UP")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":8080",  corsHandler(router)))
 }
