@@ -5,14 +5,15 @@ import (
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/dynamic"
 )
 
 const DefaultNamespace = "default"
 
-var getResourceI = getResourceInterface
+type ResourceInterfaceGetter func (resourceType string, namespace string, DefaultNamespace string) (dynamic.ResourceInterface, *models.ModelError)
 
-func GetResource(resourceType string, namespace string, resourceName string) (models.ResourceDetails, *models.ModelError) {
-	resourceInterface, err := getResourceI(resourceType, namespace, DefaultNamespace)
+func GetResource(resourceType string, namespace string, resourceName string, getResourceInterface ResourceInterfaceGetter) (models.ResourceDetails, *models.ModelError) {
+	resourceInterface, err := getResourceInterface(resourceType, namespace, DefaultNamespace)
 	if err != nil {
 		return models.ResourceDetails{}, err
 	}
@@ -26,8 +27,8 @@ func GetResource(resourceType string, namespace string, resourceName string) (mo
 	return models.ResourceDetails{ResourceDetails: &resource}, nil
 }
 
-func CreateResource(resourceType string, namespace string, resource models.ResourceDetails) (models.ResourceDetails, *models.ModelError) {
-	resourceInterface, err := getResourceI(resourceType, namespace, DefaultNamespace)
+func CreateResource(resourceType string, namespace string, resource models.ResourceDetails, getResourceInterface ResourceInterfaceGetter) (models.ResourceDetails, *models.ModelError) {
+	resourceInterface, err := getResourceInterface(resourceType, namespace, DefaultNamespace)
 	if err != nil {
 		return models.ResourceDetails{}, err
 	}
@@ -54,8 +55,8 @@ func CreateResource(resourceType string, namespace string, resource models.Resou
 	return models.ResourceDetails{ResourceDetails: &createdResource}, nil
 }
 
-func DeleteResource(resourceType string, namespace string, resourceName string) *models.ModelError {
-	resourceInterface, err := getResourceI(resourceType, namespace, DefaultNamespace)
+func DeleteResource(resourceType string, namespace string, resourceName string, getResourceInterface ResourceInterfaceGetter) *models.ModelError {
+	resourceInterface, err := getResourceInterface(resourceType, namespace, DefaultNamespace)
 	if err != nil {
 		return err
 	}
@@ -68,8 +69,8 @@ func DeleteResource(resourceType string, namespace string, resourceName string) 
 	return nil
 }
 
-func UpdateResource(resourceType string, namespace string, resourceName string, resource models.ResourceDetails) (models.ResourceDetails, *models.ModelError) {
-	resourceInterface, err := getResourceI(resourceType, namespace, DefaultNamespace)
+func UpdateResource(resourceType string, namespace string, resourceName string, resource models.ResourceDetails, getResourceInterface ResourceInterfaceGetter) (models.ResourceDetails, *models.ModelError) {
+	resourceInterface, err := getResourceInterface(resourceType, namespace, DefaultNamespace)
 	if err != nil {
 		return models.ResourceDetails{}, err
 	}
