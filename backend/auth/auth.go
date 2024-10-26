@@ -6,7 +6,6 @@ import (
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/joho/godotenv"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -28,7 +27,6 @@ func init() {
 
 func GetJWTTokenFromHeader(r *http.Request) (string, error) {
 	authHeader := r.Header.Get("Authorization")
-	log.Printf(authHeader)
 	if authHeader == "" {
 		return "", fmt.Errorf("authorization header missing")
 	}
