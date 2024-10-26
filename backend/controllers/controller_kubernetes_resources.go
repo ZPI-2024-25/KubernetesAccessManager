@@ -94,7 +94,16 @@ func setJSONCTAndAuth(w http.ResponseWriter, r *http.Request, operation models.O
 			Message: "Authentication failed",
 		}
 	}
-	if !auth.IsUserAuthorized(operation) {
+
+	authorized, err := auth.IsUserAuthorized(operation, getRoles(r))
+	if err != nil {
+		return &models.ModelError{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
+		}
+	}
+
+	if !authorized {
 		return &models.ModelError{
 			Code:    http.StatusForbidden,
 			Message: "Insufficient permissions",
@@ -113,6 +122,11 @@ func getResourceName(r *http.Request) string {
 
 func getNamespace(r *http.Request) string {
 	return r.URL.Query().Get("namespace")
+}
+
+func getRoles(r *http.Request) []string {
+	// TODO - make sure this is the correct way to get roles from the request
+	return r.URL.Query()["roles"]
 }
 
 func writeJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {

@@ -2,14 +2,14 @@ package auth
 
 import (
 	"fmt"
-	"github.com/MicahParks/keyfunc"
-	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
-	"github.com/golang-jwt/jwt/v4"
-	"github.com/joho/godotenv"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+	"github.com/MicahParks/keyfunc"
+	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/joho/godotenv"
 )
 
 var jwks *keyfunc.JWKS
@@ -63,6 +63,17 @@ func IsTokenValid(tokenStr string) bool {
 	return true
 }
 
-func IsUserAuthorized(operation models.Operation) bool {
-	return true
+func IsUserAuthorized(operation models.Operation, roles []string) (bool, error) {
+	authService, err := GetInstance()
+	if err != nil {
+		fmt.Printf("Error when loading config: %v\n", err)
+		return false, err
+	}
+
+	for _, role := range roles {
+		if authService.HasPermission(role, &operation) {
+			return true, nil
+		}
+	}
+	return false, nil
 }
