@@ -32,39 +32,23 @@ Kubernetes Application Manager (KAM) Helm Chart
 {{- if .Values.ingress.enabled}}
 2. Ingress Configuration
 
-{{- if .Values.ingress.hosts -}}
-{{- $host := (index .Values.ingress.hosts 0).host | default "your-hostname" }}
-{{- range $pathGroup := .Values.ingress.paths }}
-  {{- if $pathGroup.backend }}
-    {{- range $path := $pathGroup.backend }}
-http{{ if .Values.ingress.tls }}s{{ end }}://{{ $host }}{{ $path.path }}
+{{- range .Values.ingress.hosts }}
+  backend paths:
+    {{- range  .paths }}
+    {{- range .backend }}
+    {{ .path }}
     {{- end }}
-  {{- end }}
-  {{- if $pathGroup.frontend }}
-    {{- range $path := $pathGroup.frontend }}
-http{{ if .Values.ingress.tls }}s{{ end }}://{{ $host }}{{ $path.path }}
     {{- end }}
-  {{- end }}
-{{- end }}
-{{- else}}
-backend paths:
-{{- range $pathGroup := .Values.ingress.paths }}
-  {{- if $pathGroup.backend }}
-    {{- range $path := $pathGroup.backend }}
-    {{ $path.path }}
-    {{- end }}
-  {{- end }}
-{{- end }}
 
 frontend paths:
-{{- range $pathGroup := .Values.ingress.paths }}
-  {{- if $pathGroup.frontend }}
-    {{- range $path := $pathGroup.frontend }}
-    {{ $path.path }}
+    {{- range .paths }}
+    {{- range .frontend }}
+    {{ .path }}
     {{- end }}
-  {{- end }}
+    {{- end }}
+
 {{- end -}}
-{{- end -}}
+
 {{- end -}}
 
 {{printf "\n" }}
