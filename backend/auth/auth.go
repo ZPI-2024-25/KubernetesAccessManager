@@ -17,7 +17,7 @@ var jwks *keyfunc.JWKS
 
 func init() {
 	err := godotenv.Load()
-	jwksURL := os.Getenv("KEYCLOACK_URL")
+	jwksURL := os.Getenv("KEYCLOAK_URL")
 	jwks, err = keyfunc.Get(jwksURL, keyfunc.Options{
 		RefreshInterval: time.Hour,
 	})
@@ -28,6 +28,7 @@ func init() {
 
 func GetJWTTokenFromHeader(r *http.Request) (string, error) {
 	authHeader := r.Header.Get("Authorization")
+	log.Printf(authHeader)
 	if authHeader == "" {
 		return "", fmt.Errorf("authorization header missing")
 	}
@@ -40,9 +41,8 @@ func GetJWTTokenFromHeader(r *http.Request) (string, error) {
 }
 
 func IsTokenValid(tokenStr string) bool {
-	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-		return jwks.Keyfunc(token)
-	})
+	claims := jwt.MapClaims{}
+	token, err := jwt.ParseWithClaims(tokenStr, &claims, jwks.Keyfunc)
 	if err != nil {
 		fmt.Printf("Token parsing error: %v\n", err)
 		return false
@@ -50,20 +50,15 @@ func IsTokenValid(tokenStr string) bool {
 	if !token.Valid {
 		return false
 	}
-	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		if exp, ok := claims["exp"].(float64); ok {
-			expirationTime := time.Unix(int64(exp), 0)
-			log.Printf("%s", expirationTime.String())
-			if time.Now().After(expirationTime) {
-				fmt.Println("Token has expired")
-				return false
-			}
-		} else {
-			fmt.Println("Expiration claim missing or invalid")
+
+	if exp, ok := claims["exp"].(float64); ok {
+		expirationTime := time.Unix(int64(exp), 0)
+		if time.Now().After(expirationTime) {
+			fmt.Println("Token has expired")
 			return false
 		}
 	} else {
-		fmt.Println("Invalid token claims")
+		fmt.Println("Expiration claim missing or invalid")
 		return false
 	}
 

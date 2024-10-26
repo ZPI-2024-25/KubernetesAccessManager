@@ -18,7 +18,7 @@ func CreateResource(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteResource(w http.ResponseWriter, r *http.Request) {
-	controllers.DeleteClusterResourceController(w, r)
+	controllers.DeleteResourceController(w, r)
 }
 
 func GetResource(w http.ResponseWriter, r *http.Request) {

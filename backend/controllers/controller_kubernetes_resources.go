@@ -32,7 +32,7 @@ func CreateResourceController(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func DeleteClusterResourceController(w http.ResponseWriter, r *http.Request) {
+func DeleteResourceController(w http.ResponseWriter, r *http.Request) {
 	handleResourceOperation(w, r, models.Delete, func(resourceType, namespace, resourceName string) (interface{}, *models.ModelError) {
 		if err := cluster.DeleteResource(resourceType, namespace, resourceName); err != nil {
 			return nil, err
@@ -87,22 +87,18 @@ func handleResourceOperation(w http.ResponseWriter, r *http.Request, opType mode
 
 func setJSONCTAndAuth(w http.ResponseWriter, r *http.Request, operation models.Operation) *models.ModelError {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	authErrors := map[string]*models.ModelError{
-		"Authentication failed": {
-			Code:    http.StatusUnauthorized,
-			Message: "Authentication failed",
-		},
-		"Insufficient permissions": {
-			Code:    http.StatusForbidden,
-			Message: "Insufficient permissions",
-		},
-	}
 	token, err := auth.GetJWTTokenFromHeader(r)
 	if err != nil || !auth.IsTokenValid(token) {
-		return authErrors["Authentication failed"]
+		return &models.ModelError{
+			Code:    http.StatusUnauthorized,
+			Message: "Authentication failed",
+		}
 	}
 	if !auth.IsUserAuthorized(operation) {
-		return authErrors["Insufficient permissions"]
+		return &models.ModelError{
+			Code:    http.StatusForbidden,
+			Message: "Insufficient permissions",
+		}
 	}
 	return nil
 }
@@ -135,7 +131,6 @@ func decodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) boo
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(dst)
 	if err != nil {
-		writeJSONResponse(w, http.StatusBadRequest, &models.ModelError{Code: http.StatusBadRequest, Message: "Invalid request body"})
 		return false
 	}
 	return true
