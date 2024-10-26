@@ -25,7 +25,7 @@ func ListResourcesController(w http.ResponseWriter, r *http.Request) {
 func CreateResourceController(w http.ResponseWriter, r *http.Request) {
 	handleResourceOperation(w, r, models.Create, func(resourceType, namespace, _ string) (interface{}, *models.ModelError) {
 		var resource models.ResourceDetails
-		if !decodeJSONBody(w, r, &resource.ResourceDetails) {
+		if !decodeJSONBody(r, &resource.ResourceDetails) {
 			return nil, &models.ModelError{Code: http.StatusBadRequest, Message: "Invalid request body"}
 		}
 		return cluster.CreateResource(resourceType, namespace, resource)
@@ -48,7 +48,7 @@ func DeleteResourceController(w http.ResponseWriter, r *http.Request) {
 func UpdateResourceController(w http.ResponseWriter, r *http.Request) {
 	handleResourceOperation(w, r, models.Update, func(resourceType, namespace, resourceName string) (interface{}, *models.ModelError) {
 		var resource models.ResourceDetails
-		if !decodeJSONBody(w, r, &resource.ResourceDetails) {
+		if !decodeJSONBody(r, &resource.ResourceDetails) {
 			return nil, &models.ModelError{Code: http.StatusBadRequest, Message: "Invalid request body"}
 		}
 		return cluster.UpdateResource(resourceType, namespace, resourceName, resource)
@@ -127,7 +127,7 @@ func writeJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) 
 	}
 }
 
-func decodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) bool {
+func decodeJSONBody(r *http.Request, dst interface{}) bool {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(dst)
 	if err != nil {
