@@ -32,3 +32,8 @@ spec:
             - name: http
               containerPort: {{ .Values.frontend.service.port }}
               protocol: TCP
+          env:
+            - name: BACKEND_SERVICE_HOST
+              value: {{ include "charts.fullnameBackend" . }}
+            - name: BACKEND_SERVICE_PORT
+              value: {{ .Values.backend.service.port | quote }}
