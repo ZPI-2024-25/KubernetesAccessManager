@@ -6,6 +6,7 @@ import (
 	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
 	"github.com/gorilla/handlers"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/health"
+	"github.com/gorilla/handlers"
 	"log"
 	"net/http"
 )
@@ -19,6 +20,7 @@ func main() {
 		fmt.Printf("Error when loading config: %v\n", err)
 		return
 	}
+
 	go func() {
 		log.Printf("health endpoints starting")
 		if err := healthServer.ListenAndServe(); err != nil {
@@ -27,8 +29,10 @@ func main() {
 	}()
 	log.Printf("marking application liveness as UP")
 	health.ApplicationStatus.MarkAsUp()
+
 	log.Printf("Server started")
 	log.Printf("Authentication method: %s", singleton.GetAuthenticationMethod())
+
 	router := sw.NewRouter()
 
 	corsHandler := handlers.CORS(

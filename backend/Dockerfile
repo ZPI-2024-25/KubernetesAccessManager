@@ -25,4 +25,5 @@ FROM scratch AS runtime
 WORKDIR /
 COPY --from=build /app/swagger ./
 EXPOSE 8080
+EXPOSE 8082
 ENTRYPOINT ["./swagger", "-in-cluster"]
