@@ -12,7 +12,7 @@ COPY models/ models/
 COPY common/ common/
 COPY controllers/ controllers/
 COPY cluster/ cluster/
-COPY /health health/
+COPY health/ health/
 
 COPY main.go .
 # Build the Go application
