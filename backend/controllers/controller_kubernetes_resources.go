@@ -16,7 +16,7 @@ func GetResourceController(w http.ResponseWriter, r *http.Request) {
 	resourceName := getResourceName(r)
 	namespace := getNamespace(r)
 
-	resource, err := cluster.GetResource(resourceType, namespace, resourceName)
+	resource, err := cluster.GetResource(resourceType, namespace, resourceName, cluster.GetResourceInterface)
 	if err != nil {
 		writeJSONResponse(w, int(err.Code), err)
 		return
@@ -31,7 +31,7 @@ func ListResourcesController(w http.ResponseWriter, r *http.Request) {
 	resourceType := getResourceType(r)
 	namespace := getNamespace(r)
 
-	resources, err := cluster.ListResources(resourceType, namespace)
+	resources, err := cluster.ListResources(resourceType, namespace, cluster.GetResourceInterface)
 	if err != nil {
 		writeJSONResponse(w, int(err.Code), err)
 		return
@@ -51,7 +51,7 @@ func CreateResourceController(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resource, err := cluster.CreateResource(resourceType, namespace, resource)
+	resource, err := cluster.CreateResource(resourceType, namespace, resource, cluster.GetResourceInterface)
 	if err != nil {
 		fmt.Println(err)
 		writeJSONResponse(w, int(err.Code), err)
@@ -68,7 +68,7 @@ func DeleteClusterResourceController(w http.ResponseWriter, r *http.Request) {
 	resourceName := getResourceName(r)
 	namespace := getNamespace(r)
 
-	err := cluster.DeleteResource(resourceType, namespace, resourceName)
+	err := cluster.DeleteResource(resourceType, namespace, resourceName, cluster.GetResourceInterface)
 	if err != nil {
 		writeJSONResponse(w, int(err.Code), err)
 		return
@@ -96,7 +96,7 @@ func UpdateResourceController(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resource, err := cluster.UpdateResource(resourceType, namespace, resourceName, resource)
+	resource, err := cluster.UpdateResource(resourceType, namespace, resourceName, resource, cluster.GetResourceInterface)
 	if err != nil {
 		writeJSONResponse(w, int(err.Code), err)
 		return

@@ -28,7 +28,7 @@ const (
 	secretString      = "Secret"
 )
 
-func ListResources(resourceType string, namespace string) (models.ResourceList, *models.ModelError) {
+func ListResources(resourceType string, namespace string, getResourceInterface ResourceInterfaceGetter) (models.ResourceList, *models.ModelError) {
 	resourceInterface, err := getResourceInterface(resourceType, namespace, emptyNamespace)
 	if err != nil {
 		return models.ResourceList{}, err
