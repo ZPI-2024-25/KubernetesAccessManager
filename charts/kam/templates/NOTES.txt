@@ -1,0 +1,90 @@
+Kubernetes Application Manager (KAM) Helm Chart
+
+1. Resources Created
+- Backend:
+  - Deployment: `{{ include "charts.fullnameBackend" . }}`
+  - Service: `{{ include "charts.fullnameBackend" . }}`
+  - ServiceAccount: `{{ include "charts.fullnameBackend" . }}`
+  {{- if .Values.backend.autoscaling.enabled }}
+  - HorizontalPodAutoscaler: `{{ include "charts.fullnameBackend" . }}`
+  {{- end -}}
+  {{- if .Values.backend.rbac.create }}
+  - ClusterRole: `{{ include "charts.fullnameBackend" . }}`
+  - ClusterRoleBinding: `{{ include "charts.fullnameBackend" . }}`
+   {{- end }}
+
+- Frontend:
+  - Deployment: `{{ include "charts.fullnameFrontend" . }}`
+  - Service: `{{ include "charts.fullnameFrontend" . }}`
+  {{- if .Values.frontend.autoscaling.enabled }}
+  - HorizontalPodAutoscaler: `{{ include "charts.fullnameFrontend" . }}`
+  {{ end -}}
+
+{{printf "\n" }}
+
+{{- if .Values.ingress.enabled }}
+- Ingress:
+  - Ingress Resource: `{{ include "charts.fullname" . }}`
+{{- end -}}
+
+{{printf "\n" }}
+
+{{- if .Values.ingress.enabled}}
+2. Ingress Configuration
+
+{{- range .Values.ingress.hosts }}
+  backend paths:
+    {{- range  .paths }}
+    {{- range .backend }}
+    {{ .path }}
+    {{- end }}
+    {{- end }}
+
+frontend paths:
+    {{- range .paths }}
+    {{- range .frontend }}
+    {{ .path }}
+    {{- end }}
+    {{- end }}
+
+{{- end -}}
+
+{{- end -}}
+
+{{printf "\n" }}
+
+{{- if .Values.ingress.enabled }}
+3. Important Notes
+{{- else }}
+2. Important Notes
+{{- end }}
+
+{{- if .Values.ingress.enabled }}
+- Ingress Controller:
+  - Ensure that an Ingress controller (e.g., NGINX Ingress Controller) is installed in your cluster to handle Ingress resources.
+{{- end -}}
+
+{{- if .Values.backend.rbac.create }}
+- RBAC Permissions:
+  - Cluster Role `{{ include "charts.fullnameBackend" . }}` is created and bound to the service account `{{ include "charts.fullnameBackend" . }}`. It has all the permissions in cluster.
+{{- else }}
+- Security Context:
+  - The backend service needs all the permissions to run properly. If your cluster has RBAC enabled, make sure to enable rbac values.yaml.
+{{- end -}}
+
+{{- if and .Values.ingress.enabled .Values.ingress.hosts }}
+- DNS Configuration:
+  - Make sure your domain (`{{ (index .Values.ingress.hosts 0).host | default "your-hostname" }}`) points to the Ingress controller's IP address.
+{{- end -}}
+
+{{printf "\n" }}
+
+{{- if .Values.ingress.enabled }}
+4. Cleanup
+{{- else }}
+3. Cleanup
+{{- end }}
+- To uninstall/delete the deployment:
+     helm uninstall {{ .Release.Name }}
+
+Thank you for installing kubernetes-access-manager!
