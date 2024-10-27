@@ -12,13 +12,13 @@ import (
 
 func GetResourceController(w http.ResponseWriter, r *http.Request) {
 	handleResourceOperation(w, r, models.Read, func(resourceType, namespace, resourceName string) (interface{}, *models.ModelError) {
-		return cluster.GetResource(resourceType, namespace, resourceName)
+		return cluster.GetResource(resourceType, namespace, resourceName, cluster.GetResourceInterface)
 	})
 }
 
 func ListResourcesController(w http.ResponseWriter, r *http.Request) {
 	handleResourceOperation(w, r, models.List, func(resourceType, namespace, _ string) (interface{}, *models.ModelError) {
-		return cluster.ListResources(resourceType, namespace)
+		return cluster.ListResources(resourceType, namespace, cluster.GetResourceInterface)
 	})
 }
 
@@ -28,13 +28,13 @@ func CreateResourceController(w http.ResponseWriter, r *http.Request) {
 		if !decodeJSONBody(r, &resource.ResourceDetails) {
 			return nil, &models.ModelError{Code: http.StatusBadRequest, Message: "Invalid request body"}
 		}
-		return cluster.CreateResource(resourceType, namespace, resource)
+		return cluster.CreateResource(resourceType, namespace, resource, cluster.GetResourceInterface)
 	})
 }
 
 func DeleteResourceController(w http.ResponseWriter, r *http.Request) {
 	handleResourceOperation(w, r, models.Delete, func(resourceType, namespace, resourceName string) (interface{}, *models.ModelError) {
-		if err := cluster.DeleteResource(resourceType, namespace, resourceName); err != nil {
+		if err := cluster.DeleteResource(resourceType, namespace, resourceName, cluster.GetResourceInterface); err != nil {
 			return nil, err
 		}
 		return models.Status{
@@ -51,7 +51,7 @@ func UpdateResourceController(w http.ResponseWriter, r *http.Request) {
 		if !decodeJSONBody(r, &resource.ResourceDetails) {
 			return nil, &models.ModelError{Code: http.StatusBadRequest, Message: "Invalid request body"}
 		}
-		return cluster.UpdateResource(resourceType, namespace, resourceName, resource)
+		return cluster.UpdateResource(resourceType, namespace, resourceName, resource, cluster.GetResourceInterface)
 	})
 }
 

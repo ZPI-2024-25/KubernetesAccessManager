@@ -6,7 +6,6 @@ import (
 	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
 	"github.com/gorilla/handlers"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/health"
-	"github.com/gorilla/handlers"
 	"log"
 	"net/http"
 )
