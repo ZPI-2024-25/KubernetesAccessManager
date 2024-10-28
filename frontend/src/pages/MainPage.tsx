@@ -1,12 +1,11 @@
-import React from "react";
-import LeftMenu from "../components/Menu/Menu.tsx";
 import "./MainPage.css"
+import {content} from "../consts/content.ts";
 
 
 export const MainPage = () => {
     return (
         <>
-            <LeftMenu/>
+            {content}
         </>
     );
 };

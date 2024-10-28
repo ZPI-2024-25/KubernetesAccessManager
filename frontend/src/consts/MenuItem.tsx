@@ -2,13 +2,6 @@ import React from "react";
 import {FileOutlined, PieChartOutlined, TeamOutlined, UserOutlined} from "@ant-design/icons";
 import {MenuItem} from "../types";
 
-export interface MenuItem {
-    key: string;
-    label:string;
-    icon?: React.ReactNode;
-    children?: MenuItem[];
-}
-
 function getItem(
     label: React.ReactNode,
     key: React.Key,

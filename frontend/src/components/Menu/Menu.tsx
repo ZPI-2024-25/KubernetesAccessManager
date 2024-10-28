@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Breadcrumb, Layout, Menu } from 'antd';
 import styles from './Menu.module.css';
-import {MenuItem, items} from "../../consts/MenuItem";
+import { items } from '../../consts/MenuItem';
+import { MenuItem } from '../../types';
+import { Outlet } from 'react-router-dom';
 
 const { Header, Content, Footer, Sider } = Layout;
-
 
 const LeftMenu: React.FC = () => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [currentPage, setCurrentPage] = useState<string>('');
     const [selectedKey, setSelectedKey] = useState<string>('1');
+    const [asideWidth, setAsideWidth] = useState<number>(250);
+    const username = 'k8_userjjjjjjjjjjjjjjjiiiiiiiii';
 
     const findItemByKey = (key: string, items: MenuItem[]): MenuItem | { sectionLabel: string, childLabel: string } | null => {
         for (const item of items) {
@@ -55,7 +58,7 @@ const LeftMenu: React.FC = () => {
         if (defaultItem) {
             setCurrentPageFromItem(defaultItem);
         }
-    }, []); // Runs only once after the component mounts
+    }, []);
 
     return (
         <Layout className={styles.menuLayout}>
@@ -63,10 +66,16 @@ const LeftMenu: React.FC = () => {
                 className={styles.menuSider}
                 collapsible
                 collapsed={collapsed}
-                onCollapse={(value) => setCollapsed(value)}
+                onCollapse={(value) => {
+                    setCollapsed(value);
+                    setAsideWidth(asideWidth === 80 ? 250 : 80);
+                }}
+                width={`${asideWidth}px`}
             >
                 <div className={styles.logo}>
-                    <span className={styles.logoText}>k8_user</span>
+                    <span className={styles.logoText}>
+                        {collapsed ? 'U' : username.length > 10 ? `${username.slice(0, 10)}...` : username}
+                    </span>
                 </div>
                 <Menu
                     theme="dark"
@@ -76,14 +85,14 @@ const LeftMenu: React.FC = () => {
                     onClick={handleMenuClick}
                 />
             </Sider>
-            <Layout className={styles.menuLayout}>
-                <Header className={styles.header}>{currentPage || 'name of page'}</Header>
+            <Layout className={styles.contentLayout} style={{marginLeft: `${asideWidth}px`}}>
+                <Header className={styles.header}><p style={{paddingLeft: `${asideWidth}px`}}>{currentPage || 'name of page'}</p></Header>
                 <Content className={styles.content}>
                     <Breadcrumb className={styles.breadcrumb}>
                         <Breadcrumb.Item>lists</Breadcrumb.Item>
                     </Breadcrumb>
-                    <div>
-                        Content goes here
+                    <div className={styles.innerContent}>
+                        <Outlet />
                     </div>
                 </Content>
                 <Footer className={styles.footer}>
