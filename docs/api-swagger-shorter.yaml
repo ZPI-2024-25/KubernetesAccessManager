@@ -7,7 +7,7 @@ info:
     Some useful links:
     - [Jira](https://samuelus.atlassian.net/jira/software/projects/ZPI/boards/4)
     - [Confluence](https://samuelus.atlassian.net/wiki/spaces/ZPI/overview)
-  version: 0.0.3
+  version: 0.0.4
 servers:
   - url: http://localhost:8080/api/v1
 security:
@@ -207,89 +207,12 @@ paths:
           $ref: '#/components/responses/OtherErrors'
       security:
         - bearerAuth: []
-  /auth/callback:
-    post:
-      tags:
-        - SSO
-      summary: Exchange authorization code for tokens
-      description: Exchanges an authorization code for access and refresh tokens.
-      operationId: exchangeAuthCode
-      requestBody:
-        description: Authorization code received from the authentication provider.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AuthCallbackBody'
-        required: true
-      responses:
-        "200":
-          description: Tokens issued successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthTokens'
-        "400":
-          $ref: '#/components/responses/BadRequest'
-        "401":
-          $ref: '#/components/responses/Unauthorized'
-        "500":
-          $ref: '#/components/responses/OtherErrors'
-      security: []
-  /auth/refresh:
-    post:
-      tags:
-        - SSO
-      summary: Refresh tokens
-      description: Refreshes the access token using a valid refresh token.
-      operationId: refreshToken
-      requestBody:
-        description: Refresh token required for generating a new access token.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AuthRefreshBody'
-        required: true
-      responses:
-        "200":
-          description: Token refreshed successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthTokens'
-        "400":
-          $ref: '#/components/responses/BadRequest'
-        "401":
-          $ref: '#/components/responses/Unauthorized'
-        "500":
-          $ref: '#/components/responses/OtherErrors'
-      security: []
-  /auth/logout:
-    post:
-      tags:
-        - SSO
-      summary: Logout user
-      description: Logs out the user and invalidates their session tokens.
-      operationId: logoutUser
-      responses:
-        "200":
-          description: User logged out successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Status'
-        "401":
-          $ref: '#/components/responses/Unauthorized'
-        "500":
-          $ref: '#/components/responses/OtherErrors'
-      security:
-        - bearerAuth: []
   /auth/status:
     get:
       tags:
         - SSO
       summary: Check login status
-      description: Checks whether the user is currently logged in and retrieves session
-        details and account privileges.
+      description: Checks whether the user is currently logged in and retrieves session details and account privileges.<br>https://samuelus.atlassian.net/wiki/spaces/ZPI/pages/28147713/Dokumentacja+Struktury+JSON+dla+Uprawnie
       operationId: checkLoginStatus
       responses:
         "200":
@@ -786,78 +709,55 @@ components:
         code: 0
         message: message
         status: status
-    AuthTokens:
-      type: object
-      properties:
-        accessToken:
-          type: string
-          description: JWT access token
-        refreshToken:
-          type: string
-          description: Refresh token
-        expiresIn:
-          type: integer
-          description: Access token expiration time in seconds
-          format: int32
-      description: Authentication tokens
-      example:
-        expiresIn: 0
-        accessToken: accessToken
-        refreshToken: refreshToken
     UserStatus:
       type: object
       properties:
-        user:
-          $ref: '#/components/schemas/User'
         permissions:
           type: array
-          description: List of user permissions
+          description: List of user permissions for resources and namespaces.<br>https://samuelus.atlassian.net/wiki/spaces/ZPI/pages/28147713/Dokumentacja+Struktury+JSON+dla+Uprawnie
           items:
-            type: string
+            type: object
+            properties:
+              resource:
+                type: array
+                description: List of resources with specific permissions
+                items:
+                  type: string
+              namespace:
+                type: array
+                description: Namespaces with specific permissions
+                items:
+                  type: string
+              operations:
+                type: array
+                description: List of allowed operations
+                items:
+                  type: string
+        user:
+          type: object
+          properties:
+            exp:
+              type: integer
+              description: JWT expiration time
+            preferred_username:
+              type: string
+              description: User's preferred username
+            email:
+              type: string
+              description: User's email address
       description: User session details and privileges
       example:
         permissions:
-          - permissions
-          - permissions
+          - resource: ["*"]
+            namespace: ["default", "production"]
+            operations: ["read", "create", "list"]
+          - resource: ["Pod"]
+            namespace: ["default"]
+            operations: ["delete"]
         user:
-          createdAt: 2000-01-23T04:56:07.000+00:00
-          permissions:
-            - permissions
-            - permissions
-          id: id
-          email: ""
-          username: username
-    User:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Unique identifier of the user
-        username:
-          type: string
-          description: Username of the user
-        email:
-          type: string
-          description: Email address of the user
-          format: email
-        permissions:
-          type: array
-          description: List of user permissions
-          items:
-            type: string
-        createdAt:
-          type: string
-          description: Account creation timestamp
-          format: date-time
-      description: User information
-      example:
-        createdAt: 2000-01-23T04:56:07.000+00:00
-        permissions:
-          - permissions
-          - permissions
-        id: id
-        email: ""
-        username: username
+          exp: 1672531199
+          preferred_username: "username"
+          email: "user@example.com"
     HelmRelease:
       type: object
       properties:
@@ -922,18 +822,6 @@ components:
         chart: chart
         revision: 0
         status: status
-    AuthCallbackBody:
-      type: object
-      properties:
-        code:
-          type: string
-          description: Authorization code.
-    AuthRefreshBody:
-      type: object
-      properties:
-        refreshToken:
-          type: string
-          description: Refresh token.
     ReleaseNameRollbackBody:
       type: object
       properties:
