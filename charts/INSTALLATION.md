@@ -14,8 +14,11 @@ Tyle wystarczy by zainstalować helm charta na klastrze. Więcej wyjaśnień pon
 helm install [name] [chart name] --namespace <namespace>
 ```
 Komenda instalująca helm chart na klastrze.
+
 `[name]` odnosi się do tego jak ta konkretna instancja helm chartu będzie nazywana. Wpływa na nazwy zasobów.
+
 `[chart name]` nazwa helm charta (folderu.) W naszym przypadku `kam` z folderu `charts`.
+
 Flaga `--namespace <namespace>` jest opcjonalna i pozwala zainstalować chart w wybranym namespace.
 
 [Więcej informacji](https://helm.sh/docs/helm/helm_install/)
@@ -62,6 +65,7 @@ Komenda renderuje lokalnie szablony i wyświetla jak będą wyglądały. Wartoś
 helm install [name] [chart name] --dry-run --debug
 ```
 Komenda działająca podobnie do `helm template`, z tym że sprawdzi również czy nie ma konfliktujących zasobów na klastrze.
+
 [Więcej infromacji](https://helm.sh/docs/chart_template_guide/debugging/)
 
 ---
@@ -70,6 +74,8 @@ Komenda działająca podobnie do `helm template`, z tym że sprawdzi również c
 helm create <name>
 ```
 Komenda tworząca nowy chart folder wraz z często używanymi plikami.
+
+[Więcej informacji](https://helm.sh/docs/helm/helm_create/)
 
 # 3. Values.yaml
 
@@ -83,11 +89,13 @@ podAnnotations: {}
 podLabels: {}
 ```
 **nameOverride** - zastępuje nazwę chartu (znajdującą się w Chart.yaml) podczas tworzenia nazw obiektów Kubernetes. Nasza nazwa jest długa, dlatego ją skróciłem.
+
 **fullnameOverride** - całkowicie zastępuje wygenerowaną nazwę
 
 *Uwaga: jeżeli release name oraz chart name (lub name Override) będą takie same, wybrane zostanie release name. Dlatego mając access-manager i access-manager nazwy zawierają jedynie access-manager a nie access-manager-access-manager*
 
 **podAnnotations** - dodaje do podów zaprezentowane adnotacje
+
 **podLabels** - pozwala dodać dodatkowe etykiety do podów. Chart bazowo dodaje własne. Są zdefiniowane w `_helpers.tpl`, dokładniej w `charts.labels` i jego pochodnych
 
 ## Backend
@@ -140,11 +148,16 @@ backend:
 - **IfNotPresent** - tylko jeśli obrazu nie ma lokalnie
 - **Always** - szuka obrazu za każdym razem gdy uruchamiany jest kontener
 - **Never** - nigdy nie ściąga, korzysta tylko z lokalnego obrazu (jeśli jest)
-  **tag** - nadpisuje tag obrazu. Domyślnie tag obrazu równy jest "v" + appVersion z pliku Chart.yaml
-  **livenessProbe** - określa na jakiej ścieżce i porcie kubernetes ma szukać live probe
-  **readinessProbe** - to samo co livenessProbe
-  **autoscaling** - pozwala włączyć opcjonalne skalowanie liczby replik w zależności od obciążenia
-  **rbac** - jeżeli klaster używa rbac aplikacja wymaga określonych uprawnień. Ustawienie create na true tworzy `Cluster Role` i `Cluster Role Binding` z określonymi uprawnieniami
+
+**tag** - nadpisuje tag obrazu. Domyślnie tag obrazu równy jest "v" + appVersion z pliku Chart.yaml
+
+**livenessProbe** - określa na jakiej ścieżce i porcie kubernetes ma szukać live probe
+
+**readinessProbe** - to samo co livenessProbe
+
+**autoscaling** - pozwala włączyć opcjonalne skalowanie liczby replik w zależności od obciążenia
+
+**rbac** - jeżeli klaster używa rbac aplikacja wymaga określonych uprawnień. Ustawienie create na true tworzy `Cluster Role` i `Cluster Role Binding` z określonymi uprawnieniami
 
 ## Frontend
 
@@ -178,18 +191,27 @@ ingress:
   #    hosts:  #      - chart-example.local
 ```
 Opcjonalna konfiguracja sieciowa.
+
 **className** - ingress może korzystać z różnych **Ingress Controllerów**. className służy do wyboru używanego przez ingress controllera. W późniejszej sekcji będzie więcej o minikube i ingress.
+
 **hosts** - lista hostów z własnymi parametrami. Można zdefiniować wiele hostów.
+
 **host** - pozwala mieć wiele hostów na jednym adresie ip. Jedna połączenie do ingress wymaga właściwego hosta. Jeżeli obecny, ścieżki i zasady są stosowane tylko do ich hosta.
+
 **paths** - dostępne dla hosta ścieżki
+
 **backend** - ścieżki dla danego hosta z portem i serwisem backendowym.
+
 **frontend** - ścieżki dla danego hosta z portem i serwisem frontendowym.
+
 **pathType** - typ ścieżki.
 - **ImplementationSpecific** - zależy od IngressClass
 - **Exact** - dokładne dopasowanie, rozróżnia wielkość liter oraz obecność lub brak /
 - **Prefix** - dopasowuje na podsawie ścieżki podzielonej na /. Rozróżnia wielkość liter. Luźniejsze niż Exact
-  **tls** - pozwala zabezpieczyć Ingress za pomocą kluczy i certyfikatów. Wymaga Secret na klastrze.
-  secretName - nazwa zasobu zawierającego klucze i certyfikaty TLS. Przykład:
+
+**tls** - pozwala zabezpieczyć Ingress za pomocą kluczy i certyfikatów. Wymaga Secret na klastrze.
+
+**secretName** - nazwa zasobu zawierającego klucze i certyfikaty TLS. Przykład:
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -233,7 +255,7 @@ Dodatkowo należy zmienić typy serwisów na NodePort albo LoadBalancer.
 
 Więcej informacji czym się różnią [tutaj](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types)
 
-W minikube można pominąć nawet tą zmianę, gdyż do celów testowych można odsłonić również typ CluserIp.
+W minikube można pominąć nawet tą zmianę, gdyż do celów testowych można odsłonić również typ ClusterIP.
 
 Aby uzyskać dostęp do serwisu wystarczy wpisać:
 ```shell
