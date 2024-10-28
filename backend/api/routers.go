@@ -10,10 +10,10 @@ package api
 
 import (
 	"fmt"
+	"github.com/ZPI-2024-25/KubernetesAccessManager/common"
+	"github.com/gorilla/mux"
 	"net/http"
 	"strings"
-
-	"github.com/gorilla/mux"
 )
 
 type Route struct {
@@ -30,7 +30,7 @@ func NewRouter() *mux.Router {
 	for _, route := range routes {
 		var handler http.Handler
 		handler = route.HandlerFunc
-		handler = Logger(handler, route.Name)
+		handler = common.Logger(handler, route.Name)
 
 		router.
 			Methods(route.Method).
