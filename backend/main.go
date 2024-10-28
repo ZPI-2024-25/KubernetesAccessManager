@@ -2,71 +2,45 @@ package main
 
 import (
 	"fmt"
-	sw "github.com/ZPI-2024-25/KubernetesUserManager/go/api"
-	"github.com/ZPI-2024-25/KubernetesUserManager/go/common"
+	sw "github.com/ZPI-2024-25/KubernetesAccessManager/api"
+	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
+	"github.com/ZPI-2024-25/KubernetesAccessManager/health"
+	"github.com/gorilla/handlers"
 	"log"
 	"net/http"
 )
 
-var clientsetSingleton *common.ClientSetSingleton
-
 func main() {
+	healthServer := health.PrepareHealthEndpoints(
+		8082,
+	)
+	singleton, err := cluster.GetInstance()
+	if err != nil {
+		fmt.Printf("Error when loading config: %v\n", err)
+		return
+	}
+
+	go func() {
+		log.Printf("health endpoints starting")
+		if err := healthServer.ListenAndServe(); err != nil {
+			log.Fatal("health endpoints have been shut down unexpectedly: ", err)
+		}
+	}()
+	log.Printf("marking application liveness as UP")
+	health.ApplicationStatus.MarkAsUp()
+
 	log.Printf("Server started")
-	clientsetSingleton, _ = common.GetInstance()
+	log.Printf("Authentication method: %s", singleton.GetAuthenticationMethod())
+
 	router := sw.NewRouter()
-	log.Fatal(http.ListenAndServe(":8080", router))
-}
+	health.ServiceStatus.MarkAsUp()
+	log.Printf("marking application readiness as UP")
 
-/*
-	TODO
-    This code should be removed as well as deploy folder and Deployment Instructions.md when logic under api endpoints
-    is implemented.
-*/
+	corsHandler := handlers.CORS(
+		handlers.AllowedOrigins([]string{"*"}),
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
+		handlers.AllowedHeaders([]string{"Authorization", "Content-Type"}),
+	)
 
-func queryPods(w http.ResponseWriter, r *http.Request) {
-	pods, err := clientsetSingleton.QueryPods("default")
-	if err != nil {
-		fmt.Fprintf(w, "Error: %s", err.Error())
-		return
-	}
-
-	fmt.Fprintf(w, "Pods in default namespace:\n")
-
-	for _, pod := range pods {
-		fmt.Fprintf(w, "- %s\n", pod)
-	}
-
-	fmt.Fprintf(w, "\n There are %d pods in the cluster\n", len(pods))
-}
-
-func queryDeployments(w http.ResponseWriter, r *http.Request) {
-	deployments, err := clientsetSingleton.QueryDeployments("default")
-	if err != nil {
-		fmt.Fprintf(w, "Error: %s", err.Error())
-		return
-	}
-
-	fmt.Fprintf(w, "Deployments in default namespace:\n")
-
-	for _, deployment := range deployments {
-		fmt.Fprintf(w, "- %s\n", deployment)
-	}
-
-	fmt.Fprintf(w, "\nThere are %d deployments in the cluster\n", len(deployments))
-}
-
-func queryServices(w http.ResponseWriter, r *http.Request) {
-	service, err := clientsetSingleton.QueryServices("default")
-	if err != nil {
-		fmt.Fprintf(w, "Error: %s", err.Error())
-		return
-	}
-
-	fmt.Fprintf(w, "Services in default namespace:\n")
-
-	for _, service := range service {
-		fmt.Fprintf(w, "- %s\n", service)
-	}
-
-	fmt.Fprintf(w, "\nThere are %d services in the cluster\n", len(service))
+	log.Fatal(http.ListenAndServe(":8080", corsHandler(router)))
 }
