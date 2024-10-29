@@ -8,8 +8,8 @@ const (
 	Read   OperationType = "read"
 	Delete OperationType = "delete"
 	List   OperationType = "list"
-	All    OperationType = "all"
-	all    string 	 	 = "all"
+	All    OperationType = "*"
+	all    string 	 	 = "*"
 )
 
 type Operation struct {

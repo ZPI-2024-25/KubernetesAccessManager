@@ -2,12 +2,17 @@ package auth
 
 import (
 	"errors"
+	"log"
 	"sync"
+
+	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
+	"gopkg.in/yaml.v2"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 type RoleMapRepository struct {
-	roleMap map[string]*models.Role
+	RoleMap map[string]*models.Role
 }
 
 var (
@@ -19,48 +24,10 @@ func GetInstance() (*RoleMapRepository, error) {
 	once.Do(func() {
 		// TODO: Load role mappings from Kubernetes resources
 		instance = &RoleMapRepository{
-			roleMap: map[string]*models.Role{
-				"admin": {
-					Name: "admin",
-					Permit: []models.Operation{
-						{
-							Resource: "all",
-							Type: models.All,
-							Namespace: "all",
-						},
-					},
-					Subroles: []string{"user"},
-				},
-				"user": {
-					Name: "user",
-					Permit: []models.Operation{
-						{
-							Resource: "Pod",
-							Type: models.Read,
-							Namespace: "all",
-						},
-						{
-							Resource: "Service",
-							Type: models.Read,
-							Namespace: "all",
-						},
-						{
-							Resource: "Deployment",
-							Type: models.Read,
-							Namespace: "all",
-						},
-					},
-					Deny: []models.Operation{
-						{
-							Resource: "all",
-							Type: models.All,
-							Namespace: "forbidden",
-						},
-					},
-					Subroles: []string{"guest"},
-				},
-			},
+			RoleMap: *GetRoleMapConfig("default", "role-map"),
 		}
+
+		log.Printf("RoleMapRepository initialized with %d roles", len(instance.RoleMap))
 	})
 
 	if instance == nil {
@@ -74,7 +41,7 @@ func GetInstance() (*RoleMapRepository, error) {
 
 
 func (rmr *RoleMapRepository) HasPermission(rolename string, operation *models.Operation) bool {
-	role := rmr.roleMap[rolename]
+	role := rmr.RoleMap[rolename]
 	if role == nil {
 		return false
 	}
@@ -99,6 +66,32 @@ func (rmr *RoleMapRepository) HasPermission(rolename string, operation *models.O
 	}
 
 	return false
+}
+
+func GetRoleMapConfig (namespace string, name string) *map[string]*models.Role {
+	res, err := cluster.GetResource("ConfigMap", namespace, name, cluster.GetResourceInterface)
+	if err != nil {
+		return nil
+	}
+
+	details := (*res.ResourceDetails).(*unstructured.Unstructured)
+	
+	roleMapData, found, err2 := unstructured.NestedString(details.Object, "data", "role-map")
+
+	if err2 != nil || !found {
+		log.Printf("Error retrieving roleMap data: %v", err)
+		return nil
+	}
+
+	// Parse the YAML data in roleMap into the Role map structure
+	roleMap := make(map[string]*models.Role)
+	err2 = yaml.Unmarshal([]byte(roleMapData), &roleMap)
+	if err2 != nil {
+		log.Printf("Error parsing roleMap data: %v", err)
+		return nil
+	}
+
+	return &roleMap
 }
 
 

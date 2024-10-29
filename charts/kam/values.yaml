@@ -10,7 +10,10 @@ backend:
     repository: ninjashadow/kubernetes-access-manager-backend
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: ""
+    tag: "latest"
+
+  env:
+    KEYCLOAK_URL: "keycloak.192.168.49.2.nip.io"
 
   serviceAccount:
     create: true
