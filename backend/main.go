@@ -5,6 +5,7 @@ import (
 	sw "github.com/ZPI-2024-25/KubernetesAccessManager/api"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/health"
+	"github.com/ZPI-2024-25/KubernetesAccessManager/helm"
 	"github.com/gorilla/handlers"
 	"log"
 	"net/http"
@@ -14,9 +15,15 @@ func main() {
 	healthServer := health.PrepareHealthEndpoints(
 		8082,
 	)
-	singleton, err := cluster.GetInstance()
+	clusterSingleton, err := cluster.GetInstance()
 	if err != nil {
 		fmt.Printf("Error when loading config: %v\n", err)
+		return
+	}
+
+	_, err = helm.GetInstance()
+	if err != nil {
+		fmt.Printf("Error when loading helm client: %v\n", err)
 		return
 	}
 
@@ -30,7 +37,7 @@ func main() {
 	health.ApplicationStatus.MarkAsUp()
 
 	log.Printf("Server started")
-	log.Printf("Authentication method: %s", singleton.GetAuthenticationMethod())
+	log.Printf("Authentication method: %s", clusterSingleton.GetAuthenticationMethod())
 
 	router := sw.NewRouter()
 	health.ServiceStatus.MarkAsUp()
