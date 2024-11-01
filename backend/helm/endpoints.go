@@ -3,9 +3,15 @@ package helm
 import (
 	"fmt"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
+	"helm.sh/helm/v3/pkg/action"
 )
 
 func GetHelmRelease(releaseName string, namespace string) (*models.HelmRelease, *models.ModelError) {
+	err := RegenerateWithNewNamespace(namespace)
+	if err != nil {
+		return nil, &models.ModelError{Code: 500, Message: "Failed to regenerate helm client with new namespace"}
+	}
+
 	helmClient, err := GetHelmClient()
 	if err != nil {
 		return nil, &models.ModelError{Code: 500, Message: "Failed to get helm client"}
@@ -26,4 +32,36 @@ func GetHelmRelease(releaseName string, namespace string) (*models.HelmRelease, 
 	helmRelease.AppVersion = release.Chart.AppVersion()
 
 	return &helmRelease, nil
+}
+
+func ListHelmReleases(namespace string) (*[]models.HelmRelease, *models.ModelError) {
+	err := RegenerateWithNewNamespace(namespace)
+	if err != nil {
+		return nil, &models.ModelError{Code: 500, Message: "Failed to regenerate helm client with new namespace"}
+	}
+
+	helmClient, err := GetHelmClient()
+	if err != nil {
+		return nil, &models.ModelError{Code: 500, Message: "Failed to get helm client"}
+	}
+
+	releases, err := helmClient.ListReleasesByStateMask(action.ListAll)
+	if err != nil {
+		return nil, &models.ModelError{Code: 500, Message: "Failed to list releases"}
+	}
+
+	var helmReleases []models.HelmRelease
+	for _, release := range releases {
+		var helmRelease models.HelmRelease
+		helmRelease.Name = release.Name
+		helmRelease.Namespace = release.Namespace
+		helmRelease.Chart = fmt.Sprintf("%s-%s", release.Chart.Name(), release.Chart.Metadata.Version)
+		helmRelease.Status = release.Info.Status.String()
+		helmRelease.Updated = release.Info.LastDeployed.Time
+		helmRelease.Revision = fmt.Sprintf("%d", release.Version)
+		helmRelease.AppVersion = release.Chart.AppVersion()
+		helmReleases = append(helmReleases, helmRelease)
+	}
+
+	return &helmReleases, nil
 }

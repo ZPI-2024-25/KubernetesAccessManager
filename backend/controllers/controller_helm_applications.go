@@ -26,8 +26,17 @@ func GetHelmReleaseHistoryController(w http.ResponseWriter, r *http.Request) {
 }
 
 func ListHelmReleasesController(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	setJSONContentType(w)
+
+	namespace := getNamespace(r)
+
+	releases, err := helm.ListHelmReleases(namespace)
+	if err != nil {
+		writeJSONResponse(w, int(err.Code), err)
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, releases)
 }
 
 func RollbackHelmReleaseController(w http.ResponseWriter, r *http.Request) {
