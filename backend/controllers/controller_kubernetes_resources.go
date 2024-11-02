@@ -59,7 +59,7 @@ func CreateResourceController(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusCreated, resource)
 }
 
-func DeleteClusterResourceController(w http.ResponseWriter, r *http.Request) {
+func DeleteResourceController(w http.ResponseWriter, r *http.Request) {
 	setJSONContentType(w)
 
 	resourceType := getResourceType(r)
@@ -71,8 +71,6 @@ func DeleteClusterResourceController(w http.ResponseWriter, r *http.Request) {
 		writeJSONResponse(w, int(err.Code), err)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 
 	status := models.Status{
 		Status:  "Success",

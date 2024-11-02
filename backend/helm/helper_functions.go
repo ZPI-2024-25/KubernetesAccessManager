@@ -17,3 +17,14 @@ func GetReleaseData(release *release.Release) *models.HelmRelease {
 	helmRelease.AppVersion = release.Chart.AppVersion()
 	return &helmRelease
 }
+
+func GetReleaseHistoryData(releaseHistory *release.Release) *models.HelmReleaseHistory {
+	var helmReleaseHistory models.HelmReleaseHistory
+	helmReleaseHistory.AppVersion = releaseHistory.Chart.AppVersion()
+	helmReleaseHistory.Description = releaseHistory.Info.Description
+	helmReleaseHistory.Updated = releaseHistory.Info.LastDeployed.Time
+	helmReleaseHistory.Chart = fmt.Sprintf("%s-%s", releaseHistory.Chart.Name(), releaseHistory.Chart.Metadata.Version)
+	helmReleaseHistory.Revision = int32(releaseHistory.Version)
+	helmReleaseHistory.Status = releaseHistory.Info.Status.String()
+	return &helmReleaseHistory
+}
