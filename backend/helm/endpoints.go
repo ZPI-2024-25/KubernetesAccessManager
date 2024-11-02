@@ -1,10 +1,9 @@
 package helm
 
 import (
+	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
-	helmclient "github.com/mittwald/go-helm-client"
 	"helm.sh/helm/v3/pkg/action"
-	"time"
 )
 
 func GetHelmRelease(releaseName string, namespace string) (*models.HelmRelease, *models.ModelError) {
@@ -73,31 +72,49 @@ func GetHelmReleaseHistory(name string, namespace string) (*[]models.HelmRelease
 	return &helmReleases, nil
 }
 
+//func RollbackHelmRelease(name string, namespace string, version int) (*models.HelmRelease, *models.ModelError) {
+//	helmClient, err := GetHelmClient(namespace)
+//	if err != nil {
+//		return nil, &models.ModelError{Code: 500, Message: "Failed to get helm client"}
+//	}
+//
+//	release, err := helmClient.GetRelease(name)
+//	if err != nil {
+//		return nil, &models.ModelError{Code: 404, Message: "Release not found"}
+//	}
+//
+//	chartSpec := helmclient.ChartSpec{
+//		ReleaseName: release.Name,
+//		ChartName:   release.Chart.Name(),
+//		Namespace:   release.Namespace,
+//		UpgradeCRDs: true,
+//		Wait:        true,
+//		Timeout:     time.Duration(30) * time.Second,
+//	}
+//
+//	err = helmClient.RollbackRelease(&chartSpec)
+//	if err != nil {
+//		return nil, &models.ModelError{Code: 500, Message: "Failed to rollback release: " + err.Error()}
+//	}
+//
+//	return GetHelmRelease(name, namespace)
+//}
+
 func RollbackHelmRelease(name string, namespace string, version int) (*models.HelmRelease, *models.ModelError) {
-	helmClient, err := GetHelmClient(namespace)
+	config, err := cluster.GetConfig()
 	if err != nil {
-		return nil, &models.ModelError{Code: 500, Message: "Failed to get helm client"}
+		return nil, &models.ModelError{Code: 500, Message: "Failed to get cluster config"}
 	}
 
-	release, err := helmClient.GetRelease(name)
+	actionConfig, err := getActionConfig(config, namespace)
 	if err != nil {
-		return nil, &models.ModelError{Code: 404, Message: "Release not found"}
+		return nil, &models.ModelError{Code: 500, Message: "Failed to create Helm action configuration: " + err.Error()}
 	}
 
-	chartSpec := helmclient.ChartSpec{
-		ReleaseName: release.Name,
-		ChartName:   release.Chart.Name(),
-		Namespace:   release.Namespace,
-		UpgradeCRDs: true,
-		Wait:        true,
-		Timeout:     time.Duration(30) * time.Second,
-	}
-
-	err = helmClient.RollbackRelease(&chartSpec)
+	release, err := rollbackRelease(actionConfig, name, version)
 	if err != nil {
 		return nil, &models.ModelError{Code: 500, Message: "Failed to rollback release: " + err.Error()}
 	}
 
-	return GetHelmRelease(name, namespace)
-
+	return GetReleaseData(release), nil
 }
