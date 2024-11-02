@@ -2,29 +2,49 @@ package helm
 
 import (
 	"fmt"
+	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
+	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/release"
 )
 
 func GetReleaseData(release *release.Release) *models.HelmRelease {
-	var helmRelease models.HelmRelease
-	helmRelease.Name = release.Name
-	helmRelease.Namespace = release.Namespace
-	helmRelease.Chart = fmt.Sprintf("%s-%s", release.Chart.Name(), release.Chart.Metadata.Version)
-	helmRelease.Status = release.Info.Status.String()
-	helmRelease.Updated = release.Info.LastDeployed.Time
-	helmRelease.Revision = fmt.Sprintf("%d", release.Version)
-	helmRelease.AppVersion = release.Chart.AppVersion()
-	return &helmRelease
+	return &models.HelmRelease{
+		Name:       release.Name,
+		Namespace:  release.Namespace,
+		Chart:      fmt.Sprintf("%s-%s", release.Chart.Name(), release.Chart.Metadata.Version),
+		Status:     release.Info.Status.String(),
+		Updated:    release.Info.LastDeployed.Time,
+		Revision:   fmt.Sprintf("%d", release.Version),
+		AppVersion: release.Chart.AppVersion(),
+	}
 }
 
 func GetReleaseHistoryData(releaseHistory *release.Release) *models.HelmReleaseHistory {
-	var helmReleaseHistory models.HelmReleaseHistory
-	helmReleaseHistory.AppVersion = releaseHistory.Chart.AppVersion()
-	helmReleaseHistory.Description = releaseHistory.Info.Description
-	helmReleaseHistory.Updated = releaseHistory.Info.LastDeployed.Time
-	helmReleaseHistory.Chart = fmt.Sprintf("%s-%s", releaseHistory.Chart.Name(), releaseHistory.Chart.Metadata.Version)
-	helmReleaseHistory.Revision = int32(releaseHistory.Version)
-	helmReleaseHistory.Status = releaseHistory.Info.Status.String()
-	return &helmReleaseHistory
+	return &models.HelmReleaseHistory{
+		AppVersion:  releaseHistory.Chart.AppVersion(),
+		Description: releaseHistory.Info.Description,
+		Updated:     releaseHistory.Info.LastDeployed.Time,
+		Chart:       fmt.Sprintf("%s-%s", releaseHistory.Chart.Name(), releaseHistory.Chart.Metadata.Version),
+		Revision:    int32(releaseHistory.Version),
+		Status:      releaseHistory.Info.Status.String(),
+	}
+}
+
+func PrepareActionConfig(namespace string, useDefaultNamespace bool) (*action.Configuration, *models.ModelError) {
+	config, err := cluster.GetConfig()
+	if err != nil {
+		return nil, &models.ModelError{Code: 500, Message: "Failed to get cluster config"}
+	}
+
+	if namespace == "" && useDefaultNamespace {
+		namespace = "default"
+	}
+
+	actionConfig, err := getActionConfig(config, namespace)
+	if err != nil {
+		return nil, &models.ModelError{Code: 500, Message: "Failed to create Helm action configuration: " + err.Error()}
+	}
+
+	return actionConfig, nil
 }

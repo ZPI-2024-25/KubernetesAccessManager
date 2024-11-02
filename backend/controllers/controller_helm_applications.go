@@ -61,6 +61,11 @@ func RollbackHelmReleaseController(w http.ResponseWriter, r *http.Request) {
 	if !decodeJSONBody(w, r, &version) {
 		return
 	}
+	err := checkVersion(version.Version)
+	if err != nil {
+		writeJSONResponse(w, int(err.Code), err)
+		return
+	}
 
 	release, err := helm.RollbackHelmRelease(releaseName, namespace, int(version.Version))
 	if err != nil {

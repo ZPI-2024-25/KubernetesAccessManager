@@ -1,34 +1,34 @@
 package helm
 
 import (
-	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
+	"errors"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
-	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/storage/driver"
 )
 
 func GetHelmRelease(releaseName string, namespace string) (*models.HelmRelease, *models.ModelError) {
-	helmClient, err := GetHelmClient(namespace)
-	if err != nil {
-		return nil, &models.ModelError{Code: 500, Message: "Failed to get helm client"}
+	actionConfig, cErr := PrepareActionConfig(namespace, false)
+	if cErr != nil {
+		return nil, cErr
 	}
 
-	release, err := helmClient.GetRelease(releaseName)
+	release, err := getRelease(actionConfig, releaseName)
 	if err != nil {
-		return nil, &models.ModelError{Code: 404, Message: "Release not found"}
+		return nil, &models.ModelError{Code: 404, Message: "Release not found: " + err.Error()}
 	}
 
 	return GetReleaseData(release), nil
 }
 
-func ListHelmReleases(namespace string) (*[]models.HelmRelease, *models.ModelError) {
-	helmClient, err := GetHelmClient(namespace)
-	if err != nil {
-		return nil, &models.ModelError{Code: 500, Message: "Failed to get helm client"}
+func ListHelmReleases(namespace string) ([]models.HelmRelease, *models.ModelError) {
+	actionConfig, cErr := PrepareActionConfig(namespace, false)
+	if cErr != nil {
+		return nil, cErr
 	}
 
-	releases, err := helmClient.ListReleasesByStateMask(action.ListAll)
+	releases, err := listReleases(actionConfig, namespace == "")
 	if err != nil {
-		return nil, &models.ModelError{Code: 500, Message: "Failed to list releases"}
+		return nil, &models.ModelError{Code: 500, Message: "Failed to list releases: " + err.Error()}
 	}
 
 	var helmReleases []models.HelmRelease
@@ -36,30 +36,33 @@ func ListHelmReleases(namespace string) (*[]models.HelmRelease, *models.ModelErr
 		helmReleases = append(helmReleases, *GetReleaseData(release))
 	}
 
-	return &helmReleases, nil
+	return helmReleases, nil
 }
 
-func UninstallHelmRelease(release string, namespace string) *models.ModelError {
-	helmClient, err := GetHelmClient(namespace)
-	if err != nil {
-		return &models.ModelError{Code: 500, Message: "Failed to get helm client"}
+func UninstallHelmRelease(releaseName string, namespace string) *models.ModelError {
+	actionConfig, cErr := PrepareActionConfig(namespace, true)
+	if cErr != nil {
+		return cErr
 	}
 
-	err = helmClient.UninstallReleaseByName(release)
+	_, err := uninstallRelease(actionConfig, releaseName)
 	if err != nil {
-		return &models.ModelError{Code: 500, Message: "Failed to uninstall release"}
+		if errors.Is(err, driver.ErrReleaseNotFound) {
+			return &models.ModelError{Code: 404, Message: "Release not found: " + err.Error()}
+		}
+		return &models.ModelError{Code: 500, Message: "Failed to uninstall release: " + err.Error()}
 	}
 
 	return nil
 }
 
-func GetHelmReleaseHistory(name string, namespace string) (*[]models.HelmReleaseHistory, *models.ModelError) {
-	helmClient, err := GetHelmClient(namespace)
-	if err != nil {
-		return nil, &models.ModelError{Code: 500, Message: "Failed to get helm client"}
+func GetHelmReleaseHistory(releaseName string, namespace string) ([]models.HelmReleaseHistory, *models.ModelError) {
+	actionConfig, cErr := PrepareActionConfig(namespace, true)
+	if cErr != nil {
+		return nil, cErr
 	}
 
-	releases, err := helmClient.ListReleaseHistory(name, 0)
+	releases, err := getReleaseHistory(actionConfig, releaseName, 0)
 	if err != nil {
 		return nil, &models.ModelError{Code: 404, Message: "Failed to get release history"}
 	}
@@ -69,51 +72,23 @@ func GetHelmReleaseHistory(name string, namespace string) (*[]models.HelmRelease
 		helmReleases = append(helmReleases, *GetReleaseHistoryData(release))
 	}
 
-	return &helmReleases, nil
+	return helmReleases, nil
 }
 
-//func RollbackHelmRelease(name string, namespace string, version int) (*models.HelmRelease, *models.ModelError) {
-//	helmClient, err := GetHelmClient(namespace)
-//	if err != nil {
-//		return nil, &models.ModelError{Code: 500, Message: "Failed to get helm client"}
-//	}
-//
-//	release, err := helmClient.GetRelease(name)
-//	if err != nil {
-//		return nil, &models.ModelError{Code: 404, Message: "Release not found"}
-//	}
-//
-//	chartSpec := helmclient.ChartSpec{
-//		ReleaseName: release.Name,
-//		ChartName:   release.Chart.Name(),
-//		Namespace:   release.Namespace,
-//		UpgradeCRDs: true,
-//		Wait:        true,
-//		Timeout:     time.Duration(30) * time.Second,
-//	}
-//
-//	err = helmClient.RollbackRelease(&chartSpec)
-//	if err != nil {
-//		return nil, &models.ModelError{Code: 500, Message: "Failed to rollback release: " + err.Error()}
-//	}
-//
-//	return GetHelmRelease(name, namespace)
-//}
-
-func RollbackHelmRelease(name string, namespace string, version int) (*models.HelmRelease, *models.ModelError) {
-	config, err := cluster.GetConfig()
-	if err != nil {
-		return nil, &models.ModelError{Code: 500, Message: "Failed to get cluster config"}
+func RollbackHelmRelease(releaseName string, namespace string, version int) (*models.HelmRelease, *models.ModelError) {
+	actionConfig, cErr := PrepareActionConfig(namespace, true)
+	if cErr != nil {
+		return nil, cErr
 	}
 
-	actionConfig, err := getActionConfig(config, namespace)
-	if err != nil {
-		return nil, &models.ModelError{Code: 500, Message: "Failed to create Helm action configuration: " + err.Error()}
-	}
-
-	release, err := rollbackRelease(actionConfig, name, version)
+	err := rollbackRelease(actionConfig, releaseName, version)
 	if err != nil {
 		return nil, &models.ModelError{Code: 500, Message: "Failed to rollback release: " + err.Error()}
+	}
+
+	release, err := getRelease(actionConfig, releaseName)
+	if err != nil {
+		return nil, &models.ModelError{Code: 404, Message: "Failed to get release: " + err.Error()}
 	}
 
 	return GetReleaseData(release), nil

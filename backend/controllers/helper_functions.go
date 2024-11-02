@@ -41,3 +41,10 @@ func decodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) boo
 	}
 	return true
 }
+
+func checkVersion(version int32) *models.ModelError {
+	if version < 0 {
+		return &models.ModelError{Code: 400, Message: "Invalid version"}
+	}
+	return nil
+}

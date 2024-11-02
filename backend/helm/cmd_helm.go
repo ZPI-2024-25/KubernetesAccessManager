@@ -42,14 +42,49 @@ func getRelease(actionConfig *action.Configuration, name string) (*release.Relea
 	return rel, nil
 }
 
-func rollbackRelease(actionConfig *action.Configuration, name string, version int) (*release.Release, error) {
+func rollbackRelease(actionConfig *action.Configuration, name string, version int) error {
 	rollback := action.NewRollback(actionConfig)
 	rollback.Version = version
 	rollback.Wait = true
 	rollback.Timeout = 300 * time.Second
 	if err := rollback.Run(name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func uninstallRelease(actionConfig *action.Configuration, name string) (*release.UninstallReleaseResponse, error) {
+	uninstall := action.NewUninstall(actionConfig)
+	response, err := uninstall.Run(name)
+	if err != nil {
 		return nil, err
 	}
 
-	return getRelease(actionConfig, name)
+	return response, nil
+}
+
+func getReleaseHistory(actionConfig *action.Configuration, name string, max int) ([]*release.Release, error) {
+	history := action.NewHistory(actionConfig)
+	history.Max = max
+	historyResponse, err := history.Run(name)
+	if err != nil {
+		return nil, err
+	}
+
+	return historyResponse, nil
+}
+
+func listReleases(actionConfig *action.Configuration, allNamespaces bool) ([]*release.Release, error) {
+	list := action.NewList(actionConfig)
+	if allNamespaces {
+		list.AllNamespaces = true
+	}
+	list.StateMask = action.ListAll
+	listResponse, err := list.Run()
+	if err != nil {
+		return nil, err
+	}
+
+	return listResponse, nil
 }
