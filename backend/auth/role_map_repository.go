@@ -40,7 +40,17 @@ func GetInstance() (*RoleMapRepository, error) {
 	return instance, nil
 }
 
-func (rmr *RoleMapRepository) HasPermission(rolename string, operation *models.Operation) bool {
+func (rmr *RoleMapRepository) HasPermission(rolenames []string, operation *models.Operation) bool {
+	visited := make(map[string]interface{})
+	for _, role := range rolenames {
+		if rmr.hasPermission(role, operation, visited) {
+			return true
+		}
+	}
+	return false
+}
+
+func (rmr *RoleMapRepository) hasPermission(rolename string, operation *models.Operation, visited map[string]interface{}) bool {
 	role := rmr.RoleMap[rolename]
 	if role == nil {
 		return false
@@ -60,15 +70,19 @@ func (rmr *RoleMapRepository) HasPermission(rolename string, operation *models.O
 
 	// Recursively check subroles, if any matches, return true
 	for _, subrole := range role.Subroles {
-		if rmr.subHasPermission(subrole, operation) {
-			return true
+		if _, exists := visited[subrole]; !exists {
+			if rmr.subHasPermission(subrole, operation, visited) {
+				return true
+			}
 		}
 	}
 
 	return false
 }
 
-func (rmr *RoleMapRepository) subHasPermission(rolename string, operation *models.Operation) bool {
+func (rmr *RoleMapRepository) subHasPermission(rolename string, operation *models.Operation, visited map[string]interface{}) bool {
+	visited[rolename] = nil
+
 	role := rmr.SubroleMap[rolename]
 	if role == nil {
 		return false
@@ -88,8 +102,10 @@ func (rmr *RoleMapRepository) subHasPermission(rolename string, operation *model
 
 	// Recursively check subroles, if any matches, return true
 	for _, subrole := range role.Subroles {
-		if rmr.subHasPermission(subrole, operation) {
-			return true
+		if _, exists := visited[subrole]; !exists {
+			if rmr.subHasPermission(subrole, operation, visited) {
+				return true
+			}
 		}
 	}
 

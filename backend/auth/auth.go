@@ -67,18 +67,17 @@ func IsTokenValid(tokenStr string) (bool, *jwt.MapClaims) {
 	return true, &claims
 }
 
-func IsUserAuthorized(operation models.Operation, roles *[]string) (bool, error) {
+func IsUserAuthorized(operation models.Operation, roles []string) (bool, error) {
 	authService, err := GetInstance()
 	if err != nil {
-		fmt.Printf("Error when loading config: %v\n", err)
+		log.Printf("Error when loading auth service: %v\n", err)
 		return false, err
 	}
 
-	for _, role := range *roles {
-		if authService.HasPermission(role, &operation) {
-			return true, nil
-		}
+	if authService.HasPermission(roles, &operation) {
+		return true, nil
 	}
+	
 	return false, nil
 }
 
