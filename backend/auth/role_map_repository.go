@@ -23,9 +23,12 @@ var (
 func GetInstance() (*RoleMapRepository, error) {
 	once.Do(func() {
 		// TODO: Load role mappings from Kubernetes resources
-		instance = &RoleMapRepository{
-			RoleMap: *GetRoleMapConfig("default", "role-map"),
+		roleMap := GetRoleMapConfig("default", "role-map")
+		if roleMap == nil {
+			log.Printf("Failed to initialize RoleMapRepository")
+			return
 		}
+		instance := &RoleMapRepository{RoleMap: *roleMap}
 
 		log.Printf("RoleMapRepository initialized with %d roles", len(instance.RoleMap))
 	})
