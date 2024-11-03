@@ -7,7 +7,7 @@ import (
 )
 
 func GetHelmRelease(releaseName string, namespace string) (*models.HelmRelease, *models.ModelError) {
-	actionConfig, cErr := PrepareActionConfig(namespace, false)
+	actionConfig, cErr := prepareActionConfig(namespace, false)
 	if cErr != nil {
 		return nil, cErr
 	}
@@ -17,11 +17,11 @@ func GetHelmRelease(releaseName string, namespace string) (*models.HelmRelease, 
 		return nil, &models.ModelError{Code: 404, Message: "Release not found: " + err.Error()}
 	}
 
-	return GetReleaseData(release), nil
+	return getReleaseData(release), nil
 }
 
 func ListHelmReleases(namespace string) ([]models.HelmRelease, *models.ModelError) {
-	actionConfig, cErr := PrepareActionConfig(namespace, false)
+	actionConfig, cErr := prepareActionConfig(namespace, false)
 	if cErr != nil {
 		return nil, cErr
 	}
@@ -33,14 +33,14 @@ func ListHelmReleases(namespace string) ([]models.HelmRelease, *models.ModelErro
 
 	var helmReleases []models.HelmRelease
 	for _, release := range releases {
-		helmReleases = append(helmReleases, *GetReleaseData(release))
+		helmReleases = append(helmReleases, *getReleaseData(release))
 	}
 
 	return helmReleases, nil
 }
 
 func UninstallHelmRelease(releaseName string, namespace string) *models.ModelError {
-	actionConfig, cErr := PrepareActionConfig(namespace, true)
+	actionConfig, cErr := prepareActionConfig(namespace, true)
 	if cErr != nil {
 		return cErr
 	}
@@ -57,7 +57,7 @@ func UninstallHelmRelease(releaseName string, namespace string) *models.ModelErr
 }
 
 func GetHelmReleaseHistory(releaseName string, namespace string) ([]models.HelmReleaseHistory, *models.ModelError) {
-	actionConfig, cErr := PrepareActionConfig(namespace, true)
+	actionConfig, cErr := prepareActionConfig(namespace, true)
 	if cErr != nil {
 		return nil, cErr
 	}
@@ -69,14 +69,14 @@ func GetHelmReleaseHistory(releaseName string, namespace string) ([]models.HelmR
 
 	var helmReleases []models.HelmReleaseHistory
 	for _, release := range releases {
-		helmReleases = append(helmReleases, *GetReleaseHistoryData(release))
+		helmReleases = append(helmReleases, *getReleaseHistoryData(release))
 	}
 
 	return helmReleases, nil
 }
 
 func RollbackHelmRelease(releaseName string, namespace string, version int) (*models.HelmRelease, *models.ModelError) {
-	actionConfig, cErr := PrepareActionConfig(namespace, true)
+	actionConfig, cErr := prepareActionConfig(namespace, true)
 	if cErr != nil {
 		return nil, cErr
 	}
@@ -91,5 +91,5 @@ func RollbackHelmRelease(releaseName string, namespace string, version int) (*mo
 		return nil, &models.ModelError{Code: 404, Message: "Failed to get release: " + err.Error()}
 	}
 
-	return GetReleaseData(release), nil
+	return getReleaseData(release), nil
 }

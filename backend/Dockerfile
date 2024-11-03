@@ -13,6 +13,7 @@ COPY common/ common/
 COPY controllers/ controllers/
 COPY cluster/ cluster/
 COPY health/ health/
+COPY helm/ helm/
 
 COPY main.go .
 # Build the Go application

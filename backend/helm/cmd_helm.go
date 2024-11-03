@@ -2,7 +2,6 @@ package helm
 
 import (
 	"helm.sh/helm/v3/pkg/action"
-	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/release"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/rest"
@@ -10,19 +9,11 @@ import (
 )
 
 func getActionConfig(kubeConfig *rest.Config, namespace string) (*action.Configuration, error) {
-	settings := cli.New()
-	settings.KubeAPIServer = kubeConfig.Host
-	settings.KubeToken = kubeConfig.BearerToken
-	settings.KubeCaFile = kubeConfig.TLSClientConfig.CAFile
-	settings.KubeInsecureSkipTLSVerify = kubeConfig.TLSClientConfig.Insecure
-	settings.SetNamespace(namespace)
-
 	configFlags := &genericclioptions.ConfigFlags{
-		APIServer:   &kubeConfig.Host,
-		CAFile:      &kubeConfig.TLSClientConfig.CAFile,
-		BearerToken: &kubeConfig.BearerToken,
-		Insecure:    &kubeConfig.TLSClientConfig.Insecure,
-		Namespace:   &namespace,
+		Namespace: &namespace,
+		WrapConfigFn: func(_ *rest.Config) *rest.Config {
+			return kubeConfig
+		},
 	}
 
 	actionConfig := new(action.Configuration)

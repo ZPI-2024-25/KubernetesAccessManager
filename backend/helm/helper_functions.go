@@ -8,7 +8,7 @@ import (
 	"helm.sh/helm/v3/pkg/release"
 )
 
-func GetReleaseData(release *release.Release) *models.HelmRelease {
+func getReleaseData(release *release.Release) *models.HelmRelease {
 	return &models.HelmRelease{
 		Name:       release.Name,
 		Namespace:  release.Namespace,
@@ -20,7 +20,7 @@ func GetReleaseData(release *release.Release) *models.HelmRelease {
 	}
 }
 
-func GetReleaseHistoryData(releaseHistory *release.Release) *models.HelmReleaseHistory {
+func getReleaseHistoryData(releaseHistory *release.Release) *models.HelmReleaseHistory {
 	return &models.HelmReleaseHistory{
 		AppVersion:  releaseHistory.Chart.AppVersion(),
 		Description: releaseHistory.Info.Description,
@@ -31,7 +31,7 @@ func GetReleaseHistoryData(releaseHistory *release.Release) *models.HelmReleaseH
 	}
 }
 
-func PrepareActionConfig(namespace string, useDefaultNamespace bool) (*action.Configuration, *models.ModelError) {
+func prepareActionConfig(namespace string, useDefaultNamespace bool) (*action.Configuration, *models.ModelError) {
 	config, err := cluster.GetConfig()
 	if err != nil {
 		return nil, &models.ModelError{Code: 500, Message: "Failed to get cluster config"}
