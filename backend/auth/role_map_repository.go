@@ -3,7 +3,9 @@ package auth
 import (
 	"errors"
 	"log"
+	"os"
 	"sync"
+
 	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"gopkg.in/yaml.v2"
@@ -23,12 +25,24 @@ var (
 
 func GetInstance() (*RoleMapRepository, error) {
 	once.Do(func() {
-		roleMap, subroleMap := GetRoleMapConfig("default", "role-map")
+		roleMapNamespace := os.Getenv("ROLEMAP_NAMESPACE")
+		if roleMapNamespace == "" {
+			log.Printf("ROLEMAP_NAMESPACE not set, using default namespace")
+			roleMapNamespace = "default"
+		}
+
+		roleMapName := os.Getenv("ROLEMAP_NAME")
+		if roleMapName == "" {
+			log.Printf("ROLEMAP_NAME not set, using default name")
+			roleMapName = "role-mapper"
+		}
+
+		roleMap, subroleMap := GetRoleMapConfig(roleMapNamespace, roleMapName)
 		if roleMap == nil {
 			log.Printf("Failed to initialize RoleMapRepository")
 			return
 		}
-		instance := &RoleMapRepository{RoleMap: roleMap, SubroleMap: subroleMap}
+		instance = &RoleMapRepository{RoleMap: roleMap, SubroleMap: subroleMap}
 
 		log.Printf("RoleMapRepository initialized with %d roles %d subroles", len(instance.RoleMap), len(instance.SubroleMap))
 	})
@@ -182,17 +196,18 @@ func GetRoleMapConfig (namespace string, name string) (map[string]*models.Role, 
 	subroleMapData, foundSubRoleMap, err2 := unstructured.NestedString(details.Object, "data", "subrole-map")
 	subroleMap := make(map[string]*models.Role)
 
-	if foundSubRoleMap && err2 == nil {
+	if !foundSubRoleMap || err2 != nil {
+		log.Printf("Error retrieving subroleMap data")
+	} else {
 		err2 = yaml.Unmarshal([]byte(subroleMapData), &subroleMap)
 		if err2 != nil {
 			log.Printf("Error parsing subroleMap data: %v", err)
 			// No return as subroleMap is optional roleMap can be used without it
 		}
 
-		// clear subrole map, can't use it
 		if hasCycle(subroleMap) {
 			log.Printf("Cycle detected in subrole map")
-			subroleMap = make(map[string]*models.Role)
+			subroleMap = make(map[string]*models.Role) // clear subrole map, can't use it
 		}
 	}
 
