@@ -159,11 +159,17 @@ func dfs(roleName string, roleMap map[string]*models.Role, visitState map[string
 	visitState[roleName] = visiting
 
 	// visit all subroles
-	for _, subrole := range roleMap[roleName].Subroles {
-		if dfs(subrole, roleMap, visitState) {
-			return true
-		}
-	}
+	role, exists := roleMap[roleName]
+    if !exists || role == nil {
+        visitState[roleName] = visited
+        return false
+    }
+
+    for _, subrole := range role.Subroles {
+        if dfs(subrole, roleMap, visitState) {
+            return true
+        }
+    }
 
 	visitState[roleName] = visited
 	return false
@@ -178,9 +184,8 @@ func GetRoleMapConfig (namespace string, name string) (map[string]*models.Role, 
 	}
 
 	details := (*res.ResourceDetails).(*unstructured.Unstructured)
-	
-	roleMapData, foundRoleMap, err2 := unstructured.NestedString(details.Object, "data", "role-map")
 
+	roleMapData, foundRoleMap, err2 := unstructured.NestedString(details.Object, "data", "role-map")
 	if err2 != nil || !foundRoleMap {
 		log.Printf("Error retrieving roleMap data: %v", err)
 		return nil, nil
