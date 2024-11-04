@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	sw "github.com/ZPI-2024-25/KubernetesAccessManager/api"
+	"github.com/ZPI-2024-25/KubernetesAccessManager/auth"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
 	"github.com/gorilla/handlers"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/health"
@@ -20,6 +21,11 @@ func main() {
 		return
 	}
 
+	_, err = auth.GetInstance()
+	if err != nil {
+		log.Printf("Error when loading role map: %v\n", err)
+	}
+	
 	go func() {
 		log.Printf("health endpoints starting")
 		if err := healthServer.ListenAndServe(); err != nil {
@@ -39,6 +45,7 @@ func main() {
 		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
 		handlers.AllowedHeaders([]string{"Authorization", "Content-Type"}),
 	)
+
 	health.ServiceStatus.MarkAsUp()
 	log.Printf("marking application readiness as UP")
 	log.Fatal(http.ListenAndServe(":8080",  corsHandler(router)))

@@ -3,11 +3,13 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/ZPI-2024-25/KubernetesAccessManager/auth"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"github.com/gorilla/mux"
-	"net/http"
+	"k8s.io/utils/env"
 )
 
 func GetResourceController(w http.ResponseWriter, r *http.Request) {
@@ -86,16 +88,31 @@ func handleResourceOperation(w http.ResponseWriter, r *http.Request, opType mode
 }
 
 func setJSONCTAndAuth(w http.ResponseWriter, r *http.Request, operation models.Operation) *models.ModelError {
+	// temporary solution to disable auth if we don't have keycloak running
+	if env.GetString("KEYCLOAK_URL", "") == "" {
+		return nil
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	token, err := auth.GetJWTTokenFromHeader(r)
-	if err != nil || !auth.IsTokenValid(token) {
+	isValid, claims := auth.IsTokenValid(token)
+
+	if err != nil || !isValid {
 		return &models.ModelError{
 			Code:    http.StatusUnauthorized,
 			Message: "Authentication failed",
 		}
 	}
 
-	authorized, err := auth.IsUserAuthorized(operation, getRoles(r))
+	roles, err := auth.ExtractRoles(claims)
+	if err != nil {
+		return &models.ModelError{
+			Code:    http.StatusBadRequest,
+			Message: "Roles not found in bearer token",
+		}
+	}
+
+	authorized, err := auth.IsUserAuthorized(operation, roles)
 	if err != nil {
 		return &models.ModelError{
 			Code:    http.StatusInternalServerError,
@@ -122,11 +139,6 @@ func getResourceName(r *http.Request) string {
 
 func getNamespace(r *http.Request) string {
 	return r.URL.Query().Get("namespace")
-}
-
-func getRoles(r *http.Request) []string {
-	// TODO - make sure this is the correct way to get roles from the request
-	return r.URL.Query()["roles"]
 }
 
 func writeJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {

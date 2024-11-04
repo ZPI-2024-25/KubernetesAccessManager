@@ -8,12 +8,12 @@ backend:
   replicaCount: 1
   image:
     repository: ninjashadow/kubernetes-access-manager-backend
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: "latest"
 
   env:
-    KEYCLOAK_URL: "keycloak.192.168.49.2.nip.io"
+    KEYCLOAK_URL: ""
 
   serviceAccount:
     create: true
@@ -56,7 +56,7 @@ frontend:
   replicaCount: 1
   image:
     repository: ninjashadow/kubernetes-access-manager-frontend
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 

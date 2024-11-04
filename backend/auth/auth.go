@@ -5,28 +5,31 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	// "os"
+	"os"
 	"strings"
 	"time"
-
 	"github.com/MicahParks/keyfunc"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"github.com/golang-jwt/jwt/v4"
-	// "github.com/joho/godotenv"
+	"github.com/joho/godotenv"
 )
 
 var jwks *keyfunc.JWKS
 
-// func init() {
-// 	err := godotenv.Load()
-// 	jwksURL := os.Getenv("KEYCLOAK_URL")
-// 	jwks, err = keyfunc.Get(jwksURL, keyfunc.Options{
-// 		RefreshInterval: time.Hour,
-// 	})
-// 	if err != nil {
-// 		panic(fmt.Sprintf("Failed to create JWKS: %s", err))
-// 	}
-// }
+func init() {
+	err := godotenv.Load()
+	jwksURL := os.Getenv("KEYCLOAK_URL")
+	if jwksURL == "" {
+		log.Println("KEYCLOAK_URL environment variable not set")
+		return
+	}
+	jwks, err = keyfunc.Get(jwksURL, keyfunc.Options{
+		RefreshInterval: time.Hour,
+	})
+	if err != nil {
+		panic(fmt.Sprintf("Failed to create JWKS: %s", err))
+	}
+}
 
 func GetJWTTokenFromHeader(r *http.Request) (string, error) {
 	authHeader := r.Header.Get("Authorization")
