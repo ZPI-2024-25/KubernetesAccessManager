@@ -57,6 +57,7 @@ func GetInstance() (*RoleMapRepository, error) {
 func (rmr *RoleMapRepository) HasPermission(rolenames []string, operation *models.Operation) bool {
 	visited := make(map[string]interface{})
 	for _, role := range rolenames {
+		role := rmr.RoleMap[role]
 		if rmr.hasPermission(role, operation, visited) {
 			return true
 		}
@@ -64,8 +65,7 @@ func (rmr *RoleMapRepository) HasPermission(rolenames []string, operation *model
 	return false
 }
 
-func (rmr *RoleMapRepository) hasPermission(rolename string, operation *models.Operation, visited map[string]interface{}) bool {
-	role := rmr.RoleMap[rolename]
+func (rmr *RoleMapRepository) hasPermission(role *models.Role, operation *models.Operation, visited map[string]interface{}) bool {
 	if role == nil {
 		return false
 	}
@@ -83,41 +83,11 @@ func (rmr *RoleMapRepository) hasPermission(rolename string, operation *models.O
 	}
 
 	// Recursively check subroles, if any matches, return true
-	for _, subrole := range role.Subroles {
-		if _, exists := visited[subrole]; !exists {
-			if rmr.subHasPermission(subrole, operation, visited) {
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
-func (rmr *RoleMapRepository) subHasPermission(rolename string, operation *models.Operation, visited map[string]interface{}) bool {
-	visited[rolename] = nil
-
-	role := rmr.SubroleMap[rolename]
-	if role == nil {
-		return false
-	}
-
-	for _, deny := range role.Deny {
-		if deny.IsSuper(operation) {
-			return false
-		}
-	}
-
-	for _, permit := range role.Permit {
-		if permit.IsSuper(operation) {
-			return true
-		}
-	}
-
-	// Recursively check subroles, if any matches, return true
-	for _, subrole := range role.Subroles {
-		if _, exists := visited[subrole]; !exists {
-			if rmr.subHasPermission(subrole, operation, visited) {
+	for _, subroleName := range role.Subroles {
+		if _, exists := visited[subroleName]; !exists {
+			subrole := rmr.SubroleMap[subroleName]
+			visited[subroleName] = nil
+			if rmr.hasPermission(subrole, operation, visited) {
 				return true
 			}
 		}

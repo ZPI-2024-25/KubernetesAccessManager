@@ -133,70 +133,6 @@ func TestHasCycle(t *testing.T) {
 	}
 }
 
-func TestSubHasPermission(t *testing.T) {
-    // Define test cases
-    tests := []struct {
-        name       string
-        roleMap    map[string]*models.Role
-        subroleMap map[string]*models.Role
-        rolename   string
-        operation  *models.Operation
-        expected   bool
-    }{
-        {
-            name: "Permission granted",
-            roleMap: map[string]*models.Role{
-                "admin": {Subroles: []string{"user", "manager"}},
-            },
-            subroleMap: map[string]*models.Role{
-                "user":    {Permit: []models.Operation{{Type: "read", Resource: "resource1"}}},
-                "manager": {Subroles: []string{"user"}},
-            },
-            rolename:  "manager",
-            operation: &models.Operation{Type: "read", Resource: "resource1"},
-            expected:  true,
-        },
-        {
-            name: "Permission denied",
-            roleMap: map[string]*models.Role{
-                "admin": {Subroles: []string{"user", "manager"}},
-            },
-            subroleMap: map[string]*models.Role{
-                "user":    {Deny: []models.Operation{{Type: "read", Resource: "resource1"}}, Permit: []models.Operation{{Type: "read", Resource: "resource"}}},
-                "manager": {Subroles: []string{"user"}},
-            },
-            rolename:  "manager",
-            operation: &models.Operation{Type: "read", Resource: "resource1"},
-            expected:  false,
-        },
-        {
-            name: "Role not found",
-            roleMap: map[string]*models.Role{
-                "admin": {Subroles: []string{"user", "manager"}},
-            },
-            subroleMap: map[string]*models.Role{
-                "user":    {Permit: []models.Operation{{Type: "read", Resource: "resource1"}}},
-                "manager": {Subroles: []string{"user"}},
-            },
-            rolename:  "nonexistent",
-            operation: &models.Operation{Type: "read", Resource: "resource1"},
-            expected:  false,
-        },
-    }
-
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            rmr := &RoleMapRepository{
-                RoleMap:    tt.roleMap,
-                SubroleMap: tt.subroleMap,
-            }
-            visited := make(map[string]interface{})
-            result := rmr.subHasPermission(tt.rolename, tt.operation, visited)
-            assert.Equal(t, tt.expected, result)
-        })
-    }
-}
-
 func TestHasPermission(t *testing.T) {
 	tests := []struct {
         name       string
@@ -282,7 +218,8 @@ func TestHasPermission(t *testing.T) {
                 SubroleMap: tt.subroleMap,
             }
             visited := make(map[string]interface{})
-            result := rmr.hasPermission(tt.rolename, tt.operation, visited)
+            role := rmr.RoleMap[tt.rolename]
+            result := rmr.hasPermission(role, tt.operation, visited)
             assert.Equal(t, tt.expected, result)
         })
     }

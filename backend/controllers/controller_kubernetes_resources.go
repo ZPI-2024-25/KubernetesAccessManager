@@ -68,7 +68,7 @@ func handleResourceOperation(w http.ResponseWriter, r *http.Request, opType mode
 		Type:      opType,
 	}
 
-	if err := setJSONCTAndAuth(w, r, operation); err != nil {
+	if err := authenticateAndAuthorize(w, r, operation); err != nil {
 		writeJSONResponse(w, int(err.Code), err)
 		return
 	}
@@ -87,13 +87,13 @@ func handleResourceOperation(w http.ResponseWriter, r *http.Request, opType mode
 	writeJSONResponse(w, statusCode, result)
 }
 
-func setJSONCTAndAuth(w http.ResponseWriter, r *http.Request, operation models.Operation) *models.ModelError {
+func authenticateAndAuthorize(w http.ResponseWriter, r *http.Request, operation models.Operation) *models.ModelError {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	
 	// temporary solution to disable auth if we don't have keycloak running
 	if env.GetString("KEYCLOAK_URL", "") == "" {
 		return nil
 	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	token, err := auth.GetJWTTokenFromHeader(r)
 	isValid, claims := auth.IsTokenValid(token)
 
