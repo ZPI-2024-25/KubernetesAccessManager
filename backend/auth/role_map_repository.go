@@ -55,7 +55,7 @@ func GetInstance() (*RoleMapRepository, error) {
 }
 
 func (rmr *RoleMapRepository) HasPermission(rolenames []string, operation *models.Operation) bool {
-	visited := make(map[string]interface{})
+	visited := make(map[string]struct{})
 	for _, role := range rolenames {
 		role := rmr.RoleMap[role]
 		if rmr.hasPermission(role, operation, visited) {
@@ -65,7 +65,7 @@ func (rmr *RoleMapRepository) HasPermission(rolenames []string, operation *model
 	return false
 }
 
-func (rmr *RoleMapRepository) hasPermission(role *models.Role, operation *models.Operation, visited map[string]interface{}) bool {
+func (rmr *RoleMapRepository) hasPermission(role *models.Role, operation *models.Operation, visited map[string]struct{}) bool {
 	if role == nil {
 		return false
 	}
@@ -86,7 +86,7 @@ func (rmr *RoleMapRepository) hasPermission(role *models.Role, operation *models
 	for _, subroleName := range role.Subroles {
 		if _, exists := visited[subroleName]; !exists {
 			subrole := rmr.SubroleMap[subroleName]
-			visited[subroleName] = nil
+			visited[subroleName] = struct{}{}
 			if rmr.hasPermission(subrole, operation, visited) {
 				return true
 			}

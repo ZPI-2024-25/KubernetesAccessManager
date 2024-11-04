@@ -217,7 +217,7 @@ func TestHasPermission(t *testing.T) {
                 RoleMap:    tt.roleMap,
                 SubroleMap: tt.subroleMap,
             }
-            visited := make(map[string]interface{})
+            visited := make(map[string]struct{})
             role := rmr.RoleMap[tt.rolename]
             result := rmr.hasPermission(role, tt.operation, visited)
             assert.Equal(t, tt.expected, result)
