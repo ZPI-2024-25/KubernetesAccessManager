@@ -10,7 +10,7 @@ backend:
     repository: ninjashadow/kubernetes-access-manager-backend
     pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "latest"
+    tag: ""
 
   env:
     KEYCLOAK_URL: ""
