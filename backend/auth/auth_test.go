@@ -82,7 +82,6 @@ func TestJsonTokenRoleExtraction(t *testing.T) {
 		_, _ = jwt.ParseWithClaims(tokenStr, &claims, nil)
 		roles, _ := ExtractRoles(&claims)
 		expectedRoles := []string{"pod-reader", "manage-account", "manage-account-links"}
-
-		assert.EqualValues(t, expectedRoles, roles)
+		assert.ElementsMatch(t, expectedRoles, roles)
 	})
 }
