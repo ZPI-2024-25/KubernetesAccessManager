@@ -19,12 +19,8 @@ type Operation struct {
 }
 
 func (o *Operation) IsSuper(operation *Operation) bool {
-	if (o.Type == All || operation.Type == o.Type) &&  
-	(o.Resource == all || operation.Resource == o.Resource) &&
-	(o.Namespace == all || operation.Namespace == o.Namespace) {
-		return true
-	}
-
-	return false
+    return (o.Type == All || operation.Type == o.Type) &&
+           (o.Resource == All || operation.Resource == o.Resource) &&
+           (o.Namespace == All || operation.Namespace == o.Namespace)
 }
 
