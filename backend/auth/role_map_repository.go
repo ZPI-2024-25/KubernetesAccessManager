@@ -16,6 +16,7 @@ type RoleMapRepository struct {
 	// Subrole map is optional, if not provided, subroles will be ignored. Roles received in token are checked only with RoleMap
 	RoleMap map[string]*models.Role
 	SubroleMap map[string]*models.Role
+	flattenedMap map[string]map[string]map[string][]models.OperationType
 }
 
 var (
@@ -42,7 +43,10 @@ func GetInstance() (*RoleMapRepository, error) {
 			log.Printf("Failed to initialize RoleMapRepository")
 			return
 		}
-		instance = &RoleMapRepository{RoleMap: roleMap, SubroleMap: subroleMap}
+		instance = &RoleMapRepository{
+			RoleMap: roleMap, 
+			SubroleMap: subroleMap,
+		}
 
 		log.Printf("RoleMapRepository initialized with %d roles %d subroles", len(instance.RoleMap), len(instance.SubroleMap))
 	})
@@ -58,14 +62,98 @@ func (rmr *RoleMapRepository) HasPermission(rolenames []string, operation *model
 	visited := make(map[string]struct{})
 	for _, role := range rolenames {
 		role := rmr.RoleMap[role]
-		if rmr.hasPermission(role, operation, visited) {
+		if hasPermission(role, rmr.SubroleMap, operation, visited) {
 			return true
 		}
 	}
 	return false
 }
 
-func (rmr *RoleMapRepository) hasPermission(role *models.Role, operation *models.Operation, visited map[string]struct{}) bool {
+func (rmr *RoleMapRepository) AddFlattenedMap() {
+	rmr.flattenedMap = flattenRoleMap(rmr.RoleMap, rmr.SubroleMap)
+}
+
+
+func flattenRoleMap (roleMap map[string]*models.Role, subroleMap map[string]*models.Role) map[string]map[string]map[string][]models.OperationType{
+	flattenedMap := make(map[string]map[string]map[string][]models.OperationType)
+	for rolename, role := range roleMap {
+		oneRoleMap := flattenRole(role, subroleMap)
+		flattenedMap[rolename] = oneRoleMap
+	}
+	return flattenedMap
+}
+
+func flattenRole(role *models.Role, subroleMap map[string]*models.Role) map[string]map[string][]models.OperationType {
+	namespaces := findUsedOperationsInGraph(
+		role, 
+		subroleMap, 
+		func (op *models.Operation) string { return op.Namespace },
+		make(map[string]struct{}), 
+		make(map[string]struct{}),
+	)
+
+	resources := findUsedOperationsInGraph(
+		role, 
+		subroleMap, 
+		func (op *models.Operation) string { return op.Resource },
+		make(map[string]struct{}), 
+		make(map[string]struct{}),
+	)
+
+	opTypes := models.GetAllOperationTypes()
+
+	result := make(map[string]map[string][]models.OperationType)
+
+	for namespace := range namespaces {
+		result[namespace] = make(map[string][]models.OperationType)
+		for resource := range resources {
+			result[namespace][resource] = make([]models.OperationType, 0, len(opTypes))
+			for _, opType := range opTypes {
+				op := models.Operation{
+					Namespace: namespace,
+					Type: opType,
+					Resource: resource,
+				}
+
+				if hasPermission(role, subroleMap, &op, make(map[string]struct{})) {
+					result[namespace][resource] = append(result[namespace][resource], opType)
+				}
+			}
+		}
+	}
+
+	return result
+}
+
+type getFieldFromOp func(*models.Operation) string
+
+func findUsedOperationsInGraph(
+	role *models.Role,
+	subroleMap map[string]*models.Role, 
+	fieldFunction getFieldFromOp, 
+	values map[string]struct{}, 
+	visited map[string]struct{},
+) map[string]struct{}{
+	for _, op := range role.Deny {
+		value := fieldFunction(&op)
+		values[value] = struct{}{}
+	}
+
+	for _, op := range role.Permit {
+		value := fieldFunction(&op)
+		values[value] = struct{}{}
+	}
+
+	for _, subroleName := range role.Subroles {
+		subrole := subroleMap[subroleName]
+		findUsedOperationsInGraph(subrole, subroleMap, fieldFunction, values, visited)
+	}
+
+	return values
+}
+	
+
+func hasPermission(role *models.Role, subroleMap map[string]*models.Role, operation *models.Operation, visited map[string]struct{}) bool {
 	if role == nil {
 		return false
 	}
@@ -85,9 +173,9 @@ func (rmr *RoleMapRepository) hasPermission(role *models.Role, operation *models
 	// Recursively check subroles, if any matches, return true
 	for _, subroleName := range role.Subroles {
 		if _, exists := visited[subroleName]; !exists {
-			subrole := rmr.SubroleMap[subroleName]
+			subrole := subroleMap[subroleName]
 			visited[subroleName] = struct{}{}
-			if rmr.hasPermission(subrole, operation, visited) {
+			if hasPermission(subrole, subroleMap, operation, visited) {
 				return true
 			}
 		}

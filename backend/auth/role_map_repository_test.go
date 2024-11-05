@@ -219,7 +219,7 @@ func TestHasPermission(t *testing.T) {
             }
             visited := make(map[string]struct{})
             role := rmr.RoleMap[tt.rolename]
-            result := rmr.hasPermission(role, tt.operation, visited)
+            result := hasPermission(role, rmr.SubroleMap, tt.operation, visited)
             assert.Equal(t, tt.expected, result)
         })
     }

@@ -18,6 +18,16 @@ type Operation struct {
 	Namespace string        `json:"namespace,omitempty"`
 }
 
+func GetAllOperationTypes() []OperationType {
+    return []OperationType{
+        Create,
+        Read,
+        Update,
+        Delete,
+        List,
+    }
+}
+
 func (o *Operation) IsSuper(operation *Operation) bool {
 	return (o.Type == All || operation.Type == o.Type) &&
 		(o.Resource == all || operation.Resource == o.Resource) &&
