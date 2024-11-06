@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Breadcrumb, Layout, Menu } from 'antd';
+import { Layout, Menu } from 'antd';
 import styles from './Menu.module.css';
 import { items } from '../../consts/MenuItem';
 import { MenuItem } from '../../types';
-import { Outlet } from 'react-router-dom';
+import Tab from '../Table/Tab.tsx'
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -12,6 +12,7 @@ const LeftMenu: React.FC = () => {
     const [currentPage, setCurrentPage] = useState<string>('');
     const [selectedKey, setSelectedKey] = useState<string>('1');
     const [asideWidth, setAsideWidth] = useState<number>(250);
+    const [currentResourceLabel, setCurrentResourceLabel] = useState<string>(''); // Стейт для текущей секции меню
     const username = 'k8_userjjjjjjjjjjjjjjjiiiiiiiii';
 
     const findItemByKey = (key: string, items: MenuItem[]): MenuItem | { sectionLabel: string, childLabel: string } | null => {
@@ -19,7 +20,6 @@ const LeftMenu: React.FC = () => {
             if (item.key === key) {
                 return item;
             }
-            // If the item has children, search recursively in children
             if (item.children) {
                 const found = findItemByKey(key, item.children);
                 if (found) {
@@ -36,8 +36,10 @@ const LeftMenu: React.FC = () => {
     const setCurrentPageFromItem = (item: MenuItem | { sectionLabel: string, childLabel: string }) => {
         if ('childLabel' in item) {
             setCurrentPage(`${item.sectionLabel}/${item.childLabel}`);
+            setCurrentResourceLabel(item.childLabel as string);  // Обновляем название выбранного объекта
         } else {
-            setCurrentPage(item.label);
+            setCurrentPage(item.label as string);
+            setCurrentResourceLabel(item.label as string);  // Обновляем название выбранного объекта
         }
     };
 
@@ -52,7 +54,6 @@ const LeftMenu: React.FC = () => {
         }
     };
 
-    // Effect to set the default page title based on the initially selected key
     useEffect(() => {
         const defaultItem = findItemByKey(selectedKey, items);
         if (defaultItem) {
@@ -85,14 +86,16 @@ const LeftMenu: React.FC = () => {
                     onClick={handleMenuClick}
                 />
             </Sider>
-            <Layout className={styles.contentLayout} style={{marginLeft: `${asideWidth}px`}}>
-                <Header className={styles.header}><p style={{paddingLeft: `${asideWidth}px`}}>{currentPage || 'name of page'}</p></Header>
+            <Layout className={styles.contentLayout} style={{ marginLeft: `${asideWidth}px` }}>
+                <Header className={styles.header}>
+                    <p style={{ paddingLeft: `${asideWidth}px` }}>
+                        {currentPage || 'name of page'}
+                    </p>
+                </Header>
                 <Content className={styles.content}>
-                    <Breadcrumb className={styles.breadcrumb}>
-                        <Breadcrumb.Item>lists</Breadcrumb.Item>
-                    </Breadcrumb>
                     <div className={styles.innerContent}>
-                        <Outlet />
+                        {/* Передаем currentResourceLabel в компонент Tab */}
+                        <Tab resourceLabel={currentResourceLabel} />
                     </div>
                 </Content>
                 <Footer className={styles.footer}>

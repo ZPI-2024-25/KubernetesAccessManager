@@ -1,11 +1,12 @@
 import "./MainPage.css"
-import {content} from "../consts/content.ts";
+import Tab from "../components/Table/Tab.tsx";
 
 
 export const MainPage = () => {
     return (
         <>
-            {content}
+            {/*{content}*/}
+            <Tab resourceLabel={""}/>
         </>
     );
 };
