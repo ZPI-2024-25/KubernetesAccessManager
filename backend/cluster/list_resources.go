@@ -353,17 +353,50 @@ func extractDesired(resource unstructured.Unstructured, resourceType string, res
 
 func extractExternalIp(resource unstructured.Unstructured, resourceType string, resourceDetailsTruncated *models.ResourceListResourceList) {
 	if slices.Contains(transposedResourceListColumns["external_ip"], resourceType) {
-		spec, specExists := resource.Object["spec"].(map[string]interface{})
-		if specExists {
-			if specExternalIPs, found := spec["externalIPs"].([]interface{}); found {
-				var externalIPs []string
-				for _, ip := range specExternalIPs {
-					if ipStr, ok := ip.(string); ok {
-						externalIPs = append(externalIPs, ipStr)
-					}
-				}
-				resourceDetailsTruncated.ExternalIp = strings.Join(externalIPs, ", ")
+		resourceDetailsTruncated.ExternalIp = "-"
+
+		serviceType, found, err := unstructured.NestedString(resource.Object, "spec", "type")
+		if err != nil || !found {
+			return
+		}
+
+		switch serviceType {
+		case "LoadBalancer":
+			ingressList, found, err := unstructured.NestedSlice(resource.Object, "status", "loadBalancer", "ingress")
+			if err != nil || !found || len(ingressList) == 0 {
+				resourceDetailsTruncated.ExternalIp = "<pending>"
+				return
 			}
+
+			var externalIPs []string
+			for _, ingress := range ingressList {
+				ingressMap, ok := ingress.(map[string]interface{})
+				if !ok {
+					continue
+				}
+				if ip, found, _ := unstructured.NestedString(ingressMap, "ip"); found {
+					externalIPs = append(externalIPs, ip)
+				} else if hostname, found, _ := unstructured.NestedString(ingressMap, "hostname"); found {
+					externalIPs = append(externalIPs, hostname)
+				}
+			}
+
+			if len(externalIPs) > 0 {
+				resourceDetailsTruncated.ExternalIp = strings.Join(externalIPs, ",")
+			} else {
+				resourceDetailsTruncated.ExternalIp = "<pending>"
+			}
+
+		case "NodePort", "ClusterIP":
+			externalIPs, found, err := unstructured.NestedStringSlice(resource.Object, "spec", "externalIPs")
+			if err != nil || !found || len(externalIPs) == 0 {
+				resourceDetailsTruncated.ExternalIp = "-"
+			} else {
+				resourceDetailsTruncated.ExternalIp = strings.Join(externalIPs, ",")
+			}
+
+		default:
+			resourceDetailsTruncated.ExternalIp = "<unknown>"
 		}
 	}
 }
@@ -398,7 +431,7 @@ func extractKeys(resource unstructured.Unstructured, resourceType string, resour
 			}
 		}
 
-		resourceDetailsTruncated.Keys = fmt.Sprintf("%v", keys)
+		resourceDetailsTruncated.Keys = strings.Join(keys, ", ")
 
 	}
 }
@@ -440,11 +473,8 @@ func extractLoadbalancers(resource unstructured.Unstructured, resourceType strin
 						if ip, ipFound := ingressMap["ip"].(string); ipFound {
 							loadBalancerAddresses = append(loadBalancerAddresses, ip)
 						}
-						if hostname, hostnameFound := ingressMap["hostname"].(string); hostnameFound {
-							loadBalancerAddresses = append(loadBalancerAddresses, hostname)
-						}
 					}
-					resourceDetailsTruncated.Loadbalancers = fmt.Sprintf("%v", loadBalancerAddresses)
+					resourceDetailsTruncated.Loadbalancers = strings.Join(loadBalancerAddresses, ", ")
 				}
 			}
 		}
