@@ -12,13 +12,16 @@ const LeftMenu: React.FC = () => {
     const [currentPage, setCurrentPage] = useState<string>('');
     const [selectedKey, setSelectedKey] = useState<string>('1');
     const [asideWidth, setAsideWidth] = useState<number>(250);
-    const [currentResourceLabel, setCurrentResourceLabel] = useState<string>(''); // Стейт для текущей секции меню
+    const [currentResourceLabel, setCurrentResourceLabel] = useState<string>(''); // for api request
     const username = 'k8_userjjjjjjjjjjjjjjjiiiiiiiii';
 
-    const findItemByKey = (key: string, items: MenuItem[]): MenuItem | { sectionLabel: string, childLabel: string } | null => {
+    const findItemByKey = (
+        key: string,
+        items: MenuItem[]
+    ): MenuItem | { sectionLabel: string; childLabel: string; resourceLabel: string } | null => {
         for (const item of items) {
             if (item.key === key) {
-                return item;
+                return { ...item, resourceLabel: item.resourcelabel as string };
             }
             if (item.children) {
                 const found = findItemByKey(key, item.children);
@@ -26,6 +29,7 @@ const LeftMenu: React.FC = () => {
                     return {
                         sectionLabel: item.label,
                         childLabel: (found as MenuItem).label,
+                        resourceLabel: (found as MenuItem).resourcelabel as string,
                     };
                 }
             }
@@ -33,15 +37,17 @@ const LeftMenu: React.FC = () => {
         return null;
     };
 
-    const setCurrentPageFromItem = (item: MenuItem | { sectionLabel: string, childLabel: string }) => {
+
+    const setCurrentPageFromItem = (item: MenuItem | { sectionLabel: string; childLabel: string; resourceLabel: string }) => {
         if ('childLabel' in item) {
             setCurrentPage(`${item.sectionLabel}/${item.childLabel}`);
-            setCurrentResourceLabel(item.childLabel as string);  // Обновляем название выбранного объекта
+            setCurrentResourceLabel(item.resourceLabel);
         } else {
             setCurrentPage(item.label as string);
-            setCurrentResourceLabel(item.label as string);  // Обновляем название выбранного объекта
+            setCurrentResourceLabel(item.resourcelabel as string);
         }
     };
+
 
     const handleMenuClick = (e: { key: string }) => {
         setSelectedKey(e.key);
@@ -94,7 +100,6 @@ const LeftMenu: React.FC = () => {
                 </Header>
                 <Content className={styles.content}>
                     <div className={styles.innerContent}>
-                        {/* Передаем currentResourceLabel в компонент Tab */}
                         <Tab resourceLabel={currentResourceLabel} />
                     </div>
                 </Content>

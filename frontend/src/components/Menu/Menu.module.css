@@ -87,17 +87,20 @@
 }
 
 .footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     text-align: center;
     color: white;
     background: #001529;
-    height: 64px;
+    height: 5%;
 }
 
 .ant-menu-inline .ant-menu-item {
     padding: 10px 16px;
 }
 .innerContent {
-    min-height: 360px;
+    height: 95%;
     border-radius: var(--borderRadiusLG);
     background: #fff;
     overflow-y: auto;

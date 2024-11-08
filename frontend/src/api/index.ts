@@ -1,1 +1,1 @@
-export * from './getApi.ts'
+export * from './listResources.ts'
