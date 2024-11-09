@@ -9,6 +9,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/utils/strings/slices"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -429,8 +430,9 @@ func extractKeys(resource unstructured.Unstructured, resourceType string, resour
 			}
 		}
 
-		resourceDetailsTruncated.Keys = strings.Join(keys, ", ")
+		sort.Strings(keys)
 
+		resourceDetailsTruncated.Keys = strings.Join(keys, ", ")
 	}
 }
 
@@ -442,6 +444,8 @@ func extractLabels(resource unstructured.Unstructured, resourceType string, reso
 			for key, value := range labels {
 				labelPairs = append(labelPairs, fmt.Sprintf("%s=%s", key, value))
 			}
+
+			sort.Strings(labelPairs)
 			resourceDetailsTruncated.Labels = strings.Join(labelPairs, ", ")
 		}
 
@@ -521,6 +525,7 @@ func extractNodeSelector(resource unstructured.Unstructured, resourceType string
 			selectorStrings = append(selectorStrings, fmt.Sprintf("%s=%s", key, value))
 		}
 
+		sort.Strings(selectorStrings)
 		resourceDetailsTruncated.NodeSelector = strings.Join(selectorStrings, ", ")
 	}
 }
@@ -690,6 +695,8 @@ func extractRoles(resource unstructured.Unstructured, resourceType string, resou
 					roles = append(roles, role)
 				}
 			}
+
+			sort.Strings(roles)
 			resourceDetailsTruncated.Roles = strings.Join(roles, ", ")
 		}
 	}
@@ -726,6 +733,8 @@ func extractSelector(resource unstructured.Unstructured, resourceType string, re
 				for key, value := range selector {
 					selectorOutput = append(selectorOutput, fmt.Sprintf("%s:%s", key, value))
 				}
+
+				sort.Strings(selectorOutput)
 				resourceDetailsTruncated.Selector = strings.Join(selectorOutput, ", ")
 			}
 		}

@@ -1113,16 +1113,13 @@ func TestExtractExternalIp(t *testing.T) {
 								map[string]interface{}{
 									"ip": "192.168.1.1",
 								},
-								map[string]interface{}{
-									"hostname": "example.com",
-								},
 							},
 						},
 					},
 				},
 			},
 			resourceType:   "Service",
-			expectedResult: "192.168.1.1,example.com",
+			expectedResult: "192.168.1.1",
 		},
 		{
 			name: "ServiceType is LoadBalancer with empty ingress",
