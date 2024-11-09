@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"sync"
-
 	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"gopkg.in/yaml.v2"
@@ -24,7 +23,7 @@ var (
 	once          sync.Once
 )
 
-func GetInstance() (*RoleMapRepository, error) {
+func GetRoleMapInstance() (*RoleMapRepository, error) {
 	once.Do(func() {
 		roleMapNamespace := os.Getenv("ROLEMAP_NAMESPACE")
 		if roleMapNamespace == "" {

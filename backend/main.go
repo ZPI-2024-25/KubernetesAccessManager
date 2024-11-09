@@ -20,7 +20,7 @@ func main() {
 		fmt.Printf("Error when loading config: %v\n", err)
 		return
 	}
-	_, err = auth.GetInstance()
+	_, err = auth.GetRoleMapInstance()
 	if err != nil {
 		log.Printf("Error when loading role map: %v\n", err)
 	}

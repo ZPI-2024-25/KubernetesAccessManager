@@ -71,7 +71,7 @@ func IsTokenValid(tokenStr string) (bool, *jwt.MapClaims) {
 }
 
 func IsUserAuthorized(operation models.Operation, roles []string) (bool, error) {
-	authService, err := GetInstance()
+	authService, err := GetRoleMapInstance()
 	if err != nil {
 		log.Printf("Error when loading auth service: %v\n", err)
 		return false, err
@@ -80,7 +80,7 @@ func IsUserAuthorized(operation models.Operation, roles []string) (bool, error) 
 	if authService.HasPermission(roles, &operation) {
 		return true, nil
 	}
-	
+
 	return false, nil
 }
 
