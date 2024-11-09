@@ -1590,3 +1590,1736 @@ func TestExtractNamespace(t *testing.T) {
 		})
 	}
 }
+
+func TestExtractNode(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['node']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "ConfigMap",
+			expectedResult: "",
+		},
+		{
+			name: "Spec does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "Pod",
+			expectedResult: "",
+		},
+		{
+			name: "nodeName does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{},
+				},
+			},
+			resourceType:   "Pod",
+			expectedResult: "",
+		},
+		{
+			name: "nodeName exists",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"nodeName": "node-1",
+					},
+				},
+			},
+			resourceType:   "Pod",
+			expectedResult: "node-1",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractNode(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.Node != tt.expectedResult {
+				t.Errorf("Expected Node to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.Node)
+			}
+		})
+	}
+}
+
+func TestExtractNodeSelector(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['node_selector']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "ConfigMap",
+			expectedResult: "",
+		},
+		{
+			name: "Spec does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "DaemonSet",
+			expectedResult: "None",
+		},
+		{
+			name: "NodeSelector does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"template": map[string]interface{}{
+							"spec": map[string]interface{}{},
+						},
+					},
+				},
+			},
+			resourceType:   "DaemonSet",
+			expectedResult: "None",
+		},
+		{
+			name: "NodeSelector is empty",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"template": map[string]interface{}{
+							"spec": map[string]interface{}{
+								"nodeSelector": map[string]interface{}{},
+							},
+						},
+					},
+				},
+			},
+			resourceType:   "DaemonSet",
+			expectedResult: "None",
+		},
+		{
+			name: "NodeSelector exists with labels",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"template": map[string]interface{}{
+							"spec": map[string]interface{}{
+								"nodeSelector": map[string]interface{}{
+									"disktype": "ssd",
+									"region":   "us-west",
+								},
+							},
+						},
+					},
+				},
+			},
+			resourceType:   "DaemonSet",
+			expectedResult: "disktype=ssd, region=us-west",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractNodeSelector(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.NodeSelector != tt.expectedResult {
+				t.Errorf("Expected NodeSelector to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.NodeSelector)
+			}
+		})
+	}
+}
+
+func TestExtractPods(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['pods']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "ConfigMap",
+			expectedResult: "",
+		},
+		{
+			name: "Status does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "Deployment",
+			expectedResult: "",
+		},
+		{
+			name: "Deployment with replicas and unavailableReplicas",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"status": map[string]interface{}{
+						"replicas":            int64(5),
+						"unavailableReplicas": int64(2),
+					},
+				},
+			},
+			resourceType:   "Deployment",
+			expectedResult: "3/5",
+		},
+		{
+			name: "Deployment with only replicas",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"status": map[string]interface{}{
+						"replicas": int64(5),
+					},
+				},
+			},
+			resourceType:   "Deployment",
+			expectedResult: "5/5",
+		},
+		{
+			name: "StatefulSet with availableReplicas and replicas",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"status": map[string]interface{}{
+						"availableReplicas": int64(3),
+						"replicas":          int64(5),
+					},
+				},
+			},
+			resourceType:   "StatefulSet",
+			expectedResult: "3/5",
+		},
+		{
+			name: "StatefulSet with only replicas",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"status": map[string]interface{}{
+						"replicas": int64(4),
+					},
+				},
+			},
+			resourceType:   "StatefulSet",
+			expectedResult: "0/4",
+		},
+		{
+			name: "DaemonSet with numberReady and desiredNumberScheduled",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"status": map[string]interface{}{
+						"numberReady":            int64(5),
+						"desiredNumberScheduled": int64(5),
+					},
+				},
+			},
+			resourceType:   "DaemonSet",
+			expectedResult: "5/5",
+		},
+		{
+			name: "DaemonSet missing numberReady",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"status": map[string]interface{}{
+						"desiredNumberScheduled": int64(3),
+					},
+				},
+			},
+			resourceType:   "DaemonSet",
+			expectedResult: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractPods(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.Pods != tt.expectedResult {
+				t.Errorf("Expected Pods to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.Pods)
+			}
+		})
+	}
+}
+
+func TestExtractPorts(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['ports']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "ConfigMap",
+			expectedResult: "",
+		},
+		{
+			name: "Spec does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "Service",
+			expectedResult: "",
+		},
+		{
+			name: "Ports does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{},
+				},
+			},
+			resourceType:   "Service",
+			expectedResult: "",
+		},
+		{
+			name: "Ports exist with various fields",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"ports": []interface{}{
+							map[string]interface{}{
+								"port":       int64(80),
+								"targetPort": int64(8080),
+								"protocol":   "TCP",
+							},
+							map[string]interface{}{
+								"port":     int64(443),
+								"protocol": "TCP",
+							},
+							map[string]interface{}{
+								"port":     int64(53),
+								"nodePort": int64(30053),
+								"protocol": "UDP",
+							},
+							map[string]interface{}{
+								"port": int64(22),
+							},
+						},
+					},
+				},
+			},
+			resourceType:   "Service",
+			expectedResult: "80:8080/TCP, 443/TCP, 53:30053/UDP, 22",
+		},
+		{
+			name: "Ports with missing protocol",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"ports": []interface{}{
+							map[string]interface{}{
+								"port": int64(80),
+							},
+						},
+					},
+				},
+			},
+			resourceType:   "Service",
+			expectedResult: "80",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractPorts(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.Ports != tt.expectedResult {
+				t.Errorf("Expected Ports to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.Ports)
+			}
+		})
+	}
+}
+
+func TestExtractProvisioner(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['provisioner']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "ConfigMap",
+			expectedResult: "",
+		},
+		{
+			name: "Provisioner field exists",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"provisioner": "kubernetes.io/aws-ebs",
+				},
+			},
+			resourceType:   "StorageClass",
+			expectedResult: "kubernetes.io/aws-ebs",
+		},
+		{
+			name: "Provisioner field does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "StorageClass",
+			expectedResult: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractProvisioner(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.Provisioner != tt.expectedResult {
+				t.Errorf("Expected Provisioner to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.Provisioner)
+			}
+		})
+	}
+}
+
+func TestExtractQos(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['qos']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "ConfigMap",
+			expectedResult: "",
+		},
+		{
+			name: "Status does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "Pod",
+			expectedResult: "Unknown",
+		},
+		{
+			name: "ResourceType in 'qos', status.qosClass not present",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "Pod",
+			expectedResult: "Unknown",
+		},
+		{
+			name: "ResourceType in 'qos', status.qosClass present",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"status": map[string]interface{}{
+						"qosClass": "BestEffort",
+					},
+				},
+			},
+			resourceType:   "Pod",
+			expectedResult: "BestEffort",
+		},
+		{
+			name: "ResourceType in 'qos', status.qosClass present as non-string (simulate error)",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"status": map[string]interface{}{
+						"qosClass": 123,
+					},
+				},
+			},
+			resourceType:   "Pod",
+			expectedResult: "Unknown",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractQos(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.Qos != tt.expectedResult {
+				t.Errorf("Expected Qos to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.Qos)
+			}
+		})
+	}
+}
+
+func TestExtractReady(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['ready']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "ConfigMap",
+			expectedResult: "",
+		},
+		{
+			name: "Status does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "ReplicaSet",
+			expectedResult: "0",
+		},
+		{
+			name: "readyReplicas does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"status": map[string]interface{}{},
+				},
+			},
+			resourceType:   "ReplicaSet",
+			expectedResult: "0",
+		},
+		{
+			name: "readyReplicas exists",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"status": map[string]interface{}{
+						"readyReplicas": int64(3),
+					},
+				},
+			},
+			resourceType:   "ReplicaSet",
+			expectedResult: "3",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractReady(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.Ready != tt.expectedResult {
+				t.Errorf("Expected Ready to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.Ready)
+			}
+		})
+	}
+}
+
+func TestExtractReclaimPolicy(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['reclaim_policy']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "ConfigMap",
+			expectedResult: "",
+		},
+		{
+			name: "reclaimPolicy field exists",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"reclaimPolicy": "Retain",
+				},
+			},
+			resourceType:   "StorageClass",
+			expectedResult: "Retain",
+		},
+		{
+			name: "reclaimPolicy field does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "StorageClass",
+			expectedResult: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractReclaimPolicy(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.ReclaimPolicy != tt.expectedResult {
+				t.Errorf("Expected ReclaimPolicy to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.ReclaimPolicy)
+			}
+		})
+	}
+}
+
+func TestExtractReplicas(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['replicas']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "ConfigMap",
+			expectedResult: "",
+		},
+		{
+			name: "Spec does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "Deployment",
+			expectedResult: "0",
+		},
+		{
+			name: "Replicas field does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{},
+				},
+			},
+			resourceType:   "Deployment",
+			expectedResult: "0",
+		},
+		{
+			name: "Replicas field exists",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"replicas": int64(3),
+					},
+				},
+			},
+			resourceType:   "Deployment",
+			expectedResult: "3",
+		},
+		{
+			name: "Replicas field exists but not int64",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"replicas": "3",
+					},
+				},
+			},
+			resourceType:   "Deployment",
+			expectedResult: "0",
+		},
+		{
+			name: "StatefulSet with replicas",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"replicas": int64(5),
+					},
+				},
+			},
+			resourceType:   "StatefulSet",
+			expectedResult: "5",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractReplicas(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.Replicas != tt.expectedResult {
+				t.Errorf("Expected Replicas to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.Replicas)
+			}
+		})
+	}
+}
+
+func TestExtractResource(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['resource']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "Deployment",
+			expectedResult: "",
+		},
+		{
+			name: "Spec does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "CustomResourceDefinition",
+			expectedResult: "",
+		},
+		{
+			name: "Names field does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{},
+				},
+			},
+			resourceType:   "CustomResourceDefinition",
+			expectedResult: "",
+		},
+		{
+			name: "Singular field exists",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"names": map[string]interface{}{
+							"singular": "myresource",
+						},
+					},
+				},
+			},
+			resourceType:   "CustomResourceDefinition",
+			expectedResult: "Myresource",
+		},
+		{
+			name: "Singular field missing",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"names": map[string]interface{}{},
+					},
+				},
+			},
+			resourceType:   "CustomResourceDefinition",
+			expectedResult: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractResource(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.Resource != tt.expectedResult {
+				t.Errorf("Expected Resource to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.Resource)
+			}
+		})
+	}
+}
+
+func TestExtractRestarts(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['restarts']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "Service",
+			expectedResult: "",
+		},
+		{
+			name: "Status does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "Pod",
+			expectedResult: "",
+		},
+		{
+			name: "ContainerStatuses does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"status": map[string]interface{}{},
+				},
+			},
+			resourceType:   "Pod",
+			expectedResult: "",
+		},
+		{
+			name: "ContainerStatuses exist with restart counts",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"status": map[string]interface{}{
+						"containerStatuses": []interface{}{
+							map[string]interface{}{
+								"restartCount": int64(2),
+							},
+							map[string]interface{}{
+								"restartCount": int64(1),
+							},
+						},
+					},
+				},
+			},
+			resourceType:   "Pod",
+			expectedResult: "3",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractRestarts(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.Restarts != tt.expectedResult {
+				t.Errorf("Expected Restarts to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.Restarts)
+			}
+		})
+	}
+}
+
+func TestExtractRoles(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['roles']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "Pod",
+			expectedResult: "",
+		},
+		{
+			name: "Labels do not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"metadata": map[string]interface{}{},
+				},
+			},
+			resourceType:   "Node",
+			expectedResult: "",
+		},
+		{
+			name: "No node-role labels",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"metadata": map[string]interface{}{
+						"labels": map[string]interface{}{
+							"app": "my-app",
+						},
+					},
+				},
+			},
+			resourceType:   "Node",
+			expectedResult: "",
+		},
+		{
+			name: "Node-role labels exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"metadata": map[string]interface{}{
+						"labels": map[string]interface{}{
+							"node-role.kubernetes.io/master": "",
+							"node-role.kubernetes.io/worker": "",
+						},
+					},
+				},
+			},
+			resourceType:   "Node",
+			expectedResult: "master, worker",
+		},
+		{
+			name: "Node-role label with value",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"metadata": map[string]interface{}{
+						"labels": map[string]interface{}{
+							"node-role.kubernetes.io/custom-role": "true",
+						},
+					},
+				},
+			},
+			resourceType:   "Node",
+			expectedResult: "custom-role",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractRoles(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.Roles != tt.expectedResult {
+				t.Errorf("Expected Roles to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.Roles)
+			}
+		})
+	}
+}
+
+func TestExtractSchedule(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['schedule']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "Deployment",
+			expectedResult: "",
+		},
+		{
+			name: "Spec does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "CronJob",
+			expectedResult: "",
+		},
+		{
+			name: "Schedule field does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{},
+				},
+			},
+			resourceType:   "CronJob",
+			expectedResult: "",
+		},
+		{
+			name: "Schedule field exists",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"schedule": "*/5 * * * *",
+					},
+				},
+			},
+			resourceType:   "CronJob",
+			expectedResult: "*/5 * * * *",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractSchedule(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.Schedule != tt.expectedResult {
+				t.Errorf("Expected Schedule to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.Schedule)
+			}
+		})
+	}
+}
+
+func TestExtractScope(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['scope']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "Deployment",
+			expectedResult: "",
+		},
+		{
+			name: "Spec does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "CustomResourceDefinition",
+			expectedResult: "",
+		},
+		{
+			name: "Scope field does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{},
+				},
+			},
+			resourceType:   "CustomResourceDefinition",
+			expectedResult: "",
+		},
+		{
+			name: "Scope field exists",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"scope": "Namespaced",
+					},
+				},
+			},
+			resourceType:   "CustomResourceDefinition",
+			expectedResult: "Namespaced",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractScope(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.Scope != tt.expectedResult {
+				t.Errorf("Expected Scope to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.Scope)
+			}
+		})
+	}
+}
+
+func TestExtractSelector(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['selector']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "ConfigMap",
+			expectedResult: "",
+		},
+		{
+			name: "Spec does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "Service",
+			expectedResult: "",
+		},
+		{
+			name: "Selector field does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{},
+				},
+			},
+			resourceType:   "Service",
+			expectedResult: "",
+		},
+		{
+			name: "Selector field exists",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"selector": map[string]interface{}{
+							"app":   "my-app",
+							"tier":  "frontend",
+							"track": "stable",
+						},
+					},
+				},
+			},
+			resourceType:   "Service",
+			expectedResult: "app:my-app, tier:frontend, track:stable",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractSelector(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.Selector != tt.expectedResult {
+				t.Errorf("Expected Selector to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.Selector)
+			}
+		})
+	}
+}
+
+func TestExtractSize(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['size']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "ConfigMap",
+			expectedResult: "",
+		},
+		{
+			name: "Spec does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "PersistentVolumeClaim",
+			expectedResult: "",
+		},
+		{
+			name: "Size field does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{},
+				},
+			},
+			resourceType:   "PersistentVolumeClaim",
+			expectedResult: "",
+		},
+		{
+			name: "Size field exists",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"resources": map[string]interface{}{
+							"requests": map[string]interface{}{
+								"storage": "10Gi",
+							},
+						},
+					},
+				},
+			},
+			resourceType:   "PersistentVolumeClaim",
+			expectedResult: "10Gi",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractSize(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.Size != tt.expectedResult {
+				t.Errorf("Expected Size to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.Size)
+			}
+		})
+	}
+}
+
+func TestExtractStatus(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['status']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "ConfigMap",
+			expectedResult: "",
+		},
+		{
+			name:           "ResourceType is Pod, status does not exist",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "Pod",
+			expectedResult: "",
+		},
+		{
+			name: "ResourceType is Pod, phase does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"status": map[string]interface{}{},
+				},
+			},
+			resourceType:   "Pod",
+			expectedResult: "",
+		},
+		{
+			name: "ResourceType is Pod, phase exists",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"status": map[string]interface{}{
+						"phase": "Running",
+					},
+				},
+			},
+			resourceType:   "Pod",
+			expectedResult: "Running",
+		},
+		{
+			name: "ResourceType is PersistentVolumeClaim, phase exists",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"status": map[string]interface{}{
+						"phase": "Bound",
+					},
+				},
+			},
+			resourceType:   "PersistentVolumeClaim",
+			expectedResult: "Bound",
+		},
+		{
+			name: "ResourceType is Namespace, phase exists",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"status": map[string]interface{}{
+						"phase": "Active",
+					},
+				},
+			},
+			resourceType:   "Namespace",
+			expectedResult: "Active",
+		},
+		{
+			name: "ResourceType is PersistentVolume, phase exists",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"status": map[string]interface{}{
+						"phase": "Bound",
+					},
+				},
+			},
+			resourceType:   "PersistentVolume",
+			expectedResult: "Bound",
+		},
+		{
+			name:           "ResourceType is Service, status does not exist",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "Service",
+			expectedResult: "",
+		},
+		{
+			name: "Service type is LoadBalancer, no ingresses",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"type": "LoadBalancer",
+					},
+					"status": map[string]interface{}{},
+				},
+			},
+			resourceType:   "Service",
+			expectedResult: "Pending",
+		},
+		{
+			name: "Service type is LoadBalancer, with ingresses",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"type": "LoadBalancer",
+					},
+					"status": map[string]interface{}{
+						"loadBalancer": map[string]interface{}{
+							"ingress": []interface{}{
+								map[string]interface{}{
+									"ip": "192.168.1.1",
+								},
+							},
+						},
+					},
+				},
+			},
+			resourceType:   "Service",
+			expectedResult: "Active",
+		},
+		{
+			name: "Service type is ClusterIP",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"type": "ClusterIP",
+					},
+					"status": map[string]interface{}{},
+				},
+			},
+			resourceType:   "Service",
+			expectedResult: "Active",
+		},
+		{
+			name: "Service type unknown",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"type": "Unknown",
+					},
+					"status": map[string]interface{}{},
+				},
+			},
+			resourceType:   "Service",
+			expectedResult: "Active",
+		},
+		{
+			name: "Service type LoadBalancer, error in unstructured.NestedSlice",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"type": "LoadBalancer",
+					},
+					"status": map[string]interface{}{
+						"loadBalancer": "invalid",
+					},
+				},
+			},
+			resourceType:   "Service",
+			expectedResult: "Unknown",
+		},
+		{
+			name: "Service type LoadBalancer, ingresses is empty",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"type": "LoadBalancer",
+					},
+					"status": map[string]interface{}{
+						"loadBalancer": map[string]interface{}{
+							"ingress": []interface{}{},
+						},
+					},
+				},
+			},
+			resourceType:   "Service",
+			expectedResult: "Pending",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractStatus(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.Status != tt.expectedResult {
+				t.Errorf("Expected Status to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.Status)
+			}
+		})
+	}
+}
+
+func TestExtractStorageClass(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['storage_class']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "Deployment",
+			expectedResult: "",
+		},
+		{
+			name: "Spec does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "PersistentVolumeClaim",
+			expectedResult: "",
+		},
+		{
+			name: "storageClassName field does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{},
+				},
+			},
+			resourceType:   "PersistentVolumeClaim",
+			expectedResult: "",
+		},
+		{
+			name: "storageClassName field exists",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"storageClassName": "fast-storage",
+					},
+				},
+			},
+			resourceType:   "PersistentVolumeClaim",
+			expectedResult: "fast-storage",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractStorageClass(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.StorageClass != tt.expectedResult {
+				t.Errorf("Expected StorageClass to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.StorageClass)
+			}
+		})
+	}
+}
+
+func TestExtractSuspend(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['suspend']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "Deployment",
+			expectedResult: "",
+		},
+		{
+			name: "Spec does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "CronJob",
+			expectedResult: "",
+		},
+		{
+			name: "suspend field does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{},
+				},
+			},
+			resourceType:   "CronJob",
+			expectedResult: "",
+		},
+		{
+			name: "suspend field exists (true)",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"suspend": true,
+					},
+				},
+			},
+			resourceType:   "CronJob",
+			expectedResult: "true",
+		},
+		{
+			name: "suspend field exists (false)",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"suspend": false,
+					},
+				},
+			},
+			resourceType:   "CronJob",
+			expectedResult: "false",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractSuspend(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.Suspend != tt.expectedResult {
+				t.Errorf("Expected Suspend to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.Suspend)
+			}
+		})
+	}
+}
+
+func TestExtractTaints(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['taints']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "Pod",
+			expectedResult: "",
+		},
+		{
+			name: "Spec does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "Node",
+			expectedResult: "",
+		},
+		{
+			name: "taints field does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{},
+				},
+			},
+			resourceType:   "Node",
+			expectedResult: "0",
+		},
+		{
+			name: "taints field exists with taints",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"taints": []interface{}{
+							map[string]interface{}{
+								"key":    "key1",
+								"value":  "value1",
+								"effect": "NoSchedule",
+							},
+							map[string]interface{}{
+								"key":    "key2",
+								"value":  "value2",
+								"effect": "NoExecute",
+							},
+						},
+					},
+				},
+			},
+			resourceType:   "Node",
+			expectedResult: "2",
+		},
+		{
+			name: "taints field exists but empty",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"taints": []interface{}{},
+					},
+				},
+			},
+			resourceType:   "Node",
+			expectedResult: "0",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractTaints(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.Taints != tt.expectedResult {
+				t.Errorf("Expected Taints to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.Taints)
+			}
+		})
+	}
+}
+
+func TestExtractType(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['type']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "ConfigMap",
+			expectedResult: "",
+		},
+		{
+			name: "Spec does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "Service",
+			expectedResult: "",
+		},
+		{
+			name: "ResourceType is Secret, type field exists",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"type": "Opaque",
+				},
+			},
+			resourceType:   secretString,
+			expectedResult: "Opaque",
+		},
+		{
+			name: "ResourceType is Secret, type field does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   secretString,
+			expectedResult: "",
+		},
+		{
+			name: "ResourceType is not Secret, spec.type exists",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"type": "LoadBalancer",
+					},
+				},
+			},
+			resourceType:   "Service",
+			expectedResult: "LoadBalancer",
+		},
+		{
+			name: "ResourceType is not Secret, spec.type does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{},
+				},
+			},
+			resourceType:   "Service",
+			expectedResult: "",
+		},
+		{
+			name: "ResourceType is not Secret, spec does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "Service",
+			expectedResult: "",
+		},
+		{
+			name: "Type field exists but wrong type",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"type": 123,
+				},
+			},
+			resourceType:   secretString,
+			expectedResult: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractType(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.Type_ != tt.expectedResult {
+				t.Errorf("Expected Type_ to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.Type_)
+			}
+		})
+	}
+}
+
+func TestExtractVersion(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       unstructured.Unstructured
+		resourceType   string
+		expectedResult string
+	}{
+		{
+			name:           "ResourceType not in transposedResourceListColumns['version']",
+			resource:       unstructured.Unstructured{},
+			resourceType:   "Service",
+			expectedResult: "",
+		},
+		{
+			name: "ResourceType is Node, status.nodeInfo.kubeletVersion exists",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"status": map[string]interface{}{
+						"nodeInfo": map[string]interface{}{
+							"kubeletVersion": "v1.20.4",
+						},
+					},
+				},
+			},
+			resourceType:   nodeString,
+			expectedResult: "v1.20.4",
+		},
+		{
+			name: "ResourceType is Node, status.nodeInfo does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"status": map[string]interface{}{},
+				},
+			},
+			resourceType:   nodeString,
+			expectedResult: "",
+		},
+		{
+			name: "ResourceType is Node, status does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   nodeString,
+			expectedResult: "",
+		},
+		{
+			name: "ResourceType is CustomResourceDefinition, spec.versions exists with storage true",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"versions": []interface{}{
+							map[string]interface{}{
+								"name":    "v1",
+								"storage": false,
+							},
+							map[string]interface{}{
+								"name":    "v1beta1",
+								"storage": true,
+							},
+						},
+					},
+				},
+			},
+			resourceType:   "CustomResourceDefinition",
+			expectedResult: "v1beta1",
+		},
+		{
+			name: "ResourceType is CustomResourceDefinition, spec.versions exists but no storage true",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"versions": []interface{}{
+							map[string]interface{}{
+								"name":    "v1",
+								"storage": false,
+							},
+							map[string]interface{}{
+								"name":    "v1beta1",
+								"storage": false,
+							},
+						},
+					},
+				},
+			},
+			resourceType:   "CustomResourceDefinition",
+			expectedResult: "",
+		},
+		{
+			name: "ResourceType is CustomResourceDefinition, spec.versions does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{},
+				},
+			},
+			resourceType:   "CustomResourceDefinition",
+			expectedResult: "",
+		},
+		{
+			name: "ResourceType is CustomResourceDefinition, spec does not exist",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{},
+			},
+			resourceType:   "CustomResourceDefinition",
+			expectedResult: "",
+		},
+		{
+			name: "ResourceType is CustomResourceDefinition, version name missing",
+			resource: unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"spec": map[string]interface{}{
+						"versions": []interface{}{
+							map[string]interface{}{
+								"storage": true,
+							},
+						},
+					},
+				},
+			},
+			resourceType:   "CustomResourceDefinition",
+			expectedResult: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resourceDetailsTruncated := &models.ResourceListResourceList{}
+
+			extractVersion(tt.resource, tt.resourceType, resourceDetailsTruncated)
+
+			if resourceDetailsTruncated.Version != tt.expectedResult {
+				t.Errorf("Expected Version to be '%s', got '%s'", tt.expectedResult, resourceDetailsTruncated.Version)
+			}
+		})
+	}
+}

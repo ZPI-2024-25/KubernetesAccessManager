@@ -376,8 +376,6 @@ func extractExternalIp(resource unstructured.Unstructured, resourceType string, 
 				}
 				if ip, found, _ := unstructured.NestedString(ingressMap, "ip"); found {
 					externalIPs = append(externalIPs, ip)
-				} else if hostname, found, _ := unstructured.NestedString(ingressMap, "hostname"); found {
-					externalIPs = append(externalIPs, hostname)
 				}
 			}
 
@@ -586,7 +584,7 @@ func extractPorts(resource unstructured.Unstructured, resourceType string, resou
 						portStrings = append(portStrings, fmt.Sprintf("%d", int(portNumber)))
 					}
 				}
-				resourceDetailsTruncated.Ports = fmt.Sprintf("%v", portStrings)
+				resourceDetailsTruncated.Ports = strings.Join(portStrings, ", ")
 			}
 		}
 	}
@@ -602,38 +600,12 @@ func extractProvisioner(resource unstructured.Unstructured, resourceType string,
 
 func extractQos(resource unstructured.Unstructured, resourceType string, resourceDetailsTruncated *models.ResourceListResourceList) {
 	if slices.Contains(transposedResourceListColumns["qos"], resourceType) {
-		spec, specExists := resource.Object["spec"].(map[string]interface{})
-		qosClass := "BestEffort"
-
-		if specExists {
-			if containers, found := spec["containers"].([]interface{}); found {
-				for _, container := range containers {
-					containerMap := container.(map[string]interface{})
-					if resources, resExists := containerMap["resources"].(map[string]interface{}); resExists {
-						requests, reqExists := resources["requests"].(map[string]interface{})
-						limits, limExists := resources["limits"].(map[string]interface{})
-
-						if limExists && reqExists {
-							cpuRequest, cpuReqExists := requests["cpu"]
-							cpuLimit, cpuLimExists := limits["cpu"]
-							memoryRequest, memReqExists := requests["memory"]
-							memoryLimit, memLimExists := limits["memory"]
-
-							if cpuReqExists && cpuLimExists && memReqExists && memLimExists &&
-								cpuRequest == cpuLimit && memoryRequest == memoryLimit {
-								qosClass = "Guaranteed"
-							} else {
-								qosClass = "Burstable"
-							}
-						} else if reqExists {
-							qosClass = "Burstable"
-						}
-					}
-				}
-			}
+		qosClass, found, err := unstructured.NestedString(resource.Object, "status", "qosClass")
+		if err != nil || !found {
+			resourceDetailsTruncated.Qos = "Unknown"
+		} else {
+			resourceDetailsTruncated.Qos = qosClass
 		}
-
-		resourceDetailsTruncated.Qos = qosClass
 	}
 }
 
