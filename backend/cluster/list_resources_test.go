@@ -1,10 +1,114 @@
 package cluster
 
 import (
+	"context"
+	"errors"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/client-go/dynamic"
 	"testing"
 )
+
+type MockListResourceInterface struct {
+	dynamic.ResourceInterface
+	mock.Mock
+	ReturnedList  *unstructured.UnstructuredList
+	ReturnedError error
+}
+
+func (m *MockListResourceInterface) List(ctx context.Context, opts metav1.ListOptions) (*unstructured.UnstructuredList, error) {
+	return m.ReturnedList, m.ReturnedError
+}
+
+func MockUnstructuredList() *unstructured.UnstructuredList {
+	return &unstructured.UnstructuredList{
+		Items: []unstructured.Unstructured{
+			{
+				Object: map[string]interface{}{
+					"metadata": map[string]interface{}{
+						"name":      "resource1",
+						"namespace": "validNamespace",
+					},
+				},
+			},
+			{
+				Object: map[string]interface{}{
+					"metadata": map[string]interface{}{
+						"name":      "resource2",
+						"namespace": "validNamespace",
+					},
+				},
+			},
+		},
+	}
+}
+
+func TestListResourcesError(t *testing.T) {
+	mockGetResourceI := new(mock.Mock)
+	expectedModelError := &models.ModelError{Code: 404, Message: "Not found"}
+	mockGetResourceI.On("func1", "Pod", "validNamespace", "").Return(&MockListResourceInterface{}, expectedModelError)
+
+	getResourceI := func(resourceType string, namespace string, emptyNamespace string) (dynamic.ResourceInterface, *models.ModelError) {
+		args := mockGetResourceI.Called(resourceType, namespace, emptyNamespace)
+		return args.Get(0).(dynamic.ResourceInterface), args.Get(1).(*models.ModelError)
+	}
+
+	t.Run("Test ListResources Error", func(t *testing.T) {
+		result, err := ListResources("Pod", "validNamespace", getResourceI)
+		assert.NotNil(t, err)
+		assert.Equal(t, expectedModelError, err)
+		assert.Equal(t, models.ResourceList{}, result)
+	})
+}
+
+func TestListResourcesSuccess(t *testing.T) {
+	mockGetResourceI := new(mock.Mock)
+	mockResourceInterface := &MockListResourceInterface{
+		ReturnedList: MockUnstructuredList(),
+	}
+	mockGetResourceI.On("func1", "Pod", "validNamespace", "").
+		Return(mockResourceInterface, nil)
+
+	getResourceI := func(resourceType string, namespace string, emptyNamespace string) (dynamic.ResourceInterface, *models.ModelError) {
+		args := mockGetResourceI.Called(resourceType, namespace, emptyNamespace)
+		return args.Get(0).(dynamic.ResourceInterface), nil
+	}
+
+	t.Run("Test ListResources Success", func(t *testing.T) {
+		result, err := ListResources("Pod", "validNamespace", getResourceI)
+		assert.Nil(t, err)
+		assert.Equal(t, 2, len(result.ResourceList))
+		for _, resource := range result.ResourceList {
+			assert.Equal(t, "validNamespace", resource.Namespace)
+		}
+	})
+}
+
+func TestListResourcesErrorFromList(t *testing.T) {
+	mockGetResourceI := new(mock.Mock)
+	expectedError := errors.New("failed to list resources")
+	mockResourceInterface := &MockListResourceInterface{
+		ReturnedError: expectedError,
+	}
+	mockGetResourceI.On("func1", "Pod", "validNamespace", "").
+		Return(mockResourceInterface, nil)
+
+	getResourceI := func(resourceType string, namespace string, emptyNamespace string) (dynamic.ResourceInterface, *models.ModelError) {
+		args := mockGetResourceI.Called(resourceType, namespace, emptyNamespace)
+		return args.Get(0).(dynamic.ResourceInterface), nil
+	}
+
+	t.Run("Test ListResources Error from List", func(t *testing.T) {
+		result, err := ListResources("Pod", "validNamespace", getResourceI)
+		expectedModelError := &models.ModelError{Code: 500, Message: "Internal server error: " + expectedError.Error()}
+		assert.NotNil(t, err)
+		assert.Equal(t, expectedModelError, err)
+		assert.Equal(t, models.ResourceList{}, result)
+	})
+}
 
 func TestExtractActive(t *testing.T) {
 	tests := []struct {

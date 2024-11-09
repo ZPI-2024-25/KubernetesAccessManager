@@ -37,7 +37,7 @@ func ListResources(resourceType string, namespace string, getResourceInterface R
 	resources, listErr := resourceInterface.List(context.TODO(), metav1.ListOptions{})
 
 	if listErr != nil {
-		handleKubernetesError(listErr)
+		return models.ResourceList{}, handleKubernetesError(listErr)
 	}
 
 	var resourceList models.ResourceList
