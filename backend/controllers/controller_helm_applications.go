@@ -8,90 +8,76 @@ import (
 )
 
 func GetHelmReleaseController(w http.ResponseWriter, r *http.Request) {
-	setJSONContentType(w)
-
-	releaseName := getReleaseName(r)
-	namespace := getNamespace(r)
-
-	release, err := helm.GetHelmRelease(releaseName, namespace)
-	if err != nil {
-		writeJSONResponse(w, int(err.Code), err)
-		return
-	}
-
-	writeJSONResponse(w, http.StatusOK, release)
+	handleHelmOperation(w, r, models.Read, func(releaseName, namespace string) (interface{}, *models.ModelError) {
+		return helm.GetHelmRelease(releaseName, namespace)
+	})
 }
 
 func GetHelmReleaseHistoryController(w http.ResponseWriter, r *http.Request) {
-	setJSONContentType(w)
-
-	releaseName := getReleaseName(r)
-	namespace := getNamespace(r)
-
-	release, err := helm.GetHelmReleaseHistory(releaseName, namespace)
-	if err != nil {
-		writeJSONResponse(w, int(err.Code), err)
-		return
-	}
-
-	writeJSONResponse(w, http.StatusOK, release)
+	handleHelmOperation(w, r, models.Update, func(releaseName, namespace string) (interface{}, *models.ModelError) {
+		return helm.GetHelmReleaseHistory(releaseName, namespace)
+	})
 }
 
 func ListHelmReleasesController(w http.ResponseWriter, r *http.Request) {
-	setJSONContentType(w)
-
-	namespace := getNamespace(r)
-
-	releases, err := helm.ListHelmReleases(namespace)
-	if err != nil {
-		writeJSONResponse(w, int(err.Code), err)
-		return
-	}
-
-	writeJSONResponse(w, http.StatusOK, releases)
+	handleHelmOperation(w, r, models.List, func(releaseName, namespace string) (interface{}, *models.ModelError) {
+		return helm.ListHelmReleases(namespace)
+	})
 }
 
 func RollbackHelmReleaseController(w http.ResponseWriter, r *http.Request) {
-	setJSONContentType(w)
+	handleHelmOperation(w, r, models.Update, func(releaseName, namespace string) (interface{}, *models.ModelError) {
+		var version models.ReleaseNameRollbackBody
+		if !decodeJSONBody(r, &version) {
+			return nil, &models.ModelError{Code: http.StatusBadRequest, Message: "Invalid request body"}
+		}
+		if err := checkVersion(version.Version); err != nil {
+			return nil, err
+		}
 
-	releaseName := getReleaseName(r)
-	namespace := getNamespace(r)
-
-	var version models.ReleaseNameRollbackBody
-	if !decodeJSONBody(r, &version) {
-		return
-	}
-	err := checkVersion(version.Version)
-	if err != nil {
-		writeJSONResponse(w, int(err.Code), err)
-		return
-	}
-
-	release, err := helm.RollbackHelmRelease(releaseName, namespace, int(version.Version))
-	if err != nil {
-		writeJSONResponse(w, int(err.Code), err)
-		return
-	}
-
-	writeJSONResponse(w, http.StatusOK, release)
+		return helm.RollbackHelmRelease(releaseName, namespace, int(version.Version))
+	})
 }
 
 func UninstallHelmReleaseController(w http.ResponseWriter, r *http.Request) {
-	setJSONContentType(w)
+	handleHelmOperation(w, r, models.Delete, func(releaseName, namespace string) (interface{}, *models.ModelError) {
+		if err := helm.UninstallHelmRelease(releaseName, namespace); err != nil {
+			return nil, err
+		}
 
+		return models.Status{
+			Status:  "Success",
+			Code:    200,
+			Message: fmt.Sprintf("Release %s uninstalled successfully", releaseName),
+		}, nil
+	})
+}
+
+func handleHelmOperation(w http.ResponseWriter, r *http.Request, opType models.OperationType, operationFunc func(string, string) (interface{}, *models.ModelError)) {
 	releaseName := getReleaseName(r)
 	namespace := getNamespace(r)
 
-	err := helm.UninstallHelmRelease(releaseName, namespace)
+	operation := models.Operation{
+		Resource:  "helm",
+		Namespace: namespace,
+		Type:      opType,
+	}
+
+	if err := authenticateAndAuthorize(r, operation); err != nil {
+		writeJSONResponse(w, int(err.Code), err)
+		return
+	}
+
+	result, err := operationFunc(releaseName, namespace)
 	if err != nil {
 		writeJSONResponse(w, int(err.Code), err)
 		return
 	}
 
-	status := models.Status{
-		Status:  "Success",
-		Code:    200,
-		Message: fmt.Sprintf("Release %s uninstalled successfully", releaseName),
+	statusCode := http.StatusOK
+	if opType == models.Create {
+		statusCode = http.StatusCreated
 	}
-	writeJSONResponse(w, http.StatusOK, status)
+
+	writeJSONResponse(w, statusCode, result)
 }
