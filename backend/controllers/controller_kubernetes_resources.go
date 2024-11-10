@@ -1,13 +1,11 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/ZPI-2024-25/KubernetesAccessManager/auth"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
-	"github.com/gorilla/mux"
 	"k8s.io/utils/env"
 	"net/http"
 )
@@ -68,7 +66,7 @@ func handleResourceOperation(w http.ResponseWriter, r *http.Request, opType mode
 		Type:      opType,
 	}
 
-	if err := authenticateAndAuthorize(w, r, operation); err != nil {
+	if err := authenticateAndAuthorize(r, operation); err != nil {
 		writeJSONResponse(w, int(err.Code), err)
 		return
 	}
@@ -87,7 +85,7 @@ func handleResourceOperation(w http.ResponseWriter, r *http.Request, opType mode
 	writeJSONResponse(w, statusCode, result)
 }
 
-func authenticateAndAuthorize(w http.ResponseWriter, r *http.Request, operation models.Operation) *models.ModelError {
+func authenticateAndAuthorize(r *http.Request, operation models.Operation) *models.ModelError {
 	// temporary solution to disable auth if we don't have keycloak running
 	if env.GetString("KEYCLOAK_URL", "") == "" {
 		return nil
@@ -125,37 +123,4 @@ func authenticateAndAuthorize(w http.ResponseWriter, r *http.Request, operation 
 		}
 	}
 	return nil
-}
-
-func getResourceType(r *http.Request) string {
-	return mux.Vars(r)["resourceType"]
-}
-
-func getResourceName(r *http.Request) string {
-	return mux.Vars(r)["resourceName"]
-}
-
-func getNamespace(r *http.Request) string {
-	return r.URL.Query().Get("namespace")
-}
-
-func writeJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
-	if w.Header().Get("Content-Type") == "" {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	}
-	if statusCode != http.StatusOK {
-		w.WriteHeader(statusCode)
-	}
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	}
-}
-
-func decodeJSONBody(r *http.Request, dst interface{}) bool {
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(dst)
-	if err != nil {
-		return false
-	}
-	return true
 }

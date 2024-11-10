@@ -3,15 +3,15 @@ package auth
 import (
 	"errors"
 	"fmt"
+	"github.com/MicahParks/keyfunc"
+	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
-	"github.com/MicahParks/keyfunc"
-	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
-	"github.com/golang-jwt/jwt/v4"
-	"github.com/joho/godotenv"
 )
 
 var jwks *keyfunc.JWKS

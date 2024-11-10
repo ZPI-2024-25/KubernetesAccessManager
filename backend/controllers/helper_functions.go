@@ -28,15 +28,21 @@ func getReleaseName(r *http.Request) string {
 }
 
 func writeJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
-	w.WriteHeader(statusCode)
-	json.NewEncoder(w).Encode(data)
+	if w.Header().Get("Content-Type") == "" {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	}
+	if statusCode != http.StatusOK {
+		w.WriteHeader(statusCode)
+	}
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
 }
 
-func decodeJSONBody(w http.ResponseWriter, r *http.Request, dst interface{}) bool {
+func decodeJSONBody(r *http.Request, dst interface{}) bool {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(dst)
 	if err != nil {
-		writeJSONResponse(w, 400, &models.ModelError{Code: 400, Message: "Invalid request body"})
 		return false
 	}
 	return true

@@ -58,7 +58,7 @@ func RollbackHelmReleaseController(w http.ResponseWriter, r *http.Request) {
 	namespace := getNamespace(r)
 
 	var version models.ReleaseNameRollbackBody
-	if !decodeJSONBody(w, r, &version) {
+	if !decodeJSONBody(r, &version) {
 		return
 	}
 	err := checkVersion(version.Version)
