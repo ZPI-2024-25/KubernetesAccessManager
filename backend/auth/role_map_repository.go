@@ -25,17 +25,8 @@ var (
 
 func GetRoleMapInstance() (*RoleMapRepository, error) {
 	once.Do(func() {
-		roleMapNamespace := os.Getenv("ROLEMAP_NAMESPACE")
-		if roleMapNamespace == "" {
-			log.Printf("ROLEMAP_NAMESPACE not set, using default namespace")
-			roleMapNamespace = "default"
-		}
-
-		roleMapName := os.Getenv("ROLEMAP_NAME")
-		if roleMapName == "" {
-			log.Printf("ROLEMAP_NAME not set, using default name")
-			roleMapName = "role-mapper"
-		}
+		roleMapNamespace := getOrDefaultEnv("ROLEMAP_NAMESPACE", "default")
+		roleMapName := getOrDefaultEnv("ROLEMAP_NAME", "role-mapper")
 
 		roleMap, subroleMap := GetRoleMapConfig(roleMapNamespace, roleMapName)
 		if roleMap == nil {
@@ -55,6 +46,15 @@ func GetRoleMapInstance() (*RoleMapRepository, error) {
 	}
 
 	return instance, nil
+}
+
+func getOrDefaultEnv(key, defaultValue string) string {
+	val := os.Getenv(key)
+	if val == "" {
+		log.Printf("Environment variable %s not set, using default value %s", key, defaultValue)
+		return defaultValue
+	}
+	return val
 }
 
 func (rmr *RoleMapRepository) HasPermission(rolenames []string, operation *models.Operation) bool {

@@ -2,7 +2,6 @@ package auth
 
 import (
 	"testing"
-
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"github.com/stretchr/testify/assert"
 )

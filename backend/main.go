@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
 	sw "github.com/ZPI-2024-25/KubernetesAccessManager/api"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/auth"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
-	"github.com/gorilla/handlers"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/health"
-	"log"
-	"net/http"
+	"github.com/gorilla/handlers"
 )
 
 func main() {
@@ -43,5 +43,5 @@ func main() {
 	)
 	health.ServiceStatus.MarkAsUp()
 	log.Printf("marking application readiness as UP")
-	log.Fatal(http.ListenAndServe(":8080",  corsHandler(router)))
+	log.Fatal(http.ListenAndServe(":8080", corsHandler(router)))
 }

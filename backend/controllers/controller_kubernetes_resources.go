@@ -88,8 +88,6 @@ func handleResourceOperation(w http.ResponseWriter, r *http.Request, opType mode
 }
 
 func authenticateAndAuthorize(w http.ResponseWriter, r *http.Request, operation models.Operation) *models.ModelError {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	
 	// temporary solution to disable auth if we don't have keycloak running
 	if env.GetString("KEYCLOAK_URL", "") == "" {
 		return nil
