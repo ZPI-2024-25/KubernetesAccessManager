@@ -10,6 +10,7 @@ RUN go mod download
 COPY api/ api/
 COPY models/ models/
 COPY common/ common/
+COPY auth/ auth/
 COPY controllers/ controllers/
 COPY cluster/ cluster/
 COPY health/ health/
