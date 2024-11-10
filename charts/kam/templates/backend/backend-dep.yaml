@@ -32,6 +32,9 @@ spec:
             - name: http
               containerPort: {{ .Values.backend.service.port }}
               protocol: TCP
+          env:
+            - name: KEYCLOAK_URL
+              value: "{{ .Values.backend.env.KEYCLOAK_URL }}"
           livenessProbe:
             {{- toYaml .Values.backend.livenessProbe | nindent 12 }}
           readinessProbe:
