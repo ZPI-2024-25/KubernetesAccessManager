@@ -5,6 +5,7 @@ import (
 	"github.com/ZPI-2024-25/KubernetesAccessManager/helm"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"net/http"
+	"time"
 )
 
 func GetHelmReleaseController(w http.ResponseWriter, r *http.Request) {
@@ -41,15 +42,25 @@ func RollbackHelmReleaseController(w http.ResponseWriter, r *http.Request) {
 
 func UninstallHelmReleaseController(w http.ResponseWriter, r *http.Request) {
 	handleHelmOperation(w, r, models.Delete, func(releaseName, namespace string) (interface{}, *models.ModelError) {
-		if err := helm.UninstallHelmRelease(releaseName, namespace); err != nil {
+		timeout := 10 * time.Second
+		completed, err := helm.UninstallHelmRelease(releaseName, namespace, timeout)
+		if err != nil {
 			return nil, err
 		}
 
-		return models.Status{
-			Status:  "Success",
-			Code:    200,
-			Message: fmt.Sprintf("Release %s uninstalled successfully", releaseName),
-		}, nil
+		if completed {
+			return models.Status{
+				Status:  "Success",
+				Code:    200,
+				Message: fmt.Sprintf("Release %s uninstalled successfully", releaseName),
+			}, nil
+		} else {
+			return models.Status{
+				Status:  "Accepted",
+				Code:    202,
+				Message: fmt.Sprintf("Uninstalling release %s in progress", releaseName),
+			}, nil
+		}
 	})
 }
 
@@ -77,6 +88,9 @@ func handleHelmOperation(w http.ResponseWriter, r *http.Request, opType models.O
 	statusCode := http.StatusOK
 	if opType == models.Create {
 		statusCode = http.StatusCreated
+	} else if opType == models.Delete {
+		status := result.(models.Status)
+		statusCode = int(status.Code)
 	}
 
 	writeJSONResponse(w, statusCode, result)

@@ -47,6 +47,7 @@ func rollbackRelease(actionConfig *action.Configuration, name string, version in
 
 func uninstallRelease(actionConfig *action.Configuration, name string) (*release.UninstallReleaseResponse, error) {
 	uninstall := action.NewUninstall(actionConfig)
+	uninstall.Timeout = 300 * time.Second
 	response, err := uninstall.Run(name)
 	if err != nil {
 		return nil, err
