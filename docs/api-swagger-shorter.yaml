@@ -7,7 +7,7 @@ info:
     Some useful links:
     - [Jira](https://samuelus.atlassian.net/jira/software/projects/ZPI/boards/4)
     - [Confluence](https://samuelus.atlassian.net/wiki/spaces/ZPI/overview)
-  version: 0.0.4
+  version: 0.0.5
 servers:
   - url: http://localhost:8080/api/v1
 security:
@@ -526,7 +526,9 @@ components:
         resource_list:
           type: array
           description: List of resources, each containing the data for the specified columns.
+          minItems: 0
           items:
+            type: object
             properties:
               active:
                 type: string
@@ -660,6 +662,8 @@ components:
               version:
                 type: string
                 description: "Optional value for 'version'"
+      required:
+        - resource_list
     ResourceDetails:
       type: object
       properties:
