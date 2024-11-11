@@ -37,8 +37,6 @@ func main() {
 	log.Printf("Authentication method: %s", clusterSingleton.GetAuthenticationMethod())
 
 	router := sw.NewRouter()
-	health.ServiceStatus.MarkAsUp()
-	log.Printf("marking application readiness as UP")
 
 	corsHandler := handlers.CORS(
 		handlers.AllowedOrigins([]string{"*"}), // Otwiera na wszystkie domeny

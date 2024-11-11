@@ -14,7 +14,7 @@ func GetHelmReleaseController(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetHelmReleaseHistoryController(w http.ResponseWriter, r *http.Request) {
-	handleHelmOperation(w, r, models.Update, func(releaseName, namespace string) (interface{}, *models.ModelError) {
+	handleHelmOperation(w, r, models.Read, func(releaseName, namespace string) (interface{}, *models.ModelError) {
 		return helm.GetHelmReleaseHistory(releaseName, namespace)
 	})
 }
@@ -58,7 +58,7 @@ func handleHelmOperation(w http.ResponseWriter, r *http.Request, opType models.O
 	namespace := getNamespace(r)
 
 	operation := models.Operation{
-		Resource:  "helm",
+		Resource:  "Helm",
 		Namespace: namespace,
 		Type:      opType,
 	}
