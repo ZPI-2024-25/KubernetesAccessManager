@@ -42,7 +42,7 @@ func RollbackHelmReleaseController(w http.ResponseWriter, r *http.Request) {
 
 func UninstallHelmReleaseController(w http.ResponseWriter, r *http.Request) {
 	handleHelmOperation(w, r, models.Delete, func(releaseName, namespace string) (interface{}, *models.ModelError) {
-		timeout := 10 * time.Second
+		timeout := 5 * time.Second
 		completed, err := helm.UninstallHelmRelease(releaseName, namespace, timeout)
 		if err != nil {
 			return nil, err
