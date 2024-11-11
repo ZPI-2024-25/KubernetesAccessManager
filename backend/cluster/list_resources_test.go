@@ -116,7 +116,6 @@ func TestExtractActive(t *testing.T) {
 		resource                  unstructured.Unstructured
 		resourceType              string
 		expectedActive            string
-		transposedColumnsOverride map[string][]string
 	}{
 		{
 			name:           "ResourceType not in transposedResourceListColumns['active']",
