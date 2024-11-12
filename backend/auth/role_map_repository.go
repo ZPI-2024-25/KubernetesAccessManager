@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"sync"
+
 	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"gopkg.in/yaml.v2"
@@ -15,7 +16,7 @@ type RoleMapRepository struct {
 	// Subrole map is optional, if not provided, subroles will be ignored. Roles received in token are checked only with RoleMap
 	RoleMap map[string]*models.Role
 	SubroleMap map[string]*models.Role
-	flattenedMap map[string]map[string]map[string][]models.OperationType
+	flattenedMap map[string]map[string]map[string]map[models.OperationType]struct{}
 	flattenedCompiled bool
 }
 
@@ -34,18 +35,17 @@ func GetRoleMapInstance() (*RoleMapRepository, error) {
 			log.Printf("Failed to initialize RoleMapRepository")
 			return
 		}
+		permissionMatrix := createPermissionMatrix(roleMap, subroleMap)
 		instance = &RoleMapRepository{
 			RoleMap: roleMap, 
 			SubroleMap: subroleMap,
+			flattenedMap: permissionMatrix,
 		}
-
 		log.Printf("RoleMapRepository initialized with %d roles %d subroles", len(instance.RoleMap), len(instance.SubroleMap))
 	})
-
 	if instance == nil {
 		return nil, errors.New("failed to initialize RoleMapRepository")
 	}
-
 	return instance, nil
 }
 
@@ -59,23 +59,15 @@ func getOrDefaultEnv(key, defaultValue string) string {
 }
 
 func (rmr *RoleMapRepository) HasPermission(rolenames []string, operation *models.Operation) bool {
-	visited := make(map[string]struct{})
 	for _, role := range rolenames {
-		if rmr.flattenedCompiled {
-			if flatHasPermission(operation, rmr.flattenedMap[role]) {
+		if flatHasPermission(operation, rmr.flattenedMap[role]) {
 				return true
-			}
-		} else {
-			role := rmr.RoleMap[role]
-			if hasPermission(role, rmr.SubroleMap, operation, visited) {
-				return true
-			}
 		}
 	}
 	return false
 }
 
-func flatHasPermission(op *models.Operation, matrix map[string]map[string][]models.OperationType) bool {
+func flatHasPermission(op *models.Operation, matrix map[string]map[string]map[models.OperationType]struct{}) bool {
 	var namespace string
 	if _, exists := matrix[op.Namespace]; exists {
 		namespace = op.Namespace
@@ -89,12 +81,8 @@ func flatHasPermission(op *models.Operation, matrix map[string]map[string][]mode
 		resource = "*"
 	}
 
-	for _, opType := range matrix[namespace][resource] {
-		if opType == op.Type {
-			return true
-		}
-	}
-	return false
+	_, exists := matrix[namespace][resource][op.Type]
+	return exists
 }
 
 func createPermissionMatrix(
@@ -144,6 +132,19 @@ func addMatrix(m1 map[string]map[string]map[models.OperationType]struct{},
 	if x1 * y1 < x2 * y2 {
 		m1, m2 = m2, m1
 	}
+
+	ogns1 := make([]string, 0, len(m1))
+	for namespace := range m1 {
+		if _, exists := m2[namespace]; !exists {
+			ogns1 = append(ogns1, namespace)
+		}
+	}
+	ogres1 := make([]string, 0, len(m1["*"]))
+	for resource := range m1["*"] {
+		if _, exists := m2["*"][resource]; !exists {
+			ogres1 = append(ogres1, resource)
+		}
+	}
 	for namespace := range m2 {
 		if _, exists := m1[namespace]; !exists {
 			expandNamespaces(namespace, m1)
@@ -153,6 +154,12 @@ func addMatrix(m1 map[string]map[string]map[models.OperationType]struct{},
 		if _, exists := m1["*"][resource]; !exists {
 			expandResources(resource, m1)
 		}
+	}
+	for _, namespace := range ogns1 {
+		expandNamespaces(namespace, m2)
+	}
+	for _, resource := range ogres1 {
+		expandResources(resource, m2)
 	}
 	for namespace, resources := range m2 {
 		for resource, operations := range resources {
@@ -273,94 +280,6 @@ func expandResources(resource string, matrix map[string]map[string]map[models.Op
 		}
 	}
 }
-
-
-
-
-// 1. Macierz pozwoleń -> zaczynamy * * kopiujemy uprawnienia z ** do poszczególnych nam, resource type
-// 2. Deny -> odejmujemy od odpowiednich kolumn/wiersz uprawnienia
-
-// Dodawanie macierzy
-//
-
-func flattenRoleMap (roleMap map[string]*models.Role, subroleMap map[string]*models.Role) map[string]map[string]map[string][]models.OperationType{
-	flattenedMap := make(map[string]map[string]map[string][]models.OperationType)
-	for rolename, role := range roleMap {
-		oneRoleMap := flattenRole(role, subroleMap)
-		flattenedMap[rolename] = oneRoleMap
-	}
-	return flattenedMap
-}
-
-func flattenRole(role *models.Role, subroleMap map[string]*models.Role) map[string]map[string][]models.OperationType {
-	namespaces := findUsedOperationsInGraph(
-		role, 
-		subroleMap, 
-		func (op *models.Operation) string { return op.Namespace },
-		make(map[string]struct{}), 
-		make(map[string]struct{}),
-	)
-
-	resources := findUsedOperationsInGraph(
-		role, 
-		subroleMap, 
-		func (op *models.Operation) string { return op.Resource },
-		make(map[string]struct{}), 
-		make(map[string]struct{}),
-	)
-
-	opTypes := models.GetAllOperationTypes()
-
-	result := make(map[string]map[string][]models.OperationType)
-
-	for namespace := range namespaces {
-		result[namespace] = make(map[string][]models.OperationType)
-		for resource := range resources {
-			result[namespace][resource] = make([]models.OperationType, 0, len(opTypes))
-			for _, opType := range opTypes {
-				op := models.Operation{
-					Namespace: namespace,
-					Type: opType,
-					Resource: resource,
-				}
-
-				if hasPermission(role, subroleMap, &op, make(map[string]struct{})) {
-					result[namespace][resource] = append(result[namespace][resource], opType)
-				}
-			}
-		}
-	}
-
-	return result
-}
-
-type getFieldFromOp func(*models.Operation) string
-
-func findUsedOperationsInGraph(
-	role *models.Role,
-	subroleMap map[string]*models.Role, 
-	fieldFunction getFieldFromOp, 
-	values map[string]struct{}, 
-	visited map[string]struct{},
-) map[string]struct{}{
-	for _, op := range role.Deny {
-		value := fieldFunction(&op)
-		values[value] = struct{}{}
-	}
-
-	for _, op := range role.Permit {
-		value := fieldFunction(&op)
-		values[value] = struct{}{}
-	}
-
-	for _, subroleName := range role.Subroles {
-		subrole := subroleMap[subroleName]
-		findUsedOperationsInGraph(subrole, subroleMap, fieldFunction, values, visited)
-	}
-
-	return values
-}
-	
 
 func hasPermission(role *models.Role, subroleMap map[string]*models.Role, operation *models.Operation, visited map[string]struct{}) bool {
 	if role == nil {
