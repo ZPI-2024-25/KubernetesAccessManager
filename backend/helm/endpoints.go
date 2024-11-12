@@ -86,21 +86,43 @@ func GetHelmReleaseHistory(releaseName string, namespace string) ([]models.HelmR
 	return helmReleases, nil
 }
 
-func RollbackHelmRelease(releaseName string, namespace string, version int) (*models.HelmRelease, *models.ModelError) {
+func RollbackHelmRelease(releaseName string, namespace string, version int, timeout time.Duration) (*models.HelmRelease, bool, *models.ModelError) {
 	actionConfig, cErr := prepareActionConfig(namespace, true)
 	if cErr != nil {
-		return nil, cErr
+		return nil, false, cErr
 	}
 
-	err := rollbackRelease(actionConfig, releaseName, version)
-	if err != nil {
-		return nil, &models.ModelError{Code: 500, Message: "Failed to rollback release: " + err.Error()}
+	type rollbackResult struct {
+		release *models.HelmRelease
+		err     error
 	}
 
-	release, err := getRelease(actionConfig, releaseName)
-	if err != nil {
-		return nil, &models.ModelError{Code: 404, Message: "Failed to get release: " + err.Error()}
-	}
+	resultCh := make(chan rollbackResult, 1)
 
-	return getReleaseData(release), nil
+	go func() {
+		err := rollbackRelease(actionConfig, releaseName, version)
+		if err != nil {
+			resultCh <- rollbackResult{nil, err}
+			return
+		}
+		release, err := getRelease(actionConfig, releaseName)
+		if err != nil {
+			resultCh <- rollbackResult{nil, err}
+			return
+		}
+		resultCh <- rollbackResult{getReleaseData(release), nil}
+	}()
+
+	select {
+	case result := <-resultCh:
+		if result.err != nil {
+			if errors.Is(result.err, driver.ErrReleaseNotFound) {
+				return nil, false, &models.ModelError{Code: 404, Message: "Release not found: " + result.err.Error()}
+			}
+			return nil, false, &models.ModelError{Code: 500, Message: "Internal server error: " + result.err.Error()}
+		}
+		return result.release, true, nil
+	case <-time.After(timeout):
+		return nil, false, nil
+	}
 }

@@ -36,7 +36,21 @@ func RollbackHelmReleaseController(w http.ResponseWriter, r *http.Request) {
 			return nil, err
 		}
 
-		return helm.RollbackHelmRelease(releaseName, namespace, int(version.Version))
+		timeout := 5 * time.Second
+		release, completed, err := helm.RollbackHelmRelease(releaseName, namespace, int(version.Version), timeout)
+		if err != nil {
+			return nil, err
+		}
+
+		if completed {
+			return release, nil
+		} else {
+			return models.Status{
+				Status:  "Accepted",
+				Code:    202,
+				Message: fmt.Sprintf("Rolling back release %s to version %d in progress", releaseName, version.Version),
+			}, nil
+		}
 	})
 }
 
@@ -89,6 +103,9 @@ func handleHelmOperation(w http.ResponseWriter, r *http.Request, opType models.O
 	if opType == models.Create {
 		statusCode = http.StatusCreated
 	} else if opType == models.Delete {
+		status := result.(models.Status)
+		statusCode = int(status.Code)
+	} else if opType == models.Update {
 		status := result.(models.Status)
 		statusCode = int(status.Code)
 	}
