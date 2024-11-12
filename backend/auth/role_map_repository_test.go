@@ -434,7 +434,6 @@ func TestFlatHasPermission(t *testing.T) {
 			for operation, expected := range tt.tests {
 				result := flatHasPermission(operation, tt.matrix)
 				if expected == result {
-					t.Logf("Test passed for operation: %v", operation)
 					assert.Equal(t, expected, result)
 				} else {
 					t.Errorf("Test failed for operation: %v", operation)
