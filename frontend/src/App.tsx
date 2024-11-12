@@ -1,19 +1,19 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import LeftMenu from "./components/Menu/Menu.tsx";
 import {MainPage} from "./pages/MainPage.tsx";
-import {LoginPage} from "./pages/LoginPage.tsx";
-import Menu from "./components/Menu/Menu.tsx";
+import {AddResourcePage} from "./pages/AddResourcePage.tsx";
 
-function App() {
+const App: React.FC = () => {
     return (
         <Router>
             <Routes>
-                <Route path="/" element={<Menu />}>
+                <Route path="/kam/*" element={<LeftMenu />}>
                     <Route index element={<MainPage />} />
+                    <Route path="add" element={<AddResourcePage />} />
                 </Route>
-                <Route path="/login" element={<LoginPage />} />
             </Routes>
         </Router>
     );
-}
+};
 
 export default App;

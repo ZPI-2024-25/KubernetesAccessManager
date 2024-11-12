@@ -1,24 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, Menu } from 'antd';
+import { Outlet, useLocation } from 'react-router-dom';
 import styles from './Menu.module.css';
 import { items } from '../../consts/MenuItem';
 import { MenuItem } from '../../types';
-import Tab from '../Table/Tab.tsx'
 
 const { Header, Content, Footer, Sider } = Layout;
 
 const LeftMenu: React.FC = () => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [currentPage, setCurrentPage] = useState<string>('');
-    const [selectedKey, setSelectedKey] = useState<string>('1');
-    const [asideWidth, setAsideWidth] = useState<number>(250);
-    const [currentResourceLabel, setCurrentResourceLabel] = useState<string>(''); // for api request
+    const [selectedKey, setSelectedKey] = useState<string>('01');
+    const [asideWidth, setAsideWidth] = useState<number>(270);
+    const [currentResourceLabel, setCurrentResourceLabel] = useState<string>('');
     const username = 'k8_userjjjjjjjjjjjjjjjiiiiiiiii';
+    const location = useLocation();
 
-    const findItemByKey = (
-        key: string,
-        items: MenuItem[]
-    ): MenuItem | { sectionLabel: string; childLabel: string; resourceLabel: string } | null => {
+    const findItemByKey = (key: string, items: MenuItem[]): MenuItem | { sectionLabel: string; childLabel: string; resourceLabel: string } | null => {
         for (const item of items) {
             if (item.key === key) {
                 return { ...item, resourceLabel: item.resourcelabel as string };
@@ -37,7 +35,6 @@ const LeftMenu: React.FC = () => {
         return null;
     };
 
-
     const setCurrentPageFromItem = (item: MenuItem | { sectionLabel: string; childLabel: string; resourceLabel: string }) => {
         if ('childLabel' in item) {
             setCurrentPage(`${item.sectionLabel}/${item.childLabel}`);
@@ -47,7 +44,6 @@ const LeftMenu: React.FC = () => {
             setCurrentResourceLabel(item.resourcelabel as string);
         }
     };
-
 
     const handleMenuClick = (e: { key: string }) => {
         setSelectedKey(e.key);
@@ -65,7 +61,7 @@ const LeftMenu: React.FC = () => {
         if (defaultItem) {
             setCurrentPageFromItem(defaultItem);
         }
-    }, []);
+    }, [location.pathname]);
 
     return (
         <Layout className={styles.menuLayout}>
@@ -90,6 +86,7 @@ const LeftMenu: React.FC = () => {
                     mode="inline"
                     items={items}
                     onClick={handleMenuClick}
+                    style={{ paddingBottom: '50px' }}
                 />
             </Sider>
             <Layout className={styles.contentLayout} style={{ marginLeft: `${asideWidth}px` }}>
@@ -100,7 +97,7 @@ const LeftMenu: React.FC = () => {
                 </Header>
                 <Content className={styles.content}>
                     <div className={styles.innerContent}>
-                        <Tab resourceLabel={currentResourceLabel} />
+                        <Outlet context={{ currentResourceLabel }} />
                     </div>
                 </Content>
                 <Footer className={styles.footer}>

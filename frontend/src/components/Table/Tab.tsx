@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Table } from 'antd';
+import { Table, Button } from 'antd';
 import { ApiResponse, fetchResources } from '../../api';
+import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 
 const formatResourceAge = (createdAt: string): string => {
     const createdDate = new Date(createdAt);
@@ -48,8 +49,8 @@ interface ColumnType {
     title: string;
     dataIndex: string;
     key: string;
-    width: number;
-    render: (text: React.ReactNode, record: DataSourceItem) => React.ReactNode;
+    width?: number;
+    render?: (text: React.ReactNode, record: DataSourceItem) => React.ReactNode;
 }
 
 const Tab: React.FC<TabProps> = ({ resourceLabel }) => {
@@ -58,6 +59,7 @@ const Tab: React.FC<TabProps> = ({ resourceLabel }) => {
 
     useEffect(() => {
         if (!resourceLabel) return;
+        console.log(resourceLabel);
 
         const fetchData = async () => {
             const response: ApiResponse = await fetchResources(resourceLabel);
@@ -68,13 +70,34 @@ const Tab: React.FC<TabProps> = ({ resourceLabel }) => {
                 key: column,
                 width: 150,
                 render: (text: React.ReactNode, record: DataSourceItem): React.ReactNode => {
-                    // Explicitly assert the type of record[column] as a string
                     if (column.toLowerCase().includes('age')) {
                         return formatResourceAge(record[column] as string);
                     }
                     return text;
                 },
             }));
+
+            dynamicColumns.push({
+                dataIndex: "",
+                title: 'Actions',
+                key: 'actions',
+                render: (_, record: DataSourceItem) => (
+                    <div>
+                        <Button
+                            type="link"
+                            icon={<EditOutlined />}
+                            onClick={() => handleEdit(record)}
+                        />
+                        <Button
+                            type="link"
+                            icon={<DeleteOutlined />}
+                            onClick={() => handleDelete(record)}
+                            danger
+                        />
+                    </div>
+                ),
+                width: 100
+            });
 
             const dynamicDataSource: DataSourceItem[] = response.resource_list.map((resource, index) => ({
                 key: index,
@@ -88,8 +111,28 @@ const Tab: React.FC<TabProps> = ({ resourceLabel }) => {
         fetchData();
     }, [resourceLabel]);
 
+    const handleAdd = () => {
+        console.log("POST");
+    };
+
+    const handleEdit = (record: DataSourceItem) => {
+        console.log("PUT", record);
+    };
+
+    const handleDelete = (record: DataSourceItem) => {
+        console.log("DELETE", record);
+    };
+
     return (
         <div>
+            <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={handleAdd}
+                style={{ marginBottom: 16 }}
+            >
+                Add
+            </Button>
             <Table
                 columns={columns}
                 dataSource={dataSource}
