@@ -4,19 +4,9 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - 'Dockerfile1'
-      - 'Dockerfile2'
       - 'backend/**'
       - 'frontend/**'
-      - 'charts/**'
-  pull_request:
-    branches: [ "main" ]
-    paths:
-      - 'Dockerfile1'
-      - 'Dockerfile2'
-      - 'backend/**'
-      - 'frontend/**'
-      - 'charts/**'
+      - 'charts/kam/**'
 
 jobs:
   build-and-push:
@@ -25,47 +15,76 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: '2'
 
       - name: Install yq
         run: |
           sudo wget https://github.com/mikefarah/yq/releases/download/v4.35.1/yq_linux_amd64 -O /usr/bin/yq
           sudo chmod +x /usr/bin/yq
 
-      - name: Extract appVersion from Chart.yaml
-        id: extract_app_version
+      - name: Check if appVersion changed
+        id: check_version
         run: |
-          APP_VERSION=$(yq e '.appVersion' charts/kam/Chart.yaml)
-          echo "App version: $APP_VERSION"
-          echo "::set-output name=app_version::$APP_VERSION"
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+
+          CURRENT_VERSION=$(yq e '.appVersion' charts/kam/Chart.yaml)
+          PREVIOUS_VERSION=$(git show HEAD~1:charts/kam/Chart.yaml | yq e '.appVersion' -)
+          echo "Current appVersion: $CURRENT_VERSION"
+          echo "Previous appVersion: $PREVIOUS_VERSION"
+          
+          if [[ ! "$CURRENT_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: appVersion must be in the format v<major>.<minor>.<patch>, e.g. v1.0.0"
+            exit 1
+          fi
+
+          if [ "$CURRENT_VERSION" == "$PREVIOUS_VERSION" ]; then
+            VERSION_CHANGED=false
+          else
+            VERSION_CHANGED=true
+          fi
+          
+          echo "::set-output name=version_changed::$VERSION_CHANGED"
+          echo "::set-output name=app_version::$CURRENT_VERSION"
+
+          if [ "$VERSION_CHANGED" = "false" ]; then
+            echo "Error: appVersion was not updated."
+            exit 1
+          else
+            echo "Validation passed."
+          fi
 
       - name: Log in to Docker Hub
+        if: steps.check_version.conclusion == 'success'
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Set up Docker Buildx
+        if: steps.check_version.conclusion == 'success'
         uses: docker/setup-buildx-action@v2
 
       - name: Build and push backend image
+        if: steps.check_version.conclusion == 'success'
         uses: docker/build-push-action@v4
         with:
-          context: .
-          file: Dockerfile1
+          context: backend
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/backend:${{ steps.extract_app_version.outputs.app_version }}
             ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
 
       - name: Build and push frontend image
+        if: steps.check_version.conclusion == 'success'
         uses: docker/build-push-action@v4
         with:
-          context: .
-          file: Dockerfile2
+          context: frontend
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/frontend:${{ steps.extract_app_version.outputs.app_version }}
             ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
 
       - name: Log out from Docker Hub
+        if: steps.check_version.conclusion == 'success'
         run: docker logout
