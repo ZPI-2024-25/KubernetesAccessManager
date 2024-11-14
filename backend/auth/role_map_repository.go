@@ -172,13 +172,10 @@ func addMatrix(m1 map[string]map[string]map[models.OperationType]struct{},
 }
 
 func addPermitToMatrix(matrix map[string]map[string]map[models.OperationType]struct{}, permit models.Operation) {
-	_, hasNamespace := matrix[permit.Namespace]
-	_, hasResource := matrix["*"][permit.Resource]
-
-	if !hasNamespace {
+	if _, hasNamespace := matrix[permit.Namespace]; !hasNamespace {
 		expandNamespaces(permit.Namespace, matrix)
 	}
-	if !hasResource {
+	if _, hasResource := matrix["*"][permit.Resource]; !hasResource {
 		expandResources(permit.Resource, matrix)
 	}
 
@@ -205,13 +202,10 @@ func addPermitToMatrix(matrix map[string]map[string]map[models.OperationType]str
 	}
 }
 func restrictMatrix(matrix map[string]map[string]map[models.OperationType]struct{}, deny models.Operation) {
-	_, hasNamespace := matrix[deny.Namespace]
-	_, hasResource := matrix["*"][deny.Resource]
-
-	if !hasNamespace {
+	if _, hasNamespace := matrix[deny.Namespace]; !hasNamespace {
 		expandNamespaces(deny.Namespace, matrix)
 	}
-	if !hasResource {
+	if _, hasResource := matrix["*"][deny.Resource]; !hasResource {
 		expandResources(deny.Resource, matrix)
 	}
 
