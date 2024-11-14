@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+const (
+	DefaultOperationTimeout = 5 * time.Second
+)
+
 func GetHelmReleaseController(w http.ResponseWriter, r *http.Request) {
 	handleHelmOperation(w, r, models.Read, func(releaseName, namespace string) (interface{}, *models.ModelError) {
 		return helm.GetHelmRelease(releaseName, namespace)
@@ -36,7 +40,7 @@ func RollbackHelmReleaseController(w http.ResponseWriter, r *http.Request) {
 			return nil, err
 		}
 
-		timeout := 5 * time.Second
+		timeout := DefaultOperationTimeout
 		release, completed, err := helm.RollbackHelmRelease(releaseName, namespace, int(version.Version), timeout)
 		if err != nil {
 			return nil, err
@@ -56,7 +60,7 @@ func RollbackHelmReleaseController(w http.ResponseWriter, r *http.Request) {
 
 func UninstallHelmReleaseController(w http.ResponseWriter, r *http.Request) {
 	handleHelmOperation(w, r, models.Delete, func(releaseName, namespace string) (interface{}, *models.ModelError) {
-		timeout := 5 * time.Second
+		timeout := DefaultOperationTimeout
 		completed, err := helm.UninstallHelmRelease(releaseName, namespace, timeout)
 		if err != nil {
 			return nil, err
