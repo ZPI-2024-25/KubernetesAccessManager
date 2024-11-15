@@ -755,12 +755,15 @@ components:
       description: User session details and privileges
       example:
         permissions:
-          - resource: ["*"]
-            namespace: ["default", "production"]
-            operations: ["read", "create", "list"]
-          - resource: ["Pod"]
-            namespace: ["default"]
-            operations: ["delete"]
+          namespace1:
+            resource1:
+              - "c"
+              - "r"
+            resource2:
+              - "u"
+          namespace2:
+            resource1:
+              - "d"
         user:
           exp: 1672531199
           preferred_username: "username"
