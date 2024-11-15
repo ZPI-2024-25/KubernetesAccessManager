@@ -729,26 +729,17 @@ components:
       type: object
       properties:
         permissions:
-          type: array
-          description: List of user permissions for resources and namespaces.<br>https://samuelus.atlassian.net/wiki/spaces/ZPI/pages/28147713/Dokumentacja+Struktury+JSON+dla+Uprawnie
-          items:
+          type: object
+          additionalProperties:
             type: object
-            properties:
-              resource:
-                type: array
-                description: List of resources with specific permissions
-                items:
-                  type: string
-              namespace:
-                type: array
-                description: Namespaces with specific permissions
-                items:
-                  type: string
-              operations:
-                type: array
-                description: List of allowed operations
-                items:
-                  type: string
+            additionalProperties:
+              type: array
+              items:
+                type: string
+          description: >
+            Nested map structure defining user permissions.
+            Outer map keys represent namespaces, inner map keys represent resources,
+            and values are lists of operations.
         user:
           type: object
           properties:
