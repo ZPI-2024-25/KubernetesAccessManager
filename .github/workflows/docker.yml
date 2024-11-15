@@ -5,6 +5,7 @@ on:
     branches: [ "main" ]
     paths:
       - 'charts/kam/Chart.yaml'
+  workflow_dispatch:
 
 jobs:
   validate-and-build:
