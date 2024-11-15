@@ -6,7 +6,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"helm.sh/helm/v3/pkg/release"
+	"helm.sh/helm/v3/pkg/storage/driver"
 	"testing"
+	"time"
 )
 
 type MockActionConfigGetter struct {
@@ -230,6 +232,402 @@ func TestListHelmReleases(t *testing.T) {
 
 			mockActionConfigGetter.AssertExpectations(t)
 			mockActionConfig.AssertExpectations(t)
+		})
+	}
+}
+
+func TestUninstallHelmRelease(t *testing.T) {
+	tests := []struct {
+		name             string
+		releaseName      string
+		namespace        string
+		timeout          time.Duration
+		mockConfigError  *models.ModelError
+		mockUninstallErr error
+		expectedError    bool
+		expectedCode     int
+		expectedMsg      string
+		expectedSuccess  bool
+		mockSleep        time.Duration
+	}{
+		{
+			name:             "Success",
+			releaseName:      "test-release",
+			namespace:        "test-namespace",
+			timeout:          5 * time.Second,
+			mockConfigError:  nil,
+			mockUninstallErr: nil,
+			expectedError:    false,
+			expectedCode:     0,
+			expectedMsg:      "",
+			expectedSuccess:  true,
+			mockSleep:        0,
+		},
+		{
+			name:             "Release Not Found",
+			releaseName:      "non-existent-release",
+			namespace:        "test-namespace",
+			timeout:          5 * time.Second,
+			mockConfigError:  nil,
+			mockUninstallErr: driver.ErrReleaseNotFound,
+			expectedError:    true,
+			expectedCode:     404,
+			expectedMsg:      "Release not found",
+			expectedSuccess:  false,
+			mockSleep:        0,
+		},
+		{
+			name:             "Config Error",
+			releaseName:      "test-release",
+			namespace:        "test-namespace",
+			timeout:          5 * time.Second,
+			mockConfigError:  &models.ModelError{Code: 500, Message: "Failed to get cluster config"},
+			mockUninstallErr: nil,
+			expectedError:    true,
+			expectedCode:     500,
+			expectedMsg:      "Failed to get cluster config",
+			expectedSuccess:  false,
+			mockSleep:        0,
+		},
+		{
+			name:             "Internal Server Error",
+			releaseName:      "test-release",
+			namespace:        "test-namespace",
+			timeout:          5 * time.Second,
+			mockConfigError:  nil,
+			mockUninstallErr: fmt.Errorf("some internal error"),
+			expectedError:    true,
+			expectedCode:     500,
+			expectedMsg:      "Internal server error",
+			expectedSuccess:  false,
+			mockSleep:        0,
+		},
+		{
+			name:             "Timeout",
+			releaseName:      "test-release",
+			namespace:        "test-namespace",
+			timeout:          1 * time.Millisecond,
+			mockConfigError:  nil,
+			mockUninstallErr: nil,
+			expectedError:    false,
+			expectedCode:     0,
+			expectedMsg:      "",
+			expectedSuccess:  false,
+			mockSleep:        5 * time.Millisecond,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockActionConfigGetter := new(MockActionConfigGetter)
+			mockActionConfig := new(MockActionConfig)
+
+			mockActionConfigGetter.On("Get", tt.namespace, true).Return(mockActionConfig, tt.mockConfigError)
+
+			if tt.mockConfigError == nil {
+				mockActionConfig.On("uninstallRelease", tt.releaseName).Run(func(args mock.Arguments) {
+					time.Sleep(tt.mockSleep)
+				}).Return(&release.UninstallReleaseResponse{}, tt.mockUninstallErr)
+			}
+
+			success, err := UninstallHelmRelease(
+				tt.releaseName, tt.namespace, tt.timeout, mockActionConfigGetter.Get,
+			)
+
+			if tt.expectedError {
+				assert.NotNil(t, err)
+				assert.Contains(t, err.Message, tt.expectedMsg)
+				assert.Equal(t, tt.expectedCode, int(err.Code))
+				assert.False(t, success)
+			} else {
+				assert.Nil(t, err)
+				if tt.expectedSuccess {
+					assert.True(t, success)
+				} else {
+					assert.False(t, success)
+				}
+			}
+
+			mockActionConfigGetter.AssertExpectations(t)
+			if tt.mockConfigError == nil {
+				mockActionConfig.AssertExpectations(t)
+			}
+		})
+	}
+}
+
+func TestGetHelmReleaseHistory(t *testing.T) {
+	tests := []struct {
+		name               string
+		releaseName        string
+		namespace          string
+		mockReleaseHistory []*release.Release
+		mockConfigError    *models.ModelError
+		mockGetHistoryErr  error
+		expectedError      bool
+		expectedCode       int
+		expectedMsg        string
+		expectedResult     []models.HelmReleaseHistory
+	}{
+		{
+			name:        "Success with history",
+			releaseName: "test-release",
+			namespace:   "test-namespace",
+			mockReleaseHistory: []*release.Release{
+				{Name: "test-release", Version: 1},
+				{Name: "test-release", Version: 2},
+			},
+			mockConfigError:   nil,
+			mockGetHistoryErr: nil,
+			expectedError:     false,
+			expectedCode:      0,
+			expectedMsg:       "",
+			expectedResult: []models.HelmReleaseHistory{
+				{Chart: "-", Revision: 1, Status: "", Updated: time.Time{}},
+				{Chart: "-", Revision: 2, Status: "", Updated: time.Time{}},
+			},
+		},
+		{
+			name:               "Success with no history",
+			releaseName:        "test-release",
+			namespace:          "test-namespace",
+			mockReleaseHistory: []*release.Release{},
+			mockConfigError:    nil,
+			mockGetHistoryErr:  nil,
+			expectedError:      false,
+			expectedCode:       0,
+			expectedMsg:        "",
+			expectedResult:     []models.HelmReleaseHistory(nil),
+		},
+		{
+			name:               "Config Error",
+			releaseName:        "test-release",
+			namespace:          "test-namespace",
+			mockReleaseHistory: nil,
+			mockConfigError:    &models.ModelError{Code: 500, Message: "Failed to get cluster config"},
+			mockGetHistoryErr:  nil,
+			expectedError:      true,
+			expectedCode:       500,
+			expectedMsg:        "Failed to get cluster config",
+			expectedResult:     nil,
+		},
+		{
+			name:               "GetReleaseHistory Error",
+			releaseName:        "test-release",
+			namespace:          "test-namespace",
+			mockReleaseHistory: nil,
+			mockConfigError:    nil,
+			mockGetHistoryErr:  fmt.Errorf("release history not found"),
+			expectedError:      true,
+			expectedCode:       404,
+			expectedMsg:        "Failed to get release history",
+			expectedResult:     nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockActionConfigGetter := new(MockActionConfigGetter)
+			mockActionConfig := new(MockActionConfig)
+
+			mockActionConfigGetter.On("Get", tt.namespace, true).Return(mockActionConfig, tt.mockConfigError)
+
+			if tt.mockConfigError == nil {
+				mockActionConfig.On("getReleaseHistory", tt.releaseName, 0).Return(tt.mockReleaseHistory, tt.mockGetHistoryErr)
+			}
+
+			result, err := GetHelmReleaseHistory(tt.releaseName, tt.namespace, mockActionConfigGetter.Get)
+
+			if tt.expectedError {
+				assert.NotNil(t, err)
+				assert.Contains(t, err.Message, tt.expectedMsg)
+				assert.Equal(t, tt.expectedCode, int(err.Code))
+				assert.Nil(t, result)
+			} else {
+				assert.Nil(t, err)
+				assert.Equal(t, tt.expectedResult, result)
+			}
+
+			mockActionConfigGetter.AssertExpectations(t)
+			if tt.mockConfigError == nil {
+				mockActionConfig.AssertExpectations(t)
+			}
+		})
+	}
+}
+
+func TestRollbackHelmRelease(t *testing.T) {
+	tests := []struct {
+		name             string
+		releaseName      string
+		namespace        string
+		version          int
+		timeout          time.Duration
+		mockConfigError  *models.ModelError
+		mockRollbackErr  error
+		mockRelease      *release.Release
+		mockGetErr       error
+		expectedError    bool
+		expectedCode     int
+		expectedMsg      string
+		expectedComplete bool
+		mockSleep        time.Duration
+	}{
+		{
+			name:             "Success",
+			releaseName:      "test-release",
+			namespace:        "test-namespace",
+			version:          2,
+			timeout:          5 * time.Second,
+			mockConfigError:  nil,
+			mockRollbackErr:  nil,
+			mockRelease:      &release.Release{Name: "test-release"},
+			mockGetErr:       nil,
+			expectedError:    false,
+			expectedCode:     0,
+			expectedMsg:      "",
+			expectedComplete: true,
+			mockSleep:        0,
+		},
+		{
+			name:             "Release Not Found",
+			releaseName:      "non-existent-release",
+			namespace:        "test-namespace",
+			version:          1,
+			timeout:          5 * time.Second,
+			mockConfigError:  nil,
+			mockRollbackErr:  driver.ErrReleaseNotFound,
+			mockRelease:      nil,
+			mockGetErr:       nil,
+			expectedError:    true,
+			expectedCode:     404,
+			expectedMsg:      "Release not found",
+			expectedComplete: false,
+			mockSleep:        0,
+		},
+		{
+			name:             "Release Not retrieved",
+			releaseName:      "existent-weird-release",
+			namespace:        "test-namespace",
+			version:          1,
+			timeout:          5 * time.Second,
+			mockConfigError:  nil,
+			mockRollbackErr:  nil,
+			mockRelease:      nil,
+			mockGetErr:       driver.ErrReleaseNotFound,
+			expectedError:    true,
+			expectedCode:     404,
+			expectedMsg:      "Release not found",
+			expectedComplete: false,
+			mockSleep:        0,
+		},
+		{
+			name:             "Release Not retrieved",
+			releaseName:      "existent-weird-release",
+			namespace:        "test-namespace",
+			version:          1,
+			timeout:          5 * time.Second,
+			mockConfigError:  nil,
+			mockRollbackErr:  nil,
+			mockRelease:      nil,
+			mockGetErr:       driver.ErrReleaseNotFound,
+			expectedError:    true,
+			expectedCode:     404,
+			expectedMsg:      "Release not found",
+			expectedComplete: false,
+			mockSleep:        0,
+		},
+		{
+			name:             "Config Error",
+			releaseName:      "test-release",
+			namespace:        "test-namespace",
+			version:          1,
+			timeout:          5 * time.Second,
+			mockConfigError:  &models.ModelError{Code: 500, Message: "Failed to get cluster config"},
+			mockRollbackErr:  nil,
+			mockRelease:      nil,
+			mockGetErr:       nil,
+			expectedError:    true,
+			expectedCode:     500,
+			expectedMsg:      "Failed to get cluster config",
+			expectedComplete: false,
+			mockSleep:        0,
+		},
+		{
+			name:             "Internal server error",
+			releaseName:      "existent-release",
+			namespace:        "test-namespace",
+			version:          1,
+			timeout:          5 * time.Second,
+			mockConfigError:  nil,
+			mockRollbackErr:  nil,
+			mockRelease:      nil,
+			mockGetErr:       driver.ErrNoDeployedReleases,
+			expectedError:    true,
+			expectedCode:     500,
+			expectedMsg:      "Internal server error",
+			expectedComplete: false,
+			mockSleep:        0,
+		},
+		{
+			name:             "Timeout",
+			releaseName:      "test-release",
+			namespace:        "test-namespace",
+			version:          1,
+			timeout:          1 * time.Millisecond,
+			mockConfigError:  nil,
+			mockRollbackErr:  nil,
+			mockRelease:      nil,
+			mockGetErr:       nil,
+			expectedError:    false,
+			expectedCode:     0,
+			expectedMsg:      "",
+			expectedComplete: false,
+			mockSleep:        5 * time.Millisecond,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockActionConfigGetter := new(MockActionConfigGetter)
+			mockActionConfig := new(MockActionConfig)
+
+			mockActionConfigGetter.On("Get", tt.namespace, true).Return(mockActionConfig, tt.mockConfigError)
+
+			if tt.mockConfigError == nil {
+				mockActionConfig.On("rollbackRelease", tt.releaseName, tt.version).Run(func(args mock.Arguments) {
+					time.Sleep(tt.mockSleep)
+				}).Return(tt.mockRollbackErr)
+				if tt.mockRollbackErr == nil {
+					mockActionConfig.On("getRelease", tt.releaseName).Return(tt.mockRelease, tt.mockGetErr)
+				}
+			}
+
+			result, completed, err := RollbackHelmRelease(
+				tt.releaseName, tt.namespace, tt.version, tt.timeout, mockActionConfigGetter.Get,
+			)
+
+			if tt.expectedError {
+				assert.NotNil(t, err)
+				assert.Contains(t, err.Message, tt.expectedMsg)
+				assert.Equal(t, tt.expectedCode, int(err.Code))
+				assert.False(t, completed)
+			} else {
+				assert.Nil(t, err)
+				if tt.expectedComplete {
+					assert.NotNil(t, result)
+					assert.Equal(t, tt.releaseName, result.Name)
+					assert.True(t, completed)
+				} else {
+					assert.Nil(t, result)
+					assert.False(t, completed)
+				}
+			}
+
+			mockActionConfigGetter.AssertExpectations(t)
+			if tt.mockConfigError == nil {
+				mockActionConfig.AssertExpectations(t)
+			}
 		})
 	}
 }
