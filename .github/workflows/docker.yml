@@ -44,6 +44,7 @@ jobs:
             exit 0
           else
             echo "::set-output name=version_changed::true"
+            echo "::set-output name=app_version::$CURRENT_VERSION"
             echo "appVersion has changed. Proceeding with the build."
           fi
 
