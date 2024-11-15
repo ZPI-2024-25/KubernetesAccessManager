@@ -9,6 +9,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/utils/strings/slices"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -37,7 +38,7 @@ func ListResources(resourceType string, namespace string, getResourceInterface R
 	resources, listErr := resourceInterface.List(context.TODO(), metav1.ListOptions{})
 
 	if listErr != nil {
-		handleKubernetesError(listErr)
+		return models.ResourceList{}, handleKubernetesError(listErr)
 	}
 
 	var resourceList models.ResourceList
@@ -353,17 +354,48 @@ func extractDesired(resource unstructured.Unstructured, resourceType string, res
 
 func extractExternalIp(resource unstructured.Unstructured, resourceType string, resourceDetailsTruncated *models.ResourceListResourceList) {
 	if slices.Contains(transposedResourceListColumns["external_ip"], resourceType) {
-		spec, specExists := resource.Object["spec"].(map[string]interface{})
-		if specExists {
-			if specExternalIPs, found := spec["externalIPs"].([]interface{}); found {
-				var externalIPs []string
-				for _, ip := range specExternalIPs {
-					if ipStr, ok := ip.(string); ok {
-						externalIPs = append(externalIPs, ipStr)
-					}
-				}
-				resourceDetailsTruncated.ExternalIp = strings.Join(externalIPs, ", ")
+		resourceDetailsTruncated.ExternalIp = "-"
+
+		serviceType, found, err := unstructured.NestedString(resource.Object, "spec", "type")
+		if err != nil || !found {
+			return
+		}
+
+		switch serviceType {
+		case "LoadBalancer":
+			ingressList, found, err := unstructured.NestedSlice(resource.Object, "status", "loadBalancer", "ingress")
+			if err != nil || !found || len(ingressList) == 0 {
+				resourceDetailsTruncated.ExternalIp = "<pending>"
+				return
 			}
+
+			var externalIPs []string
+			for _, ingress := range ingressList {
+				ingressMap, ok := ingress.(map[string]interface{})
+				if !ok {
+					continue
+				}
+				if ip, found, _ := unstructured.NestedString(ingressMap, "ip"); found {
+					externalIPs = append(externalIPs, ip)
+				}
+			}
+
+			if len(externalIPs) > 0 {
+				resourceDetailsTruncated.ExternalIp = strings.Join(externalIPs, ",")
+			} else {
+				resourceDetailsTruncated.ExternalIp = "<pending>"
+			}
+
+		case "NodePort", "ClusterIP":
+			externalIPs, found, err := unstructured.NestedStringSlice(resource.Object, "spec", "externalIPs")
+			if err != nil || !found || len(externalIPs) == 0 {
+				resourceDetailsTruncated.ExternalIp = "-"
+			} else {
+				resourceDetailsTruncated.ExternalIp = strings.Join(externalIPs, ",")
+			}
+
+		default:
+			resourceDetailsTruncated.ExternalIp = "<unknown>"
 		}
 	}
 }
@@ -398,8 +430,9 @@ func extractKeys(resource unstructured.Unstructured, resourceType string, resour
 			}
 		}
 
-		resourceDetailsTruncated.Keys = fmt.Sprintf("%v", keys)
+		sort.Strings(keys)
 
+		resourceDetailsTruncated.Keys = strings.Join(keys, ", ")
 	}
 }
 
@@ -411,6 +444,8 @@ func extractLabels(resource unstructured.Unstructured, resourceType string, reso
 			for key, value := range labels {
 				labelPairs = append(labelPairs, fmt.Sprintf("%s=%s", key, value))
 			}
+
+			sort.Strings(labelPairs)
 			resourceDetailsTruncated.Labels = strings.Join(labelPairs, ", ")
 		}
 
@@ -440,11 +475,8 @@ func extractLoadbalancers(resource unstructured.Unstructured, resourceType strin
 						if ip, ipFound := ingressMap["ip"].(string); ipFound {
 							loadBalancerAddresses = append(loadBalancerAddresses, ip)
 						}
-						if hostname, hostnameFound := ingressMap["hostname"].(string); hostnameFound {
-							loadBalancerAddresses = append(loadBalancerAddresses, hostname)
-						}
 					}
-					resourceDetailsTruncated.Loadbalancers = fmt.Sprintf("%v", loadBalancerAddresses)
+					resourceDetailsTruncated.Loadbalancers = strings.Join(loadBalancerAddresses, ", ")
 				}
 			}
 		}
@@ -493,6 +525,7 @@ func extractNodeSelector(resource unstructured.Unstructured, resourceType string
 			selectorStrings = append(selectorStrings, fmt.Sprintf("%s=%s", key, value))
 		}
 
+		sort.Strings(selectorStrings)
 		resourceDetailsTruncated.NodeSelector = strings.Join(selectorStrings, ", ")
 	}
 }
@@ -556,7 +589,7 @@ func extractPorts(resource unstructured.Unstructured, resourceType string, resou
 						portStrings = append(portStrings, fmt.Sprintf("%d", int(portNumber)))
 					}
 				}
-				resourceDetailsTruncated.Ports = fmt.Sprintf("%v", portStrings)
+				resourceDetailsTruncated.Ports = strings.Join(portStrings, ", ")
 			}
 		}
 	}
@@ -572,38 +605,12 @@ func extractProvisioner(resource unstructured.Unstructured, resourceType string,
 
 func extractQos(resource unstructured.Unstructured, resourceType string, resourceDetailsTruncated *models.ResourceListResourceList) {
 	if slices.Contains(transposedResourceListColumns["qos"], resourceType) {
-		spec, specExists := resource.Object["spec"].(map[string]interface{})
-		qosClass := "BestEffort"
-
-		if specExists {
-			if containers, found := spec["containers"].([]interface{}); found {
-				for _, container := range containers {
-					containerMap := container.(map[string]interface{})
-					if resources, resExists := containerMap["resources"].(map[string]interface{}); resExists {
-						requests, reqExists := resources["requests"].(map[string]interface{})
-						limits, limExists := resources["limits"].(map[string]interface{})
-
-						if limExists && reqExists {
-							cpuRequest, cpuReqExists := requests["cpu"]
-							cpuLimit, cpuLimExists := limits["cpu"]
-							memoryRequest, memReqExists := requests["memory"]
-							memoryLimit, memLimExists := limits["memory"]
-
-							if cpuReqExists && cpuLimExists && memReqExists && memLimExists &&
-								cpuRequest == cpuLimit && memoryRequest == memoryLimit {
-								qosClass = "Guaranteed"
-							} else {
-								qosClass = "Burstable"
-							}
-						} else if reqExists {
-							qosClass = "Burstable"
-						}
-					}
-				}
-			}
+		qosClass, found, err := unstructured.NestedString(resource.Object, "status", "qosClass")
+		if err != nil || !found {
+			resourceDetailsTruncated.Qos = "Unknown"
+		} else {
+			resourceDetailsTruncated.Qos = qosClass
 		}
-
-		resourceDetailsTruncated.Qos = qosClass
 	}
 }
 
@@ -688,6 +695,8 @@ func extractRoles(resource unstructured.Unstructured, resourceType string, resou
 					roles = append(roles, role)
 				}
 			}
+
+			sort.Strings(roles)
 			resourceDetailsTruncated.Roles = strings.Join(roles, ", ")
 		}
 	}
@@ -724,6 +733,8 @@ func extractSelector(resource unstructured.Unstructured, resourceType string, re
 				for key, value := range selector {
 					selectorOutput = append(selectorOutput, fmt.Sprintf("%s:%s", key, value))
 				}
+
+				sort.Strings(selectorOutput)
 				resourceDetailsTruncated.Selector = strings.Join(selectorOutput, ", ")
 			}
 		}
