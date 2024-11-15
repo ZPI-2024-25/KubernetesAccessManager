@@ -1087,34 +1087,35 @@ components:
       type: object
       properties:
         permissions:
-          type: array
-          description: List of user permissions for resources and namespaces.<br>https://samuelus.atlassian.net/wiki/spaces/ZPI/pages/28147713/Dokumentacja+Struktury+JSON+dla+Uprawnie
-          items:
-            $ref: '#/components/schemas/UserStatus_permissions'
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: array
+              items:
+                type: string
+          description: >
+            Nested map structure defining user permissions.
+            Outer map keys represent namespaces, inner map keys represent resources,
+            and values are lists of operations.
         user:
           $ref: '#/components/schemas/UserStatus_user'
       description: User session details and privileges
       example:
         permissions:
-        - resource:
-          - '*'
-          namespace:
-          - default
-          - production
-          operations:
-          - read
-          - create
-          - list
-        - resource:
-          - Pod
-          namespace:
-          - default
-          operations:
-          - delete
-        user:
-          exp: 1672531199
-          preferred_username: username
-          email: user@example.com
+          namespace1:
+            resource1:
+              - "c"
+              - "r"
+            resource2:
+              - "u"
+          namespace2:
+            resource1:
+              - "d"
+          user:
+            exp: 1672531199
+            preferred_username: username
+            email: user@example.com
     HelmRelease:
       type: object
       properties:
@@ -1365,24 +1366,6 @@ components:
         conditions: conditions
         age: age
         status: status
-    UserStatus_permissions:
-      type: object
-      properties:
-        resource:
-          type: array
-          description: List of resources with specific permissions
-          items:
-            type: string
-        namespace:
-          type: array
-          description: Namespaces with specific permissions
-          items:
-            type: string
-        operations:
-          type: array
-          description: List of allowed operations
-          items:
-            type: string
     UserStatus_user:
       type: object
       properties:
