@@ -387,6 +387,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
+        "202":
+          description: Uninstaling helm release in progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
         "401":
           $ref: '#/components/responses/Unauthorized'
         "403":
@@ -451,6 +457,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HelmRelease'
+        "202":
+          description: Rolling back helm release in progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
         "400":
           $ref: '#/components/responses/BadRequest'
         "401":
