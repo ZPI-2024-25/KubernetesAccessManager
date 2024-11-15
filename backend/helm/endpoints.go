@@ -7,13 +7,15 @@ import (
 	"time"
 )
 
-func GetHelmRelease(releaseName string, namespace string) (*models.HelmRelease, *models.ModelError) {
-	actionConfig, cErr := prepareActionConfig(namespace, false)
+type ActionConfigGetter func(namespace string, useDefaultNamespace bool) (ActionConfigInterface, *models.ModelError)
+
+func GetHelmRelease(releaseName string, namespace string, getActionConfig ActionConfigGetter) (*models.HelmRelease, *models.ModelError) {
+	actionConfig, cErr := getActionConfig(namespace, false)
 	if cErr != nil {
 		return nil, cErr
 	}
 
-	release, err := getRelease(actionConfig, releaseName)
+	release, err := actionConfig.getRelease(releaseName)
 	if err != nil {
 		return nil, &models.ModelError{Code: 404, Message: "Release not found: " + err.Error()}
 	}
@@ -21,13 +23,13 @@ func GetHelmRelease(releaseName string, namespace string) (*models.HelmRelease, 
 	return getReleaseData(release), nil
 }
 
-func ListHelmReleases(namespace string) ([]models.HelmRelease, *models.ModelError) {
-	actionConfig, cErr := prepareActionConfig(namespace, false)
+func ListHelmReleases(namespace string, getActionConfig ActionConfigGetter) ([]models.HelmRelease, *models.ModelError) {
+	actionConfig, cErr := getActionConfig(namespace, false)
 	if cErr != nil {
 		return nil, cErr
 	}
 
-	releases, err := listReleases(actionConfig, namespace == "")
+	releases, err := actionConfig.listReleases(namespace == "")
 	if err != nil {
 		return nil, &models.ModelError{Code: 500, Message: "Failed to list releases: " + err.Error()}
 	}
@@ -40,8 +42,8 @@ func ListHelmReleases(namespace string) ([]models.HelmRelease, *models.ModelErro
 	return helmReleases, nil
 }
 
-func UninstallHelmRelease(releaseName string, namespace string, timeout time.Duration) (bool, *models.ModelError) {
-	actionConfig, cErr := prepareActionConfig(namespace, true)
+func UninstallHelmRelease(releaseName string, namespace string, timeout time.Duration, getActionConfig ActionConfigGetter) (bool, *models.ModelError) {
+	actionConfig, cErr := getActionConfig(namespace, true)
 	if cErr != nil {
 		return false, cErr
 	}
@@ -49,7 +51,7 @@ func UninstallHelmRelease(releaseName string, namespace string, timeout time.Dur
 	errCh := make(chan error, 1)
 
 	go func() {
-		_, err := uninstallRelease(actionConfig, releaseName)
+		_, err := actionConfig.uninstallRelease(releaseName)
 		errCh <- err
 	}()
 
@@ -67,13 +69,13 @@ func UninstallHelmRelease(releaseName string, namespace string, timeout time.Dur
 	}
 }
 
-func GetHelmReleaseHistory(releaseName string, namespace string) ([]models.HelmReleaseHistory, *models.ModelError) {
-	actionConfig, cErr := prepareActionConfig(namespace, true)
+func GetHelmReleaseHistory(releaseName string, namespace string, getActionConfig ActionConfigGetter) ([]models.HelmReleaseHistory, *models.ModelError) {
+	actionConfig, cErr := getActionConfig(namespace, true)
 	if cErr != nil {
 		return nil, cErr
 	}
 
-	releases, err := getReleaseHistory(actionConfig, releaseName, 0)
+	releases, err := actionConfig.getReleaseHistory(releaseName, 0)
 	if err != nil {
 		return nil, &models.ModelError{Code: 404, Message: "Failed to get release history"}
 	}
@@ -86,8 +88,8 @@ func GetHelmReleaseHistory(releaseName string, namespace string) ([]models.HelmR
 	return helmReleases, nil
 }
 
-func RollbackHelmRelease(releaseName string, namespace string, version int, timeout time.Duration) (*models.HelmRelease, bool, *models.ModelError) {
-	actionConfig, cErr := prepareActionConfig(namespace, true)
+func RollbackHelmRelease(releaseName string, namespace string, version int, timeout time.Duration, getActionConfig ActionConfigGetter) (*models.HelmRelease, bool, *models.ModelError) {
+	actionConfig, cErr := getActionConfig(namespace, true)
 	if cErr != nil {
 		return nil, false, cErr
 	}
@@ -100,12 +102,12 @@ func RollbackHelmRelease(releaseName string, namespace string, version int, time
 	resultCh := make(chan rollbackResult, 1)
 
 	go func() {
-		err := rollbackRelease(actionConfig, releaseName, version)
+		err := actionConfig.rollbackRelease(releaseName, version)
 		if err != nil {
 			resultCh <- rollbackResult{nil, err}
 			return
 		}
-		release, err := getRelease(actionConfig, releaseName)
+		release, err := actionConfig.getRelease(releaseName)
 		if err != nil {
 			resultCh <- rollbackResult{nil, err}
 			return

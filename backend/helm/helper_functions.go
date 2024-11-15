@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
-	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/release"
 	"time"
 )
@@ -87,7 +86,7 @@ func getReleaseHistoryData(releaseHistory *release.Release) *models.HelmReleaseH
 	}
 }
 
-func prepareActionConfig(namespace string, useDefaultNamespace bool) (*action.Configuration, *models.ModelError) {
+func PrepareActionConfig(namespace string, useDefaultNamespace bool) (ActionConfigInterface, *models.ModelError) {
 	config, err := cluster.GetConfig()
 	if err != nil {
 		return nil, &models.ModelError{Code: 500, Message: "Failed to get cluster config"}

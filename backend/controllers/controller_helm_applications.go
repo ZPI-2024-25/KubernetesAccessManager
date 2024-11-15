@@ -14,19 +14,19 @@ const (
 
 func GetHelmReleaseController(w http.ResponseWriter, r *http.Request) {
 	handleHelmOperation(w, r, models.Read, func(releaseName, namespace string) (interface{}, *models.ModelError) {
-		return helm.GetHelmRelease(releaseName, namespace)
+		return helm.GetHelmRelease(releaseName, namespace, helm.PrepareActionConfig)
 	})
 }
 
 func GetHelmReleaseHistoryController(w http.ResponseWriter, r *http.Request) {
 	handleHelmOperation(w, r, models.Read, func(releaseName, namespace string) (interface{}, *models.ModelError) {
-		return helm.GetHelmReleaseHistory(releaseName, namespace)
+		return helm.GetHelmReleaseHistory(releaseName, namespace, helm.PrepareActionConfig)
 	})
 }
 
 func ListHelmReleasesController(w http.ResponseWriter, r *http.Request) {
 	handleHelmOperation(w, r, models.List, func(releaseName, namespace string) (interface{}, *models.ModelError) {
-		return helm.ListHelmReleases(namespace)
+		return helm.ListHelmReleases(namespace, helm.PrepareActionConfig)
 	})
 }
 
@@ -41,7 +41,7 @@ func RollbackHelmReleaseController(w http.ResponseWriter, r *http.Request) {
 		}
 
 		timeout := DefaultOperationTimeout
-		release, completed, err := helm.RollbackHelmRelease(releaseName, namespace, int(version.Version), timeout)
+		release, completed, err := helm.RollbackHelmRelease(releaseName, namespace, int(version.Version), timeout, helm.PrepareActionConfig)
 		if err != nil {
 			return nil, err
 		}
@@ -61,7 +61,7 @@ func RollbackHelmReleaseController(w http.ResponseWriter, r *http.Request) {
 func UninstallHelmReleaseController(w http.ResponseWriter, r *http.Request) {
 	handleHelmOperation(w, r, models.Delete, func(releaseName, namespace string) (interface{}, *models.ModelError) {
 		timeout := DefaultOperationTimeout
-		completed, err := helm.UninstallHelmRelease(releaseName, namespace, timeout)
+		completed, err := helm.UninstallHelmRelease(releaseName, namespace, timeout, helm.PrepareActionConfig)
 		if err != nil {
 			return nil, err
 		}

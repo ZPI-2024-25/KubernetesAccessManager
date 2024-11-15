@@ -8,7 +8,19 @@ import (
 	"time"
 )
 
-func getActionConfig(kubeConfig *rest.Config, namespace string) (*action.Configuration, error) {
+type ActionConfigInterface interface {
+	getRelease(name string) (*release.Release, error)
+	listReleases(allNamespaces bool) ([]*release.Release, error)
+	uninstallRelease(name string) (*release.UninstallReleaseResponse, error)
+	getReleaseHistory(name string, max int) ([]*release.Release, error)
+	rollbackRelease(name string, version int) error
+}
+
+type ActionConfig struct {
+	config *action.Configuration
+}
+
+func getActionConfig(kubeConfig *rest.Config, namespace string) (*ActionConfig, error) {
 	configFlags := &genericclioptions.ConfigFlags{
 		Namespace: &namespace,
 		WrapConfigFn: func(_ *rest.Config) *rest.Config {
@@ -21,11 +33,11 @@ func getActionConfig(kubeConfig *rest.Config, namespace string) (*action.Configu
 		return nil, err
 	}
 
-	return actionConfig, nil
+	return &ActionConfig{config: actionConfig}, nil
 }
 
-func getRelease(actionConfig *action.Configuration, name string) (*release.Release, error) {
-	get := action.NewGet(actionConfig)
+func (c *ActionConfig) getRelease(name string) (*release.Release, error) {
+	get := action.NewGet(c.config)
 	rel, err := get.Run(name)
 	if err != nil {
 		return nil, err
@@ -33,8 +45,8 @@ func getRelease(actionConfig *action.Configuration, name string) (*release.Relea
 	return rel, nil
 }
 
-func rollbackRelease(actionConfig *action.Configuration, name string, version int) error {
-	rollback := action.NewRollback(actionConfig)
+func (c *ActionConfig) rollbackRelease(name string, version int) error {
+	rollback := action.NewRollback(c.config)
 	rollback.Version = version
 	rollback.Wait = true
 	rollback.Timeout = 300 * time.Second
@@ -45,8 +57,8 @@ func rollbackRelease(actionConfig *action.Configuration, name string, version in
 	return nil
 }
 
-func uninstallRelease(actionConfig *action.Configuration, name string) (*release.UninstallReleaseResponse, error) {
-	uninstall := action.NewUninstall(actionConfig)
+func (c *ActionConfig) uninstallRelease(name string) (*release.UninstallReleaseResponse, error) {
+	uninstall := action.NewUninstall(c.config)
 	response, err := uninstall.Run(name)
 	if err != nil {
 		return nil, err
@@ -55,8 +67,8 @@ func uninstallRelease(actionConfig *action.Configuration, name string) (*release
 	return response, nil
 }
 
-func getReleaseHistory(actionConfig *action.Configuration, name string, max int) ([]*release.Release, error) {
-	history := action.NewHistory(actionConfig)
+func (c *ActionConfig) getReleaseHistory(name string, max int) ([]*release.Release, error) {
+	history := action.NewHistory(c.config)
 	history.Max = max
 	historyResponse, err := history.Run(name)
 	if err != nil {
@@ -66,8 +78,8 @@ func getReleaseHistory(actionConfig *action.Configuration, name string, max int)
 	return historyResponse, nil
 }
 
-func listReleases(actionConfig *action.Configuration, allNamespaces bool) ([]*release.Release, error) {
-	list := action.NewList(actionConfig)
+func (c *ActionConfig) listReleases(allNamespaces bool) ([]*release.Release, error) {
+	list := action.NewList(c.config)
 	if allNamespaces {
 		list.AllNamespaces = true
 	}
