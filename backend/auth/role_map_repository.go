@@ -3,10 +3,10 @@ package auth
 import (
 	"errors"
 	"log"
-	"os"
 	"sync"
 
 	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
+	"github.com/ZPI-2024-25/KubernetesAccessManager/common"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -17,7 +17,6 @@ type RoleMapRepository struct {
 	RoleMap map[string]*models.Role
 	SubroleMap map[string]*models.Role
 	flattenedMap map[string]map[string]map[string]map[models.OperationType]struct{}
-	flattenedCompiled bool
 }
 
 var (
@@ -27,13 +26,12 @@ var (
 
 func GetRoleMapInstance() (*RoleMapRepository, error) {
 	once.Do(func() {
-		roleMapNamespace := getOrDefaultEnv("ROLEMAP_NAMESPACE", "default")
-		roleMapName := getOrDefaultEnv("ROLEMAP_NAME", "role-mapper")
+		roleMapNamespace := common.GetOrDefaultEnv("ROLEMAP_NAMESPACE", "default")
+		roleMapName := common.GetOrDefaultEnv("ROLEMAP_NAME", "role-mapper")
 
 		roleMap, subroleMap := GetRoleMapConfig(roleMapNamespace, roleMapName)
 		if roleMap == nil {
-			log.Printf("Failed to initialize RoleMapRepository")
-			return
+			return  
 		}
 		permissionMatrix := createPermissionMatrix(roleMap, subroleMap)
 		instance = &RoleMapRepository{
@@ -44,18 +42,9 @@ func GetRoleMapInstance() (*RoleMapRepository, error) {
 		log.Printf("RoleMapRepository initialized with %d roles %d subroles", len(instance.RoleMap), len(instance.SubroleMap))
 	})
 	if instance == nil {
-		return nil, errors.New("failed to initialize RoleMapRepository")
+		return nil, errors.New("RoleMapRepository is not initialized")
 	}
 	return instance, nil
-}
-
-func getOrDefaultEnv(key, defaultValue string) string {
-	val := os.Getenv(key)
-	if val == "" {
-		log.Printf("Environment variable %s not set, using default value %s", key, defaultValue)
-		return defaultValue
-	}
-	return val
 }
 
 func (rmr *RoleMapRepository) HasPermission(rolenames []string, operation *models.Operation) bool {
@@ -172,77 +161,56 @@ func addMatrix(m1 map[string]map[string]map[models.OperationType]struct{},
 }
 
 func addPermitToMatrix(matrix map[string]map[string]map[models.OperationType]struct{}, permit models.Operation) {
-	if _, hasNamespace := matrix[permit.Namespace]; !hasNamespace {
-		expandNamespaces(permit.Namespace, matrix)
-	}
-	if _, hasResource := matrix["*"][permit.Resource]; !hasResource {
-		expandResources(permit.Resource, matrix)
-	}
-
-	if permit.Namespace == "*" {
-		if permit.Resource == "*" { // * * op
-			for _, resources := range matrix {
-				for _, operations := range resources {
-					addOp(operations, permit.Type)
-				}
-			}
-		} else { // * r op
-			for _, resources := range matrix {
-				addOp(resources[permit.Resource], permit.Type)
-			}
-		}
-	} else {
-		if permit.Resource == "*" { // n * op
-			for _, operations := range matrix[permit.Namespace] {
-				addOp(operations, permit.Type)
-			}
-		} else { // n r op
-			addOp(matrix[permit.Namespace][permit.Resource], permit.Type)
-		}
-	}
+	regulateMatrix(matrix, permit, addOp)
 }
+
 func restrictMatrix(matrix map[string]map[string]map[models.OperationType]struct{}, deny models.Operation) {
-	if _, hasNamespace := matrix[deny.Namespace]; !hasNamespace {
-		expandNamespaces(deny.Namespace, matrix)
+	regulateMatrix(matrix, deny, removeOp)
+}
+
+func regulateMatrix(matrix map[string]map[string]map[models.OperationType]struct{}, op models.Operation, 
+	action func(map[models.OperationType]struct{}, models.OperationType)) {
+	if _, hasNamespace := matrix[op.Namespace]; !hasNamespace {
+		expandNamespaces(op.Namespace, matrix)
 	}
-	if _, hasResource := matrix["*"][deny.Resource]; !hasResource {
-		expandResources(deny.Resource, matrix)
+	if _, hasResource := matrix["*"][op.Resource]; !hasResource {
+		expandResources(op.Resource, matrix)
 	}
 
-	if deny.Namespace == "*" {
-		if deny.Resource == "*" { // * * op
+	if op.Namespace == "*" {
+		if op.Resource == "*" { // * * op
 			for _, resources := range matrix {
 				for _, operations := range resources {
-					removeOp(operations, deny.Type)
+					action(operations, op.Type)
 				}
 			}
 		} else { // * r op
 			for _, resources := range matrix {
-				removeOp(resources[deny.Resource], deny.Type)
+				action(resources[op.Resource], op.Type)
 			}
 		}
 	} else {
-		if deny.Resource == "*" { // n * op
-			for _, operations := range matrix[deny.Namespace] {
-				removeOp(operations, deny.Type)
+		if op.Resource == "*" { // n * op
+			for _, operations := range matrix[op.Namespace] {
+				action(operations, op.Type)
 			}
 		} else { // n r op
-			removeOp(matrix[deny.Namespace][deny.Resource], deny.Type)
+			action(matrix[op.Namespace][op.Resource], op.Type)
 		}
 	}
 }
 
 func addOp(ops map[models.OperationType]struct{}, opType models.OperationType) {
-		if opType == models.All {
-			ops[models.Create] = struct{}{}
-			ops[models.Read] = struct{}{}
-			ops[models.Update] = struct{}{}
-			ops[models.Delete] = struct{}{}
-			ops[models.List] = struct{}{}
-		} else {
-			ops[opType] = struct{}{}
-		}
+	if opType == models.All {
+		ops[models.Create] = struct{}{}
+		ops[models.Read] = struct{}{}
+		ops[models.Update] = struct{}{}
+		ops[models.Delete] = struct{}{}
+		ops[models.List] = struct{}{}
+	} else {
+		ops[opType] = struct{}{}
 	}
+}
 
 func removeOp(ops map[models.OperationType]struct{}, opType models.OperationType) {
 	if opType == models.All {

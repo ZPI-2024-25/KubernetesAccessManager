@@ -128,6 +128,13 @@ func TestHasCycle(t *testing.T) {
 			},
 			expected: true,
 		},
+		{
+			name: "Non-existing subrole",
+			roleMap: map[string]*models.Role{
+				"admin": {Subroles: []string{"nonexistent"}},
+			},
+			expected: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -613,7 +620,6 @@ func TestRoleMapFlatteningFuzzy(t *testing.T) {
 
 			// Check if the flattened map is created correctly
 			repo.flattenedMap = createPermissionMatrix(repo.RoleMap, repo.SubroleMap)
-			repo.flattenedCompiled = true
 			log.Printf("Flattened map created")
 
 			allPassed := true
