@@ -313,7 +313,7 @@ func TestUninstallHelmRelease(t *testing.T) {
 			expectedCode:     0,
 			expectedMsg:      "",
 			expectedSuccess:  false,
-			mockSleep:        5 * time.Millisecond,
+			mockSleep:        50 * time.Millisecond,
 		},
 	}
 
@@ -598,9 +598,8 @@ func TestRollbackHelmRelease(t *testing.T) {
 				mockActionConfig.On("rollbackRelease", tt.releaseName, tt.version).Run(func(args mock.Arguments) {
 					time.Sleep(tt.mockSleep)
 				}).Return(tt.mockRollbackErr)
-				if tt.mockRollbackErr == nil {
-					mockActionConfig.On("getRelease", tt.releaseName).Return(tt.mockRelease, tt.mockGetErr)
-				}
+
+				mockActionConfig.On("getRelease", tt.releaseName).Maybe().Return(tt.mockRelease, tt.mockGetErr)
 			}
 
 			result, completed, err := RollbackHelmRelease(
