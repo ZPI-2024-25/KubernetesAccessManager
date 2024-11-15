@@ -56,6 +56,37 @@ func (rmr *RoleMapRepository) HasPermission(rolenames []string, operation *model
 	return false
 }
 
+func (rmr *RoleMapRepository) GetAllPermissions(role []string) map[string]map[string]map[models.OperationType]struct{} {
+	pmatrix := make(map[string]map[string]map[models.OperationType]struct{})
+	first := true
+	for _, r := range role {
+		if _, exists := rmr.flattenedMap[r]; exists {
+			if first {
+				pmatrix = deepCopy(rmr.flattenedMap[r])
+				first = false
+			} else {
+				pmatrix = addMatrix(pmatrix, rmr.flattenedMap[r])
+				pruneResourcesNamespaces(pmatrix)
+			}
+		}
+	}
+	return pmatrix
+}
+
+func deepCopy(m map[string]map[string]map[models.OperationType]struct{}) map[string]map[string]map[models.OperationType]struct{} {
+	copy := make(map[string]map[string]map[models.OperationType]struct{})
+	for namespace, resources := range m {
+		copy[namespace] = make(map[string]map[models.OperationType]struct{})
+		for resource, operations := range resources {
+			copy[namespace][resource] = make(map[models.OperationType]struct{})
+			for opType := range operations {
+				copy[namespace][resource][opType] = struct{}{}
+			}
+		}
+	}
+	return copy
+}
+
 func flatHasPermission(op *models.Operation, matrix map[string]map[string]map[models.OperationType]struct{}) bool {
 	var namespace string
 	if _, exists := matrix[op.Namespace]; exists {
@@ -86,6 +117,56 @@ func createPermissionMatrix(
 	return superMatrix
 }
 
+func pruneResourcesNamespaces(matrix map[string]map[string]map[models.OperationType]struct{}) bool {
+	// delete unnecessary resources, namespaces if all operations are the same as in *
+	wasPruned := false
+	for namespace, resources := range matrix { //prune namespaces
+		if namespace != "*"{
+			allOpsSame := true
+			for resource, operations := range resources {
+				wildcardOps := matrix["*"][resource]	
+				if !sameOps(operations, wildcardOps) {
+					allOpsSame = false
+				}
+			}
+			if allOpsSame {
+				delete(matrix, namespace)
+				wasPruned = true
+			}
+		}
+	}
+	for resource, _ := range matrix["*"] { //prune resources
+		if resource != "*" {
+			allOpsSame := true
+			for namespace, resources := range matrix {
+				wildcardOps := matrix[namespace]["*"]
+				if !sameOps(resources[resource], wildcardOps) {
+					allOpsSame = false
+				}
+			}
+			if allOpsSame {
+				for _, resources := range matrix {
+					delete(resources, resource)
+				}
+				wasPruned = true
+			}
+		}
+	}
+	return wasPruned
+}
+
+func sameOps(ops1 map[models.OperationType]struct{}, ops2 map[models.OperationType]struct{}) bool {
+	if len(ops1) != len(ops2) {
+		return false
+	}
+	for op := range ops1 {
+		if _, exists := ops2[op]; !exists {
+			return false
+		}
+	}
+	return true
+}
+
 func toMatrix(role *models.Role, subroleMap map[string] *models.Role) map[string]map[string]map[models.OperationType]struct{} {
 	var matrix map[string]map[string]map[models.OperationType]struct{}
 	first := true
@@ -110,6 +191,7 @@ func toMatrix(role *models.Role, subroleMap map[string] *models.Role) map[string
 	for _, deny := range role.Deny {
 		restrictMatrix(matrix, deny)
 	}
+	pruneResourcesNamespaces(matrix)
 	return matrix
 }
 
@@ -122,42 +204,36 @@ func addMatrix(m1 map[string]map[string]map[models.OperationType]struct{},
 		m1, m2 = m2, m1
 	}
 
-	ogns1 := make([]string, 0, len(m1))
-	for namespace := range m1 {
-		if _, exists := m2[namespace]; !exists {
-			ogns1 = append(ogns1, namespace)
-		}
-	}
-	ogres1 := make([]string, 0, len(m1["*"]))
-	for resource := range m1["*"] {
-		if _, exists := m2["*"][resource]; !exists {
-			ogres1 = append(ogres1, resource)
-		}
-	}
+	res := deepCopy(m1)
 	for namespace := range m2 {
-		if _, exists := m1[namespace]; !exists {
-			expandNamespaces(namespace, m1)
+		if _, exists := res[namespace]; !exists {
+			expandNamespaces(namespace, res)
 		}
 	}
 	for resource := range m2["*"] {
-		if _, exists := m1["*"][resource]; !exists {
-			expandResources(resource, m1)
+		if _, exists := res["*"][resource]; !exists {
+			expandResources(resource, res)
 		}
 	}
-	for _, namespace := range ogns1 {
-		expandNamespaces(namespace, m2)
-	}
-	for _, resource := range ogres1 {
-		expandResources(resource, m2)
-	}
-	for namespace, resources := range m2 {
+	var fromNs, fromRes string
+	for namespace, resources := range res {
+		if _, exists := m2[namespace]; !exists {
+			fromNs = "*"
+		} else {
+			fromNs = namespace
+		}
 		for resource, operations := range resources {
-			for opType := range operations {
-				m1[namespace][resource][opType] = struct{}{}
+			if _, exists := m2["*"][resource]; !exists {
+				fromRes = "*"
+			} else {
+				fromRes = resource
+			}
+			for opType := range m2[fromNs][fromRes] {
+				operations[opType] = struct{}{}
 			}
 		}
 	}
-	return m1
+	return res
 }
 
 func addPermitToMatrix(matrix map[string]map[string]map[models.OperationType]struct{}, permit models.Operation) {

@@ -35,6 +35,12 @@ spec:
           env:
             - name: KEYCLOAK_URL
               value: "{{ .Values.backend.env.KEYCLOAK_URL }}"
+            - name: KEYCLOAK_CLIENTNAME
+              value: "{{ .Values.backend.env.KEYCLOAK_CLIENTNAME }}"
+            - name: ROLEMAP_NAMESPACE
+              value: "{{ .Values.backend.env.ROLEMAP_NAMESPACE }}"
+            - name: ROLEMAP_NAME
+              value: "{{ .Values.backend.env.ROLEMAP_NAME }}"
           livenessProbe:
             {{- toYaml .Values.backend.livenessProbe | nindent 12 }}
           readinessProbe:

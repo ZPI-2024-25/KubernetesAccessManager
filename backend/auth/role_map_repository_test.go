@@ -814,3 +814,36 @@ func randomAcyclicGraph(nodes, edges int) map[string][]string {
 	}
 	return graphAsList
 }
+
+func TestDeepCopy(t *testing.T) {
+	tests := []struct {
+		matrice map[string]map[string]map[models.OperationType]struct{}
+	}{
+		{
+			matrice: map[string]map[string]map[models.OperationType]struct{}{
+				"n1": {
+					"r1": {
+						"create": struct{}{},
+						"read":   struct{}{},
+					},
+					"r2": {
+						"delete": struct{}{},
+					},
+				},
+				"n2": {
+					"r1": {
+						"update": struct{}{},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run("Deep copy", func(t *testing.T) {
+			copy := deepCopy(tt.matrice)
+			assert.EqualValues(t, tt.matrice, copy)
+			tt.matrice["n1"]["r1"]["update"] = struct{}{}
+			assert.NotEqual(t, tt.matrice, copy)
+		})
+	}
+}
