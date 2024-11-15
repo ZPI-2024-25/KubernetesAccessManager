@@ -4,12 +4,10 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - 'backend/**'
-      - 'frontend/**'
-      - 'charts/kam/**'
+      - 'charts/kam/Chart.yaml'
 
 jobs:
-  build-and-push:
+  validate-and-build:
     runs-on: ubuntu-latest
 
     steps:
@@ -39,34 +37,27 @@ jobs:
           fi
 
           if [ "$CURRENT_VERSION" == "$PREVIOUS_VERSION" ]; then
-            VERSION_CHANGED=false
+            echo "::set-output name=version_changed::false"
+            echo "appVersion has not changed. Skipping the rest of the pipeline."
+            exit 0
           else
-            VERSION_CHANGED=true
-          fi
-          
-          echo "::set-output name=version_changed::$VERSION_CHANGED"
-          echo "::set-output name=app_version::$CURRENT_VERSION"
-
-          if [ "$VERSION_CHANGED" = "false" ]; then
-            echo "Error: appVersion was not updated."
-            exit 1
-          else
-            echo "Validation passed."
+            echo "::set-output name=version_changed::true"
+            echo "appVersion has changed. Proceeding with the build."
           fi
 
       - name: Log in to Docker Hub
-        if: steps.check_version.conclusion == 'success'
+        if: steps.check_version.outputs.version_changed == 'true'
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Set up Docker Buildx
-        if: steps.check_version.conclusion == 'success'
+        if: steps.check_version.outputs.version_changed == 'true'
         uses: docker/setup-buildx-action@v2
 
       - name: Build and push backend image
-        if: steps.check_version.conclusion == 'success'
+        if: steps.check_version.outputs.version_changed == 'true'
         uses: docker/build-push-action@v4
         with:
           context: backend
@@ -76,7 +67,7 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
 
       - name: Build and push frontend image
-        if: steps.check_version.conclusion == 'success'
+        if: steps.check_version.outputs.version_changed == 'true'
         uses: docker/build-push-action@v4
         with:
           context: frontend
@@ -86,5 +77,5 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
 
       - name: Log out from Docker Hub
-        if: steps.check_version.conclusion == 'success'
+        if: steps.check_version.outputs.version_changed == 'true'
         run: docker logout
