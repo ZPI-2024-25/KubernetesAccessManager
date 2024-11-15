@@ -243,37 +243,6 @@ func expandResources(resource string, matrix map[string]map[string]map[models.Op
 	}
 }
 
-func hasPermission(role *models.Role, subroleMap map[string]*models.Role, operation *models.Operation, visited map[string]struct{}) bool {
-	if role == nil {
-		return false
-	}
-
-	for _, deny := range role.Deny {
-		if deny.IsSuper(operation) {
-			return false
-		}
-	}
-
-	for _, permit := range role.Permit {
-		if permit.IsSuper(operation) {
-			return true
-		}
-	}
-
-	// Recursively check subroles, if any matches, return true
-	for _, subroleName := range role.Subroles {
-		if _, exists := visited[subroleName]; !exists {
-			subrole := subroleMap[subroleName]
-			visited[subroleName] = struct{}{}
-			if hasPermission(subrole, subroleMap, operation, visited) {
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
 func hasCycle(roleMap map[string]*models.Role) bool {
 	// Map to track visit state of each role
 	visitState := make(map[string]int)
