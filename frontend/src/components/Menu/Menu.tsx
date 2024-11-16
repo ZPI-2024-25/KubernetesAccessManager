@@ -14,10 +14,6 @@ const LeftMenu: React.FC = () => {
     const username = 'k8_userjjjjjjjjjjjjjjjiiiiiiiii';
     const location = useLocation();
 
-    const onCollapse = (value: boolean) => {
-        setCollapsed(value);
-        setAsideWidth(value ? 80 : 250);
-    };
 
     const generateMenuItems = (menuItems: MenuItem[]): MenuItem[] => {
         return menuItems.map((item) => {

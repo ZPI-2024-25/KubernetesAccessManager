@@ -158,7 +158,7 @@ paths:
       - Kubernetes Resources
       summary: Create a new resource
       description: Creates a new resource of the specified type.
-      operationId: createResources
+      operationId: createResource
       parameters:
       - name: resourceType
         in: path

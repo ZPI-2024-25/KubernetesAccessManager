@@ -58,7 +58,7 @@ paths:
         - Kubernetes Resources
       summary: Create a new resource
       description: Creates a new resource of the specified type.
-      operationId: createResources
+      operationId: createResource
       parameters:
         - $ref: '#/components/parameters/ResourceType'
         - $ref: '#/components/parameters/NamespaceDeafult'
