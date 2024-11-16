@@ -7,7 +7,7 @@ info:
     Some useful links:
     - [Jira](https://samuelus.atlassian.net/jira/software/projects/ZPI/boards/4)
     - [Confluence](https://samuelus.atlassian.net/wiki/spaces/ZPI/overview)
-  version: 0.0.4
+  version: 0.0.5
 servers:
   - url: http://localhost:8080/api/v1
 security:
@@ -387,6 +387,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
+        "202":
+          description: Uninstaling helm release in progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
         "401":
           $ref: '#/components/responses/Unauthorized'
         "403":
@@ -451,6 +457,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HelmRelease'
+        "202":
+          description: Rolling back helm release in progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
         "400":
           $ref: '#/components/responses/BadRequest'
         "401":
@@ -526,7 +538,9 @@ components:
         resource_list:
           type: array
           description: List of resources, each containing the data for the specified columns.
+          minItems: 0
           items:
+            type: object
             properties:
               active:
                 type: string
@@ -660,6 +674,8 @@ components:
               version:
                 type: string
                 description: "Optional value for 'version'"
+      required:
+        - resource_list
     ResourceDetails:
       type: object
       properties:
@@ -711,49 +727,47 @@ components:
         status: status
     UserStatus:
       type: object
+      description: User session details and privileges.
       properties:
         permissions:
-          type: array
-          description: List of user permissions for resources and namespaces.<br>https://samuelus.atlassian.net/wiki/spaces/ZPI/pages/28147713/Dokumentacja+Struktury+JSON+dla+Uprawnie
-          items:
+          type: object
+          description: Permissions structured by namespaces and resources with allowed operations.
+          additionalProperties:
             type: object
-            properties:
-              resource:
-                type: array
-                description: List of resources with specific permissions
-                items:
-                  type: string
-              namespace:
-                type: array
-                description: Namespaces with specific permissions
-                items:
-                  type: string
-              operations:
-                type: array
-                description: List of allowed operations
-                items:
-                  type: string
+            description: A namespace with resources and their allowed operations.
+            additionalProperties:
+              type: array
+              description: A resource with a list of allowed operations.
+              items:
+                type: string
+                description: An allowed operation for the resource in this namespace.
         user:
           type: object
+          description: Details about the user session.
           properties:
             exp:
               type: integer
-              description: JWT expiration time
+              description: JWT expiration time.
             preferred_username:
               type: string
-              description: User's preferred username
+              description: User's preferred username.
             email:
               type: string
-              description: User's email address
-      description: User session details and privileges
+              description: User's email address.
       example:
         permissions:
-          - resource: ["*"]
-            namespace: ["default", "production"]
-            operations: ["read", "create", "list"]
-          - resource: ["Pod"]
-            namespace: ["default"]
-            operations: ["delete"]
+          default:
+            Pod:
+              - "c"
+              - "r"
+              - "l"
+            Service:
+              - "c"
+              - "r"
+              - "d"
+          "*":
+            Pod:
+              - "d"
         user:
           exp: 1672531199
           preferred_username: "username"
