@@ -8,11 +8,8 @@ The files are named according to the endpoint they were used to test. Some may c
 
 - `configmap.yaml`
 - `daemonset.yaml`
-- `deployment.yaml`
-- `ingress.yaml`
 - `persistentvolume.yaml`
 - `persistentvolumeclaim.yaml`
 - `secret.yaml`
-- `service.yaml`
 - `statefulset.yaml`: StatefulSet + Service definition.
 - `customresourcedefinition.yaml`'

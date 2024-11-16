@@ -52,13 +52,13 @@ var resourceListColumns = map[string][]string{
 	"Deployment":               {nameStr, namespaceStr, podsStr, replicasStr, ageStr, conditionsStr},
 	"ConfigMap":                {nameStr, namespaceStr, keysStr, ageStr},
 	"Secret":                   {nameStr, namespaceStr, labelsStr, keysStr, typeStr, ageStr},
-	"Ingress":                  {nameStr, namespaceStr, loadbalancersStr, ageStr}, // loadbalancers untested
+	"Ingress":                  {nameStr, namespaceStr, loadbalancersStr, ageStr},
 	"PersistentVolumeClaim":    {nameStr, namespaceStr, storageClassStr, sizeStr, ageStr, statusStr},
 	"StatefulSet":              {nameStr, namespaceStr, podsStr, replicasStr, ageStr},
 	"DaemonSet":                {nameStr, namespaceStr, podsStr, nodeSelectorStr, ageStr},
 	"Job":                      {nameStr, namespaceStr, completionsStr, ageStr, conditionsStr},
 	"CronJob":                  {nameStr, namespaceStr, scheduleStr, suspendStr, activeStr, lastScheduleStr, ageStr},
-	"Service":                  {nameStr, namespaceStr, typeStr, clusterIpStr, portsStr, externalIpStr, selectorStr, ageStr, statusStr}, // external ip untested
+	"Service":                  {nameStr, namespaceStr, typeStr, clusterIpStr, portsStr, externalIpStr, selectorStr, ageStr, statusStr},
 	"ServiceAccount":           {nameStr, namespaceStr, ageStr},
 	"Node":                     {nameStr, taintsStr, rolesStr, versionStr, ageStr, conditionsStr},
 	"Namespace":                {nameStr, labelsStr, ageStr, statusStr},
