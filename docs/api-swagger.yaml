@@ -713,6 +713,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Status'
+        "202":
+          description: Uninstaling helm release in progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
         "401":
           description: Authentication failed
           content:
@@ -839,6 +845,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HelmRelease'
+        "202":
+          description: Rolling back helm release in progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
         "400":
           description: Invalid input
           content:
@@ -1087,30 +1099,27 @@ components:
       type: object
       properties:
         permissions:
-          type: array
-          description: List of user permissions for resources and namespaces.<br>https://samuelus.atlassian.net/wiki/spaces/ZPI/pages/28147713/Dokumentacja+Struktury+JSON+dla+Uprawnie
-          items:
-            $ref: '#/components/schemas/UserStatus_permissions'
+          $ref: '#/components/schemas/UserStatus_permissions'
         user:
           $ref: '#/components/schemas/UserStatus_user'
       description: User session details and privileges
       example:
         permissions:
-        - resource:
+          namespaces:
+          - default
           - '*'
-          namespace:
-          - default
-          - production
-          operations:
-          - read
-          - create
-          - list
-        - resource:
+          resources:
+          - '*'
           - Pod
-          namespace:
-          - default
-          operations:
-          - delete
+          matrix:
+          - - - c
+              - r
+              - l
+            - - c
+              - r
+              - d
+          - - - d
+            - []
         user:
           exp: 1672531199
           preferred_username: username
@@ -1368,21 +1377,30 @@ components:
     UserStatus_permissions:
       type: object
       properties:
-        resource:
+        resources:
           type: array
-          description: List of resources with specific permissions
+          description: List of resources corresponding to rows in the matrix.
           items:
             type: string
-        namespace:
+        namespaces:
           type: array
-          description: Namespaces with specific permissions
+          description: List of namespaces corresponding to columns in the matrix.
           items:
             type: string
-        operations:
+        matrix:
           type: array
-          description: List of allowed operations
+          description: Matrix of permissions where each row corresponds to a resource
+            and each column corresponds to a namespace.
           items:
-            type: string
+            type: array
+            items:
+              type: array
+              description: List of allowed operations for a specific resource and
+                namespace.
+              items:
+                type: string
+      description: "Permissions matrix where rows are resources, columns are namespaces,\
+        \ and values are lists of allowed operations."
     UserStatus_user:
       type: object
       properties:

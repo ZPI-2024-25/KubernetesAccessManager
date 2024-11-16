@@ -10,8 +10,7 @@ package models
 
 // User session details and privileges
 type UserStatus struct {
-	// List of user permissions for resources and namespaces.<br>https://samuelus.atlassian.net/wiki/spaces/ZPI/pages/28147713/Dokumentacja+Struktury+JSON+dla+Uprawnie
-	Permissions []UserStatusPermissions `json:"permissions,omitempty"`
+	Permissions *UserStatusPermissions `json:"permissions,omitempty"`
 
 	User *UserStatusUser `json:"user,omitempty"`
 }

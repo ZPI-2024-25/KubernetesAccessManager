@@ -8,11 +8,12 @@
  */
 package models
 
+// Permissions matrix where rows are resources, columns are namespaces, and values are lists of allowed operations.
 type UserStatusPermissions struct {
-	// List of resources with specific permissions
-	Resource []string `json:"resource,omitempty"`
-	// Namespaces with specific permissions
-	Namespace []string `json:"namespace,omitempty"`
-	// List of allowed operations
-	Operations []string `json:"operations,omitempty"`
+	// List of resources corresponding to rows in the matrix.
+	Resources []string `json:"resources,omitempty"`
+	// List of namespaces corresponding to columns in the matrix.
+	Namespaces []string `json:"namespaces,omitempty"`
+	// Matrix of permissions where each row corresponds to a resource and each column corresponds to a namespace.
+	Matrix [][][]string `json:"matrix,omitempty"`
 }

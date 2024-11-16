@@ -729,26 +729,29 @@ components:
       type: object
       properties:
         permissions:
-          type: array
-          description: List of user permissions for resources and namespaces.<br>https://samuelus.atlassian.net/wiki/spaces/ZPI/pages/28147713/Dokumentacja+Struktury+JSON+dla+Uprawnie
-          items:
-            type: object
-            properties:
-              resource:
+          type: object
+          description: Permissions matrix where rows are resources, columns are namespaces, and values are lists of allowed operations.
+          properties:
+            resources:
+              type: array
+              description: List of resources corresponding to rows in the matrix.
+              items:
+                type: string
+            namespaces:
+              type: array
+              description: List of namespaces corresponding to columns in the matrix.
+              items:
+                type: string
+            matrix:
+              type: array
+              description: Matrix of permissions where each row corresponds to a resource and each column corresponds to a namespace.
+              items:
                 type: array
-                description: List of resources with specific permissions
                 items:
-                  type: string
-              namespace:
-                type: array
-                description: Namespaces with specific permissions
-                items:
-                  type: string
-              operations:
-                type: array
-                description: List of allowed operations
-                items:
-                  type: string
+                  type: array
+                  description: List of allowed operations for a specific resource and namespace.
+                  items:
+                    type: string
         user:
           type: object
           properties:
@@ -764,12 +767,11 @@ components:
       description: User session details and privileges
       example:
         permissions:
-          - resource: ["*"]
-            namespace: ["default", "production"]
-            operations: ["read", "create", "list"]
-          - resource: ["Pod"]
-            namespace: ["default"]
-            operations: ["delete"]
+          namespaces: ["default", "*"]
+          resources: ["*", "Pod"]
+          matrix:
+            - [["c", "r", "l"], ["c", "r", "d"]]  # Permissions for "default"
+            - [["d"], []]                        # Permissions for "*"
         user:
           exp: 1672531199
           preferred_username: "username"
