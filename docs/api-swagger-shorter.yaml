@@ -727,51 +727,47 @@ components:
         status: status
     UserStatus:
       type: object
+      description: User session details and privileges.
       properties:
         permissions:
           type: object
-          description: Permissions matrix where rows are resources, columns are namespaces, and values are lists of allowed operations.
-          properties:
-            resources:
+          description: Permissions structured by namespaces and resources with allowed operations.
+          additionalProperties:
+            type: object
+            description: A namespace with resources and their allowed operations.
+            additionalProperties:
               type: array
-              description: List of resources corresponding to rows in the matrix.
+              description: A resource with a list of allowed operations.
               items:
                 type: string
-            namespaces:
-              type: array
-              description: List of namespaces corresponding to columns in the matrix.
-              items:
-                type: string
-            matrix:
-              type: array
-              description: Matrix of permissions where each row corresponds to a resource and each column corresponds to a namespace.
-              items:
-                type: array
-                items:
-                  type: array
-                  description: List of allowed operations for a specific resource and namespace.
-                  items:
-                    type: string
+                description: An allowed operation for the resource in this namespace.
         user:
           type: object
+          description: Details about the user session.
           properties:
             exp:
               type: integer
-              description: JWT expiration time
+              description: JWT expiration time.
             preferred_username:
               type: string
-              description: User's preferred username
+              description: User's preferred username.
             email:
               type: string
-              description: User's email address
-      description: User session details and privileges
+              description: User's email address.
       example:
         permissions:
-          namespaces: ["default", "*"]
-          resources: ["*", "Pod"]
-          matrix:
-            - [["c", "r", "l"], ["c", "r", "d"]]  # Permissions for "default"
-            - [["d"], []]                        # Permissions for "*"
+          default:
+            Pod:
+              - "c"
+              - "r"
+              - "l"
+            Service:
+              - "c"
+              - "r"
+              - "d"
+          "*":
+            Pod:
+              - "d"
         user:
           exp: 1672531199
           preferred_username: "username"

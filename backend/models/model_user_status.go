@@ -8,9 +8,10 @@
  */
 package models
 
-// User session details and privileges
+// User session details and privileges.
 type UserStatus struct {
-	Permissions *UserStatusPermissions `json:"permissions,omitempty"`
+	// Permissions structured by namespaces and resources with allowed operations.
+	Permissions map[string]map[string][]string `json:"permissions,omitempty"`
 
 	User *UserStatusUser `json:"user,omitempty"`
 }

@@ -8,11 +8,12 @@
  */
 package models
 
+// Details about the user session.
 type UserStatusUser struct {
-	// JWT expiration time
+	// JWT expiration time.
 	Exp int32 `json:"exp,omitempty"`
-	// User's preferred username
+	// User's preferred username.
 	PreferredUsername string `json:"preferred_username,omitempty"`
-	// User's email address
+	// User's email address.
 	Email string `json:"email,omitempty"`
 }
