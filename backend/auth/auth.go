@@ -107,3 +107,19 @@ func ExtractRoles(claims *jwt.MapClaims) ([]string, error) {
 
 	return roles, nil
 }
+
+func ExtractUserStatus(claims *jwt.MapClaims) (int32, string, string)  {
+	var exp int32
+	var preferredUsername string
+	var email string
+	if expFloat, ok := (*claims)["exp"].(float64); ok {
+		exp = int32(expFloat)
+	}
+	if preferredUsernameStr, ok := (*claims)["preferred_username"].(string); ok {
+		preferredUsername = preferredUsernameStr
+	}
+	if emailStr, ok := (*claims)["email"].(string); ok {
+		email = emailStr
+	}
+	return exp, preferredUsername, email
+}
