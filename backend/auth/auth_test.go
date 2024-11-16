@@ -1,19 +1,11 @@
 package auth
 
 import (
-	// "context"
-	// "errors"
 	"regexp"
 	"strings"
 	"testing"
-	// "github.com/MicahParks/keyfunc"
-	// "github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
-	// "github.com/stretchr/testify/mock"
-	// metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	// "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	// "k8s.io/client-go/dynamic"
 )
 
 
