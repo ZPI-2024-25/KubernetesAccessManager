@@ -5,7 +5,8 @@ metadata:
   namespace: default
 data:
   role-map: |
-    superadmin:
+    admin:
+      name: "admin"
       deny: 
         - resource: "Pod"
           type: "*"
@@ -15,8 +16,9 @@ data:
           type: "*"
           namespace: "*"
       subroles:
-        - "admin"
+        - "user"
     user:
+      name: "user"
       permit:
         - resource: "Pod"
           type: "read"
@@ -24,28 +26,23 @@ data:
       subroles:
         - "guest"
     guest:
+      name: "guest"
       permit:
         - resource: "Pod"
           type: "list"
           namespace: "default"
-
   subrole-map: |
-    admin:
-      deny: 
-        - resource: "Pod"
-          type: "*"
-          namespace: "*"
+    superadmin:
+      name: "superadmin"
       permit:
         - resource: "*"
           type: "*"
           namespace: "*"
       subroles:
         - "admin"
-    pod-viewer:
+    viewer:
+      name: "viewer"
       permit:
         - resource: "Pod"
           type: "read"
-          namespace: "*"
-        - resource: "Pod"
-          type: "list"
-          namespace: "*"
+          namespace: "all"
