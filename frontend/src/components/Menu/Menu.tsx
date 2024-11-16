@@ -1,67 +1,80 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Layout, Menu } from 'antd';
-import { Outlet, useLocation } from 'react-router-dom';
 import styles from './Menu.module.css';
 import { items } from '../../consts/MenuItem';
 import { MenuItem } from '../../types';
+import {Link, Outlet} from "react-router-dom";
+import { useLocation } from 'react-router-dom';
 
 const { Header, Content, Footer, Sider } = Layout;
 
 const LeftMenu: React.FC = () => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
-    const [currentPage, setCurrentPage] = useState<string>('');
-    const [selectedKey, setSelectedKey] = useState<string>('01');
     const [asideWidth, setAsideWidth] = useState<number>(270);
-    const [currentResourceLabel, setCurrentResourceLabel] = useState<string>('');
     const username = 'k8_userjjjjjjjjjjjjjjjiiiiiiiii';
     const location = useLocation();
 
-    const findItemByKey = (key: string, items: MenuItem[]): MenuItem | { sectionLabel: string; childLabel: string; resourceLabel: string } | null => {
-        for (const item of items) {
-            if (item.key === key) {
-                return { ...item, resourceLabel: item.resourcelabel as string };
+    const onCollapse = (value: boolean) => {
+        setCollapsed(value);
+        setAsideWidth(value ? 80 : 250);
+    };
+
+    const generateMenuItems = (menuItems: MenuItem[]): MenuItem[] => {
+        return menuItems.map((item) => {
+            if (item.children) {
+                return {
+                    ...item,
+                    children: generateMenuItems(item.children),
+                };
+            }
+            return {
+                ...item,
+                label: (
+                    <Link to={`/${item.resourceLabel || ''}`}>
+                        {item.label}
+                    </Link>
+                ),
+            };
+        });
+    };
+
+    const getSelectedKeys = (menuItems: MenuItem[], pathname: string): string[] => {
+        for (const item of menuItems) {
+            const itemPath = `/${item.resourceLabel || ''}`;
+            if (itemPath === pathname) {
+                return [item.key];
             }
             if (item.children) {
-                const found = findItemByKey(key, item.children);
-                if (found) {
-                    return {
-                        sectionLabel: item.label,
-                        childLabel: (found as MenuItem).label,
-                        resourceLabel: (found as MenuItem).resourcelabel as string,
-                    };
+                const childSelectedKeys = getSelectedKeys(item.children, pathname);
+                if (childSelectedKeys.length > 0) {
+                    return [item.key, ...childSelectedKeys];
                 }
             }
         }
-        return null;
+        return [];
     };
 
-    const setCurrentPageFromItem = (item: MenuItem | { sectionLabel: string; childLabel: string; resourceLabel: string }) => {
-        if ('childLabel' in item) {
-            setCurrentPage(`${item.sectionLabel}/${item.childLabel}`);
-            setCurrentResourceLabel(item.resourceLabel);
-        } else {
-            setCurrentPage(item.label as string);
-            setCurrentResourceLabel(item.resourcelabel as string);
+    const getCurrentPageTitleFromKeys = (menuItems: MenuItem[], keys: string[]): string => {
+        const labels: string[] = [];
+        let currentItems = menuItems;
+        for (const key of keys) {
+            const item = currentItems.find((item) => item.key === key);
+            if (item) {
+                labels.push(item.label as string);
+                if (item.children) {
+                    currentItems = item.children;
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
         }
+        return labels.join('/');
     };
 
-    const handleMenuClick = (e: { key: string }) => {
-        setSelectedKey(e.key);
-        const selectedItem = findItemByKey(e.key, items);
-
-        if (selectedItem) {
-            setCurrentPageFromItem(selectedItem);
-        } else {
-            setCurrentPage('');
-        }
-    };
-
-    useEffect(() => {
-        const defaultItem = findItemByKey(selectedKey, items);
-        if (defaultItem) {
-            setCurrentPageFromItem(defaultItem);
-        }
-    }, [location.pathname]);
+    const selectedKeys = getSelectedKeys(items, location.pathname);
+    const currentPageTitle = getCurrentPageTitleFromKeys(items, selectedKeys);
 
     return (
         <Layout className={styles.menuLayout}>
@@ -71,34 +84,33 @@ const LeftMenu: React.FC = () => {
                 collapsed={collapsed}
                 onCollapse={(value) => {
                     setCollapsed(value);
-                    setAsideWidth(asideWidth === 80 ? 250 : 80);
+                    setAsideWidth(asideWidth === 80 ? 270 : 80);
                 }}
                 width={`${asideWidth}px`}
             >
                 <div className={styles.logo}>
-                    <span className={styles.logoText}>
-                        {collapsed ? 'U' : username.length > 10 ? `${username.slice(0, 10)}...` : username}
-                    </span>
+          <span className={styles.logoText}>
+            {collapsed ? 'U' : username.length > 10 ? `${username.slice(0, 10)}...` : username}
+          </span>
                 </div>
                 <Menu
                     theme="dark"
-                    selectedKeys={[selectedKey]}
+                    selectedKeys={selectedKeys}
                     mode="inline"
-                    items={items}
-                    onClick={handleMenuClick}
-                    style={{ paddingBottom: '50px' }}
+                    items={generateMenuItems(items)
+                    }
+                    style={{ paddingBottom: 50 }}
+
                 />
             </Sider>
-            <Layout className={styles.contentLayout} style={{ marginLeft: `${asideWidth}px` }}>
+            <Layout className={styles.contentLayout} style={{ marginLeft: asideWidth }}>
                 <Header className={styles.header}>
-                    <p style={{ paddingLeft: `${asideWidth}px` }}>
-                        {currentPage || 'name of page'}
+                    <p style={{ paddingLeft: asideWidth }}>
+                        {currentPageTitle || 'Page name'}
                     </p>
                 </Header>
                 <Content className={styles.content}>
-                    <div className={styles.innerContent}>
-                        <Outlet context={{ currentResourceLabel }} />
-                    </div>
+                    <Outlet />
                 </Content>
                 <Footer className={styles.footer}>
                     ZPI Kubernetes Access Manager ©{new Date().getFullYear()} Created by SDVM
