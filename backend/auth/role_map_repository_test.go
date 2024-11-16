@@ -728,6 +728,100 @@ func TestRoleMapFlatteningFuzzy(t *testing.T) {
 	}
 }
 
+func TestPruning(t *testing.T) {
+	operations := []models.OperationType{"create", "read", "update", "delete"}
+	tests := []struct {
+		name       string
+		permits    int
+		denies     int
+		resources  int
+		namespaces int
+		pstar      float64
+		dstar      float64
+		nodes      int
+		edges      int
+		allowedOperations []models.OperationType
+	}{
+		{
+			name:       "Small graph with few permits and denies",
+			permits:    10,
+			denies:     5,
+			resources:  3,
+			namespaces: 3,
+			pstar:      0.2,
+			dstar:      0.1,
+			nodes:      5,
+			edges:      4,
+			allowedOperations: []models.OperationType{"create", "read", "update", "delete", "*"},
+		},
+		{
+			name:       "Medium graph with moderate permits and denies",
+			permits:    50,
+			denies:     25,
+			resources:  10,
+			namespaces: 5,
+			pstar:      0.3,
+			dstar:      0.2,
+			nodes:      10,
+			edges:      15,
+			allowedOperations: []models.OperationType{"create", "read", "update", "delete", "*"},
+		},
+		{
+			name:       "Large graph with many permits and denies",
+			permits:    100,
+			denies:     50,
+			resources:  20,
+			namespaces: 10,
+			pstar:      0.4,
+			dstar:      0.3,
+			nodes:      20,
+			edges:      30,
+			allowedOperations: []models.OperationType{"create", "read", "update", "delete", "*"},
+		},
+		{
+			name:       "Large graph with many permits and denies",
+			permits:    2500,
+			denies:     1000,
+			resources:  40,
+			namespaces: 100,
+			pstar:      0.2,
+			dstar:      0.15,
+			nodes:      100,
+			edges:      200,
+			allowedOperations: []models.OperationType{"create", "read", "update", "delete", "list", "*"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			graph := randomAcyclicGraph(tt.nodes, tt.edges)
+			repo := createFuzzyRoleRepo(tt.permits, tt.denies, tt.resources, tt.namespaces, tt.pstar, tt.dstar, tt.allowedOperations, graph)
+			assert.NotNil(t, repo)
+
+			// Check if the flattened map is created correctly
+			repo.flattenedMap = createPermissionMatrix(repo.RoleMap, repo.SubroleMap)
+			ogSize := len(repo.flattenedMap["root"]) * len(repo.flattenedMap["root"]["*"])
+			pruned := PrunePermissions(repo.flattenedMap["root"])
+			log.Printf("Flattened map created and pruned %d out of %d", pruned, ogSize)
+
+			// Compare hasPermission with flatHasPermission
+			for i := 0; i < tt.namespaces + 1; i++ {
+				for j := 0; j < tt.resources + 1; j++ {
+					for _, op := range operations {
+						operation := &models.Operation{Type: op, Resource: fmt.Sprintf("r%d", j), Namespace: fmt.Sprintf("n%d", i)}
+						expected := hasPermission(repo.RoleMap["root"], repo.SubroleMap, operation, make(map[string]struct{}))
+						result := flatHasPermission(operation, repo.flattenedMap["root"])
+						assert.Equal(t, expected, result)
+						if expected != result {
+							log.Printf("Test failed for operation: %v", operation)
+						}
+					}
+				}
+			}
+		})
+	}
+}
+
 func createFuzzyRoleRepo(permits, denies, resources, namespaces int, pstar, dstar float64, operations []models.OperationType, graph map[string][]string) *RoleMapRepository {
 	roleMap := map[string]*models.Role{"root": {Name: "root",Subroles: []string{"sub0"}}}
 	subroleMap := make(map[string]*models.Role)

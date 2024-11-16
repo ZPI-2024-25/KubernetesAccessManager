@@ -63,6 +63,7 @@ func (rmr *RoleMapRepository) GetAllPermissions(role []string) map[string]map[st
 		if _, exists := rmr.flattenedMap[r]; exists {
 			if first {
 				pmatrix = deepCopy(rmr.flattenedMap[r])
+				pruneResourcesNamespaces(pmatrix)
 				first = false
 			} else {
 				pmatrix = addMatrix(pmatrix, rmr.flattenedMap[r])
@@ -153,6 +154,21 @@ func pruneResourcesNamespaces(matrix map[string]map[string]map[models.OperationT
 		}
 	}
 	return wasPruned
+}
+
+func PrunePermissions(matrix map[string]map[string]map[models.OperationType]struct{}) int {
+	deleted := 0
+	for namespace, resources := range matrix {
+		for resource, operations := range resources {
+			if resource != "*" {
+				if sameOps(operations, matrix[namespace]["*"]) {
+					delete(matrix[namespace], resource)
+					deleted++
+				}
+			}
+		}	
+	}
+	return deleted
 }
 
 func sameOps(ops1 map[models.OperationType]struct{}, ops2 map[models.OperationType]struct{}) bool {
@@ -367,8 +383,6 @@ func dfs(roleName string, roleMap map[string]*models.Role, visitState map[string
 	visitState[roleName] = visited
 	return false
 }
-
-
 
 func GetRoleMapConfig (namespace string, name string) (map[string]*models.Role, map[string]*models.Role) {
 	res, err := cluster.GetResource("ConfigMap", namespace, name, cluster.GetResourceInterface)
