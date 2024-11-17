@@ -9,30 +9,26 @@
 package api
 
 import (
+	"github.com/ZPI-2024-25/KubernetesAccessManager/controllers"
 	"net/http"
 )
 
 func GetHelmRelease(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	controllers.GetHelmReleaseController(w, r)
 }
 
 func GetHelmReleaseHistory(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	controllers.GetHelmReleaseHistoryController(w, r)
 }
 
 func ListHelmReleases(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	controllers.ListHelmReleasesController(w, r)
 }
 
 func RollbackHelmRelease(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	controllers.RollbackHelmReleaseController(w, r)
 }
 
 func UninstallHelmRelease(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	controllers.UninstallHelmReleaseController(w, r)
 }
