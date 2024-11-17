@@ -40,7 +40,7 @@ func getLoginStatus(claims *jwt.MapClaims, rolemap *auth.RoleMapRepository) (*mo
 	if err != nil {
 		return nil, &models.ModelError{
 			Message: "Error extracting roles from JWT token: " + err.Error(),
-			Code:    http.StatusInternalServerError,
+			Code:    http.StatusBadRequest,
 		}
 	}
 	access := rolemap.GetAllPermissions(roles)
