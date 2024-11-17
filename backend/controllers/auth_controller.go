@@ -22,7 +22,7 @@ func CheckLoginStatus(w http.ResponseWriter, r *http.Request)  {
 	rolemap, err := auth.GetRoleMapInstance()
 	if err != nil {
 		writeJSONResponse(w, http.StatusInternalServerError, &models.ModelError{
-			Message: "Internal Server Error",
+			Message: fmt.Sprintf("Failed to get client: %s", err),
 			Code: http.StatusInternalServerError,
 		})
 	}
