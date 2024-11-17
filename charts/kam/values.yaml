@@ -14,6 +14,9 @@ backend:
 
   env:
     KEYCLOAK_URL: ""
+    KEYCLOAK_CLIENTNAME: ""
+    ROLEMAP_NAMESPACE: ""
+    ROLEMAP_NAME: ""
 
   serviceAccount:
     create: true

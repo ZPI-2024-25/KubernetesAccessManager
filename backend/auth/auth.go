@@ -3,15 +3,17 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"github.com/MicahParks/keyfunc"
-	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
-	"github.com/golang-jwt/jwt/v4"
-	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/MicahParks/keyfunc"
+	"github.com/ZPI-2024-25/KubernetesAccessManager/common"
+	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/joho/godotenv"
 )
 
 var jwks *keyfunc.JWKS
@@ -86,8 +88,9 @@ func IsUserAuthorized(operation models.Operation, roles []string) (bool, error) 
 
 func ExtractRoles(claims *jwt.MapClaims) ([]string, error) {
 	var roles []string
+	client := common.GetOrDefaultEnv("KEYCLOAK_CLIENTNAME", "account")
 	if resourceAccess, ok := (*claims)["resource_access"].(map[string]interface{}); ok {
-		for _, resource := range resourceAccess {
+		if resource, ok := resourceAccess[client]; ok {
 			if resourceMap, ok := resource.(map[string]interface{}); ok {
 				if resourceRoles, ok := resourceMap["roles"].([]interface{}); ok {
 					for _, role := range resourceRoles {
@@ -103,4 +106,20 @@ func ExtractRoles(claims *jwt.MapClaims) ([]string, error) {
 	}
 
 	return roles, nil
+}
+
+func ExtractUserStatus(claims *jwt.MapClaims) (int32, string, string)  {
+	var exp int32
+	var preferredUsername string
+	var email string
+	if expFloat, ok := (*claims)["exp"].(float64); ok {
+		exp = int32(expFloat)
+	}
+	if preferredUsernameStr, ok := (*claims)["preferred_username"].(string); ok {
+		preferredUsername = preferredUsernameStr
+	}
+	if emailStr, ok := (*claims)["email"].(string); ok {
+		email = emailStr
+	}
+	return exp, preferredUsername, email
 }
