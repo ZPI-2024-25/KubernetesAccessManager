@@ -45,7 +45,7 @@ func getLoginStatus(claims *jwt.MapClaims, rolemap *auth.RoleMapRepository) (*mo
 	}
 	access := rolemap.GetAllPermissions(roles)
 	auth.PrunePermissions(access)
-	permissions := shortenPermissions(access)
+	permissions := toPermissionModel(access)
 	exp, preferredUsername, email := auth.ExtractUserStatus(claims)
 
 	return &models.UserStatus{
@@ -58,36 +58,19 @@ func getLoginStatus(claims *jwt.MapClaims, rolemap *auth.RoleMapRepository) (*mo
 	}, nil
 }
 
-func shortenPermissions(pmatrix auth.PermissionMatrix) map[string]map[string][]string {
-	res := make(map[string]map[string][]string)
+func toPermissionModel(pmatrix auth.PermissionMatrix) map[string]map[string][]string {
+	result := make(map[string]map[string][]string)
 
-	for k, v := range pmatrix {
-		res[k] = make(map[string][]string)
-		for k2, v2 := range v {
-			res[k][k2] = make([]string, len(v2))
+	for namespace, resources := range pmatrix {
+		result[namespace] = make(map[string][]string)
+		for resource, operations := range resources {
+			result[namespace][resource] = make([]string, len(operations))
 			i := 0
-			for k3 := range v2 {
-				res[k][k2][i] = shorterP(k3)
+			for op := range operations {
+				result[namespace][resource][i] = op.ShortString()
 				i++
 			}
 		}
 	}
-	return res
-}
-
-func shorterP(p models.OperationType) string {
-	switch p {
-	case models.Create:
-		return "c"
-	case models.Read:
-		return "r"
-	case models.Update:
-		return "u"
-	case models.Delete:
-		return "d"
-	case models.List:
-		return "l"
-	default:
-		return "x"
-	}
+	return result
 }
