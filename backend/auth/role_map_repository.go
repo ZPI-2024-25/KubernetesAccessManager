@@ -138,7 +138,7 @@ func pruneResourcesNamespaces(matrix PermissionMatrix) bool {
 			}
 		}
 	}
-	for resource, _ := range matrix["*"] { //prune resources
+	for resource := range matrix["*"] { //prune resources
 		if resource != "*" {
 			allOpsSame := true
 			for namespace, resources := range matrix {
