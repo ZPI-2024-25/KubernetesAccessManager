@@ -28,7 +28,7 @@ func CheckLoginStatus(w http.ResponseWriter, r *http.Request)  {
 	}
 	status, errM := getLoginStatus(claims, rolemap)
 	if errM != nil {
-		writeJSONResponse(w, int(errM.Code), err)
+		writeJSONResponse(w, int(errM.Code), errM)
 		return
 	}
 	writeJSONResponse(w, http.StatusOK, status)
