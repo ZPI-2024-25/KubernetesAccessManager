@@ -39,7 +39,7 @@ func getLoginStatus(claims *jwt.MapClaims, rolemap *auth.RoleMapRepository) (*mo
 	roles, err := auth.ExtractRoles(claims)
 	if err != nil {
 		return nil, &models.ModelError{
-			Message: "Roles not found in bearer token",
+			Message: "Error extracting roles JWT token: " + err.Error(),
 			Code:    http.StatusInternalServerError,
 		}
 	}
