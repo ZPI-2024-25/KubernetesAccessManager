@@ -220,19 +220,19 @@ func addMatrix(m1 map[string]map[string]map[models.OperationType]struct{},
 		m1, m2 = m2, m1
 	}
 
-	res := deepCopy(m1)
+	sum := deepCopy(m1)
 	for namespace := range m2 {
-		if _, exists := res[namespace]; !exists {
-			expandNamespaces(namespace, res)
+		if _, exists := sum[namespace]; !exists {
+			expandNamespaces(namespace, sum)
 		}
 	}
 	for resource := range m2["*"] {
-		if _, exists := res["*"][resource]; !exists {
-			expandResources(resource, res)
+		if _, exists := sum["*"][resource]; !exists {
+			expandResources(resource, sum)
 		}
 	}
 	var fromNs, fromRes string
-	for namespace, resources := range res {
+	for namespace, resources := range sum {
 		if _, exists := m2[namespace]; !exists {
 			fromNs = "*"
 		} else {
@@ -249,7 +249,7 @@ func addMatrix(m1 map[string]map[string]map[models.OperationType]struct{},
 			}
 		}
 	}
-	return res
+	return sum
 }
 
 func addPermitToMatrix(matrix map[string]map[string]map[models.OperationType]struct{}, permit models.Operation) {
