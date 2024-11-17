@@ -178,115 +178,115 @@ func hasPermission(role *models.Role, subroleMap map[string]*models.Role, operat
 
 func TestHasPermission(t *testing.T) {
 	tests := []struct {
-        name       string
-        roleMap    map[string]*models.Role
-        subroleMap map[string]*models.Role
-        rolename   string
-        operation  *models.Operation
-        expected   bool
-    }{
-        {
-            name: "Permission granted",
-            roleMap: map[string]*models.Role{
-                "admin": {Subroles: []string{"user", "manager"}},
-            },
-            subroleMap: map[string]*models.Role{
-                "user":    {Permit: []models.Operation{{Type: "read", Resource: "resource1", Namespace: "*"}}},
-                "manager": {Subroles: []string{"user"}},
-            },
-            rolename:  "admin",
-            operation: &models.Operation{Type: "read", Resource: "resource1", Namespace: "namespace"},
-            expected:  true,
-        },
-        {
-            name: "Permission denied",
-            roleMap: map[string]*models.Role{
-                "admin": {Subroles: []string{"user", "manager"}},
-            },
-            subroleMap: map[string]*models.Role{
-                "user":    {Deny: []models.Operation{{Type: "read", Resource: "resource1", Namespace: "*"}}, Permit: []models.Operation{{Type: "read", Resource: "resource", Namespace: "hihi"}}},
-                "manager": {Subroles: []string{"user"}},
-            },
-            rolename:  "admin",
-            operation: &models.Operation{Type: "read", Resource: "resource1"},
-            expected:  false,
-        },
-        {
-            name: "Role not found",
-            roleMap: map[string]*models.Role{
-                "admin": {Subroles: []string{"user", "manager"}},
-            },
-            subroleMap: map[string]*models.Role{
-                "user":    {Permit: []models.Operation{{Type: "read", Resource: "resource1"}}},
-                "manager": {Subroles: []string{"user"}},
-            },
-            rolename:  "nonexistent",
-            operation: &models.Operation{Type: "read", Resource: "resource1"},
-            expected:  false,
-        },
+		name       string
+		roleMap    map[string]*models.Role
+		subroleMap map[string]*models.Role
+		rolename   string
+		operation  *models.Operation
+		expected   bool
+	}{
 		{
-            name: "Permission granted from alternative path",
-            roleMap: map[string]*models.Role{
-                "0": {Subroles: []string{"1", "2"}},
-            },
-            subroleMap: map[string]*models.Role{
-                "1": {Deny: []models.Operation{{Type: "read", Resource: "resource1", Namespace: "*"}}, Subroles: []string{"3"}},
-                "2": {Subroles: []string{"3"}},
-				"3": {Permit: []models.Operation{{Type: "read", Resource: "resource1", Namespace: "*"}}},
-            },
-            rolename:  "0",
-            operation: &models.Operation{Type: "read", Resource: "resource1", Namespace: "namespace"},
-            expected:  true,
-        },
+			name: "Permission granted",
+			roleMap: map[string]*models.Role{
+				"admin": {Subroles: []string{"user", "manager"}},
+			},
+			subroleMap: map[string]*models.Role{
+				"user":    {Permit: []models.Operation{{Type: "read", Resource: "resource1", Namespace: "*"}}},
+				"manager": {Subroles: []string{"user"}},
+			},
+			rolename:  "admin",
+			operation: &models.Operation{Type: "read", Resource: "resource1", Namespace: "namespace"},
+			expected:  true,
+		},
 		{
-            name: "Permission granted from alternative path",
-            roleMap: map[string]*models.Role{
-                "0": {Subroles: []string{"1", "2"}},
-            },
-            subroleMap: map[string]*models.Role{
-                "1": {Deny: []models.Operation{{Type: "read", Resource: "resource1", Namespace: "*"}}, Subroles: []string{"3"}},
-                "2": {Subroles: []string{"3"}},
+			name: "Permission denied",
+			roleMap: map[string]*models.Role{
+				"admin": {Subroles: []string{"user", "manager"}},
+			},
+			subroleMap: map[string]*models.Role{
+				"user":    {Deny: []models.Operation{{Type: "read", Resource: "resource1", Namespace: "*"}}, Permit: []models.Operation{{Type: "read", Resource: "resource", Namespace: "hihi"}}},
+				"manager": {Subroles: []string{"user"}},
+			},
+			rolename:  "admin",
+			operation: &models.Operation{Type: "read", Resource: "resource1"},
+			expected:  false,
+		},
+		{
+			name: "Role not found",
+			roleMap: map[string]*models.Role{
+				"admin": {Subroles: []string{"user", "manager"}},
+			},
+			subroleMap: map[string]*models.Role{
+				"user":    {Permit: []models.Operation{{Type: "read", Resource: "resource1"}}},
+				"manager": {Subroles: []string{"user"}},
+			},
+			rolename:  "nonexistent",
+			operation: &models.Operation{Type: "read", Resource: "resource1"},
+			expected:  false,
+		},
+		{
+			name: "Permission granted from alternative path",
+			roleMap: map[string]*models.Role{
+				"0": {Subroles: []string{"1", "2"}},
+			},
+			subroleMap: map[string]*models.Role{
+				"1": {Deny: []models.Operation{{Type: "read", Resource: "resource1", Namespace: "*"}}, Subroles: []string{"3"}},
+				"2": {Subroles: []string{"3"}},
 				"3": {Permit: []models.Operation{{Type: "read", Resource: "resource1", Namespace: "*"}}},
-            },
-            rolename:  "0",
-            operation: &models.Operation{Type: "read", Resource: "resource1", Namespace: "namespace"},
-            expected:  true,
-        },
+			},
+			rolename:  "0",
+			operation: &models.Operation{Type: "read", Resource: "resource1", Namespace: "namespace"},
+			expected:  true,
+		},
+		{
+			name: "Permission granted from alternative path",
+			roleMap: map[string]*models.Role{
+				"0": {Subroles: []string{"1", "2"}},
+			},
+			subroleMap: map[string]*models.Role{
+				"1": {Deny: []models.Operation{{Type: "read", Resource: "resource1", Namespace: "*"}}, Subroles: []string{"3"}},
+				"2": {Subroles: []string{"3"}},
+				"3": {Permit: []models.Operation{{Type: "read", Resource: "resource1", Namespace: "*"}}},
+			},
+			rolename:  "0",
+			operation: &models.Operation{Type: "read", Resource: "resource1", Namespace: "namespace"},
+			expected:  true,
+		},
 		{
 			name: "Nil subrole map",
 			roleMap: map[string]*models.Role{
 				"admin": {Subroles: []string{"user", "manager"}},
 			},
 			subroleMap: nil,
-			rolename:  "admin",
-			operation: &models.Operation{Type: "read", Namespace: "n1", Resource: "resource1"},
-			expected:  false,
+			rolename:   "admin",
+			operation:  &models.Operation{Type: "read", Namespace: "n1", Resource: "resource1"},
+			expected:   false,
 		},
 	}
 
 	for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            rmr := &RoleMapRepository{
-                RoleMap:    tt.roleMap,
-                SubroleMap: tt.subroleMap,
-            }
-            visited := make(map[string]struct{})
-            role := rmr.RoleMap[tt.rolename]
-            result := hasPermission(role, rmr.SubroleMap, tt.operation, visited)
-            assert.Equal(t, tt.expected, result)
-        })
-    }
+		t.Run(tt.name, func(t *testing.T) {
+			rmr := &RoleMapRepository{
+				RoleMap:    tt.roleMap,
+				SubroleMap: tt.subroleMap,
+			}
+			visited := make(map[string]struct{})
+			role := rmr.RoleMap[tt.rolename]
+			result := hasPermission(role, rmr.SubroleMap, tt.operation, visited)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
 }
 
 func TestFlatHasPermission(t *testing.T) {
 	tests := []struct {
-		name     string
-		matrix   map[string]map[string]map[models.OperationType]struct{}
-		tests map[*models.Operation]bool
+		name   string
+		matrix PermissionMatrix
+		tests  map[*models.Operation]bool
 	}{
 		{
 			name: "Permission granted specific namespace and resource",
-			matrix: map[string]map[string]map[models.OperationType]struct{}{
+			matrix: PermissionMatrix{
 				"namespace1": {
 					"resource1": {
 						"read": struct{}{},
@@ -299,7 +299,7 @@ func TestFlatHasPermission(t *testing.T) {
 		},
 		{
 			name: "Permission granted wildcard namespace",
-			matrix: map[string]map[string]map[models.OperationType]struct{}{
+			matrix: PermissionMatrix{
 				"*": {
 					"resource1": {
 						"read": struct{}{},
@@ -312,7 +312,7 @@ func TestFlatHasPermission(t *testing.T) {
 		},
 		{
 			name: "Permission granted wildcard resource",
-			matrix: map[string]map[string]map[models.OperationType]struct{}{
+			matrix: PermissionMatrix{
 				"namespace1": {
 					"*": {
 						"read": struct{}{},
@@ -325,7 +325,7 @@ func TestFlatHasPermission(t *testing.T) {
 		},
 		{
 			name: "Permission denied no matching namespace",
-			matrix: map[string]map[string]map[models.OperationType]struct{}{
+			matrix: PermissionMatrix{
 				"namespace2": {
 					"resource1": {
 						"read": struct{}{},
@@ -338,7 +338,7 @@ func TestFlatHasPermission(t *testing.T) {
 		},
 		{
 			name: "Permission denied no matching resource",
-			matrix: map[string]map[string]map[models.OperationType]struct{}{
+			matrix: PermissionMatrix{
 				"namespace1": {
 					"resource2": {
 						"read": struct{}{},
@@ -351,7 +351,7 @@ func TestFlatHasPermission(t *testing.T) {
 		},
 		{
 			name: "Permission denied no matching operation type",
-			matrix: map[string]map[string]map[models.OperationType]struct{}{
+			matrix: PermissionMatrix{
 				"namespace1": {
 					"resource1": {
 						"write": struct{}{},
@@ -364,37 +364,37 @@ func TestFlatHasPermission(t *testing.T) {
 		},
 		{
 			name: "Test all restrictions of wildcards",
-			matrix: map[string]map[string]map[models.OperationType]struct{}{
+			matrix: PermissionMatrix{
 				"*": {
-					"*":    {"create": struct{}{}, "read": struct{}{}, "write": struct{}{}},
-					"r1":   {"create": struct{}{}, "read": struct{}{}},
+					"*":  {"create": struct{}{}, "read": struct{}{}, "write": struct{}{}},
+					"r1": {"create": struct{}{}, "read": struct{}{}},
 				},
 				"n1": {
-					"*":    {"read": struct{}{}, "write": struct{}{}},
-					"r1":   {"list": struct{}{}},
+					"*":  {"read": struct{}{}, "write": struct{}{}},
+					"r1": {"list": struct{}{}},
 				},
 			},
 			tests: map[*models.Operation]bool{
-				// n1, r1 
+				// n1, r1
 				{Type: "create", Resource: "r1", Namespace: "n1"}: false,
-				{Type: "read", Resource: "r1", Namespace: "n1"}: false,
-				{Type: "write", Resource: "r1", Namespace: "n1"}: false,
-				{Type: "list", Resource: "r1", Namespace: "n1"}: true,
+				{Type: "read", Resource: "r1", Namespace: "n1"}:   false,
+				{Type: "write", Resource: "r1", Namespace: "n1"}:  false,
+				{Type: "list", Resource: "r1", Namespace: "n1"}:   true,
 				// n1, r2 = *
 				{Type: "create", Resource: "r2", Namespace: "n1"}: false,
-				{Type: "read", Resource: "r2", Namespace: "n1"}: true,
-				{Type: "write", Resource: "r2", Namespace: "n1"}: true,
-				{Type: "list", Resource: "r2", Namespace: "n1"}: false,
+				{Type: "read", Resource: "r2", Namespace: "n1"}:   true,
+				{Type: "write", Resource: "r2", Namespace: "n1"}:  true,
+				{Type: "list", Resource: "r2", Namespace: "n1"}:   false,
 				// n2 = *, r1
 				{Type: "create", Resource: "r1", Namespace: "n2"}: true,
-				{Type: "read", Resource: "r1", Namespace: "n2"}: true,
-				{Type: "write", Resource: "r1", Namespace: "n2"}: false,
-				{Type: "list", Resource: "r1", Namespace: "n2"}: false,
+				{Type: "read", Resource: "r1", Namespace: "n2"}:   true,
+				{Type: "write", Resource: "r1", Namespace: "n2"}:  false,
+				{Type: "list", Resource: "r1", Namespace: "n2"}:   false,
 				// n2 = *, r2 = *
 				{Type: "create", Resource: "r2", Namespace: "n2"}: true,
-				{Type: "read", Resource: "r2", Namespace: "n2"}: true,
-				{Type: "write", Resource: "r2", Namespace: "n2"}: true,
-				{Type: "list", Resource: "r2", Namespace: "n2"}: false,				
+				{Type: "read", Resource: "r2", Namespace: "n2"}:   true,
+				{Type: "write", Resource: "r2", Namespace: "n2"}:  true,
+				{Type: "list", Resource: "r2", Namespace: "n2"}:   false,
 			},
 		},
 		// Test case from fuzy:
@@ -428,30 +428,30 @@ func TestFlatHasPermission(t *testing.T) {
 		//     Operation: delete
 		{
 			name: "Test case from fuzzy",
-			matrix: map[string]map[string]map[models.OperationType]struct{}{
+			matrix: PermissionMatrix{
 				"*": {
-					"*":    {},
-					"r1":   {},
-					"r0":   {"delete": {}},
-					"r2":   {},
+					"*":  {},
+					"r1": {},
+					"r0": {"delete": {}},
+					"r2": {},
 				},
 				"n2": {
-					"*":    {},
-					"r1":   {"delete": {}, "update": {}},
-					"r0":   {"delete": {}},
-					"r2":   {},
+					"*":  {},
+					"r1": {"delete": {}, "update": {}},
+					"r0": {"delete": {}},
+					"r2": {},
 				},
 				"n0": {
-					"*":    {},
-					"r1":   {},
-					"r0":   {"delete": {}},
-					"r2":   {},
+					"*":  {},
+					"r1": {},
+					"r0": {"delete": {}},
+					"r2": {},
 				},
 				"n1": {
-					"r2":   {},
-					"*":    {"delete": {}},
-					"r1":   {"delete": {}},
-					"r0":   {"delete": {}},
+					"r2": {},
+					"*":  {"delete": {}},
+					"r1": {"delete": {}},
+					"r0": {"delete": {}},
 				},
 			},
 			tests: map[*models.Operation]bool{
@@ -484,9 +484,9 @@ func TestFlatHasPermission(t *testing.T) {
 
 func TestRoleMapFlattening(t *testing.T) {
 	tests := []struct {
-		name		 string
-		roleMap  	 map[string]*models.Role
-		subroleMap   map[string]*models.Role
+		name       string
+		roleMap    map[string]*models.Role
+		subroleMap map[string]*models.Role
 	}{
 		{
 			name: "Nil subrole map",
@@ -503,13 +503,13 @@ func TestRoleMapFlattening(t *testing.T) {
 			},
 			subroleMap: nil,
 		},
-		{	
+		{
 			name: "Test case from fuzzy",
 			subroleMap: map[string]*models.Role{
 				"sub1": {
 					Subroles: []string{"sub4"},
 					Permit:   []models.Operation{},
-					Deny:     []models.Operation{
+					Deny: []models.Operation{
 						{Resource: "r2", Type: "*", Namespace: "n0"},
 					},
 				},
@@ -546,7 +546,7 @@ func TestRoleMapFlattening(t *testing.T) {
 			roleMap: map[string]*models.Role{
 				"root": {
 					Subroles: []string{"sub0"},
-					Name: "root",
+					Name:     "root",
 				},
 			},
 		},
@@ -555,13 +555,13 @@ func TestRoleMapFlattening(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			flattened := createPermissionMatrix(tt.roleMap, tt.subroleMap)
-			for _,ns := range []string{"n0", "n1", "n2", "n3","n4"}{
-				for _,rs := range[] string{"r0", "r1", "r2", "r3", "r4"}{
-					for _,opType := range[]models.OperationType{"create", "read", "update", "delete", "list"}{
+			for _, ns := range []string{"n0", "n1", "n2", "n3", "n4"} {
+				for _, rs := range []string{"r0", "r1", "r2", "r3", "r4"} {
+					for _, opType := range []models.OperationType{"create", "read", "update", "delete", "list"} {
 						op := &models.Operation{
 							Namespace: ns,
-							Type: opType,
-							Resource: rs,
+							Type:      opType,
+							Resource:  rs,
 						}
 						expected := hasPermission(tt.roleMap["root"], tt.subroleMap, op, make(map[string]struct{}))
 						result := flatHasPermission(op, flattened["root"])
@@ -575,67 +575,66 @@ func TestRoleMapFlattening(t *testing.T) {
 	}
 }
 
-
 func TestRoleMapFlatteningFuzzy(t *testing.T) {
 	operations := []models.OperationType{"create", "read", "update", "delete"}
 	tests := []struct {
-		name       string
-		permits    int
-		denies     int
-		resources  int
-		namespaces int
-		pstar      float64
-		dstar      float64
-		nodes      int
-		edges      int
+		name              string
+		permits           int
+		denies            int
+		resources         int
+		namespaces        int
+		pstar             float64
+		dstar             float64
+		nodes             int
+		edges             int
 		allowedOperations []models.OperationType
 	}{
 		{
-			name:       "Small graph with few permits and denies",
-			permits:    10,
-			denies:     5,
-			resources:  3,
-			namespaces: 3,
-			pstar:      0.2,
-			dstar:      0.1,
-			nodes:      5,
-			edges:      4,
+			name:              "Small graph with few permits and denies",
+			permits:           10,
+			denies:            5,
+			resources:         3,
+			namespaces:        3,
+			pstar:             0.2,
+			dstar:             0.1,
+			nodes:             5,
+			edges:             4,
 			allowedOperations: []models.OperationType{"create", "read", "update", "delete", "*"},
 		},
 		{
-			name:       "Medium graph with moderate permits and denies",
-			permits:    50,
-			denies:     25,
-			resources:  10,
-			namespaces: 5,
-			pstar:      0.3,
-			dstar:      0.2,
-			nodes:      10,
-			edges:      15,
+			name:              "Medium graph with moderate permits and denies",
+			permits:           50,
+			denies:            25,
+			resources:         10,
+			namespaces:        5,
+			pstar:             0.3,
+			dstar:             0.2,
+			nodes:             10,
+			edges:             15,
 			allowedOperations: []models.OperationType{"create", "read", "update", "delete", "*"},
 		},
 		{
-			name:       "Large graph with many permits and denies",
-			permits:    100,
-			denies:     50,
-			resources:  20,
-			namespaces: 10,
-			pstar:      0.4,
-			dstar:      0.3,
-			nodes:      20,
-			edges:      30,
+			name:              "Large graph with many permits and denies",
+			permits:           100,
+			denies:            50,
+			resources:         20,
+			namespaces:        10,
+			pstar:             0.4,
+			dstar:             0.3,
+			nodes:             20,
+			edges:             30,
 			allowedOperations: []models.OperationType{"create", "read", "update", "delete", "*"},
 		},
 		{
-			name:       "Large graph with many permits and denies",
-			permits:    2500,
-			denies:     1000,
-			resources:  40,
-			namespaces: 100,
-			pstar:      0.2,
-			dstar:      0.15,
-			nodes:      100,
-			edges:      200,
+			name:              "Large graph with many permits and denies",
+			permits:           2500,
+			denies:            1000,
+			resources:         40,
+			namespaces:        100,
+			pstar:             0.2,
+			dstar:             0.15,
+			nodes:             100,
+			edges:             200,
 			allowedOperations: []models.OperationType{"create", "read", "update", "delete", "list", "*"},
 		},
 	}
@@ -655,8 +654,8 @@ func TestRoleMapFlatteningFuzzy(t *testing.T) {
 
 			allPassed := true
 			// Compare hasPermission with flatHasPermission
-			for i := 0; i < tt.namespaces + 1; i++ {
-				for j := 0; j < tt.resources + 1; j++ {
+			for i := 0; i < tt.namespaces+1; i++ {
+				for j := 0; j < tt.resources+1; j++ {
 					for _, op := range operations {
 						operation := &models.Operation{Type: op, Resource: fmt.Sprintf("r%d", j), Namespace: fmt.Sprintf("n%d", i)}
 						expected := hasPermission(repo.RoleMap["root"], repo.SubroleMap, operation, make(map[string]struct{}))
@@ -731,63 +730,63 @@ func TestRoleMapFlatteningFuzzy(t *testing.T) {
 func TestPruning(t *testing.T) {
 	operations := []models.OperationType{"create", "read", "update", "delete"}
 	tests := []struct {
-		name       string
-		permits    int
-		denies     int
-		resources  int
-		namespaces int
-		pstar      float64
-		dstar      float64
-		nodes      int
-		edges      int
+		name              string
+		permits           int
+		denies            int
+		resources         int
+		namespaces        int
+		pstar             float64
+		dstar             float64
+		nodes             int
+		edges             int
 		allowedOperations []models.OperationType
 	}{
 		{
-			name:       "Small graph with few permits and denies",
-			permits:    10,
-			denies:     5,
-			resources:  3,
-			namespaces: 3,
-			pstar:      0.2,
-			dstar:      0.1,
-			nodes:      5,
-			edges:      4,
+			name:              "Small graph with few permits and denies",
+			permits:           10,
+			denies:            5,
+			resources:         3,
+			namespaces:        3,
+			pstar:             0.2,
+			dstar:             0.1,
+			nodes:             5,
+			edges:             4,
 			allowedOperations: []models.OperationType{"create", "read", "update", "delete", "*"},
 		},
 		{
-			name:       "Medium graph with moderate permits and denies",
-			permits:    50,
-			denies:     25,
-			resources:  10,
-			namespaces: 5,
-			pstar:      0.3,
-			dstar:      0.2,
-			nodes:      10,
-			edges:      15,
+			name:              "Medium graph with moderate permits and denies",
+			permits:           50,
+			denies:            25,
+			resources:         10,
+			namespaces:        5,
+			pstar:             0.3,
+			dstar:             0.2,
+			nodes:             10,
+			edges:             15,
 			allowedOperations: []models.OperationType{"create", "read", "update", "delete", "*"},
 		},
 		{
-			name:       "Large graph with many permits and denies",
-			permits:    100,
-			denies:     50,
-			resources:  20,
-			namespaces: 10,
-			pstar:      0.4,
-			dstar:      0.3,
-			nodes:      20,
-			edges:      30,
+			name:              "Large graph with many permits and denies",
+			permits:           100,
+			denies:            50,
+			resources:         20,
+			namespaces:        10,
+			pstar:             0.4,
+			dstar:             0.3,
+			nodes:             20,
+			edges:             30,
 			allowedOperations: []models.OperationType{"create", "read", "update", "delete", "*"},
 		},
 		{
-			name:       "Large graph with many permits and denies",
-			permits:    2500,
-			denies:     1000,
-			resources:  40,
-			namespaces: 100,
-			pstar:      0.2,
-			dstar:      0.15,
-			nodes:      100,
-			edges:      200,
+			name:              "Large graph with many permits and denies",
+			permits:           2500,
+			denies:            1000,
+			resources:         40,
+			namespaces:        100,
+			pstar:             0.2,
+			dstar:             0.15,
+			nodes:             100,
+			edges:             200,
 			allowedOperations: []models.OperationType{"create", "read", "update", "delete", "list", "*"},
 		},
 	}
@@ -805,8 +804,8 @@ func TestPruning(t *testing.T) {
 			log.Printf("Flattened map created and pruned %d out of %d", pruned, ogSize)
 
 			// Compare hasPermission with flatHasPermission
-			for i := 0; i < tt.namespaces + 1; i++ {
-				for j := 0; j < tt.resources + 1; j++ {
+			for i := 0; i < tt.namespaces+1; i++ {
+				for j := 0; j < tt.resources+1; j++ {
 					for _, op := range operations {
 						operation := &models.Operation{Type: op, Resource: fmt.Sprintf("r%d", j), Namespace: fmt.Sprintf("n%d", i)}
 						expected := hasPermission(repo.RoleMap["root"], repo.SubroleMap, operation, make(map[string]struct{}))
@@ -823,7 +822,7 @@ func TestPruning(t *testing.T) {
 }
 
 func createFuzzyRoleRepo(permits, denies, resources, namespaces int, pstar, dstar float64, operations []models.OperationType, graph map[string][]string) *RoleMapRepository {
-	roleMap := map[string]*models.Role{"root": {Name: "root",Subroles: []string{"sub0"}}}
+	roleMap := map[string]*models.Role{"root": {Name: "root", Subroles: []string{"sub0"}}}
 	subroleMap := make(map[string]*models.Role)
 	subroles := len(graph)
 	avgP := permits / subroles
@@ -831,8 +830,8 @@ func createFuzzyRoleRepo(permits, denies, resources, namespaces int, pstar, dsta
 
 	for node, children := range graph {
 		subrole := &models.Role{
-			Permit: make([]models.Operation, 0),
-			Deny: make([]models.Operation, 0),
+			Permit:   make([]models.Operation, 0),
+			Deny:     make([]models.Operation, 0),
 			Subroles: children,
 		}
 		subroleMap[node] = subrole
@@ -882,17 +881,17 @@ func makeRandomOperation(pstar, dstar float64, namespaces, resources int, operat
 
 func randomAcyclicGraph(nodes, edges int) map[string][]string {
 	graph := make(map[string]map[string]struct{})
-	if edges > (nodes*(nodes-1)/3) {
-		edges = nodes*(nodes-1)/3
+	if edges > (nodes * (nodes - 1) / 3) {
+		edges = nodes * (nodes - 1) / 3
 	}
 	for i := 0; i < nodes; i++ {
 		graph[fmt.Sprintf("sub%d", i)] = make(map[string]struct{})
 	}
 	for edges > 0 {
 		nr := rand.Float64()
-		skewed := math.Pow(nr, 2) // skew the distribution towards head	
-		from := int(skewed * float64(nodes - 1))
-		to := rand.Intn(nodes - 1 - from) + from + 1
+		skewed := math.Pow(nr, 2) // skew the distribution towards head
+		from := int(skewed * float64(nodes-1))
+		to := rand.Intn(nodes-1-from) + from + 1
 		// log.Printf("from: %d, to: %d", from, to)
 		if _, ok := graph[fmt.Sprintf("sub%d", from)][fmt.Sprintf("sub%d", to)]; !ok {
 			edges = edges - 1
@@ -911,10 +910,10 @@ func randomAcyclicGraph(nodes, edges int) map[string][]string {
 
 func TestDeepCopy(t *testing.T) {
 	tests := []struct {
-		matrice map[string]map[string]map[models.OperationType]struct{}
+		matrice PermissionMatrix
 	}{
 		{
-			matrice: map[string]map[string]map[models.OperationType]struct{}{
+			matrice: PermissionMatrix{
 				"n1": {
 					"r1": {
 						"create": struct{}{},

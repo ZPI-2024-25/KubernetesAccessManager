@@ -9,14 +9,14 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-func CheckLoginStatus(w http.ResponseWriter, r *http.Request)  {
+func CheckLoginStatus(w http.ResponseWriter, r *http.Request) {
 	token, err := auth.GetJWTTokenFromHeader(r)
 	isValid, claims := auth.IsTokenValid(token)
 
 	if err != nil || !isValid {
 		writeJSONResponse(w, http.StatusUnauthorized, models.ModelError{
 			Message: "Unauthorized",
-			Code: http.StatusUnauthorized,
+			Code:    http.StatusUnauthorized,
 		})
 		return
 	}
@@ -24,7 +24,7 @@ func CheckLoginStatus(w http.ResponseWriter, r *http.Request)  {
 	if err != nil {
 		writeJSONResponse(w, http.StatusInternalServerError, &models.ModelError{
 			Message: fmt.Sprintf("Failed to get client: %s", err),
-			Code: http.StatusInternalServerError,
+			Code:    http.StatusInternalServerError,
 		})
 	}
 	status, errM := getLoginStatus(claims, rolemap)
@@ -40,7 +40,7 @@ func getLoginStatus(claims *jwt.MapClaims, rolemap *auth.RoleMapRepository) (*mo
 	if err != nil {
 		return nil, &models.ModelError{
 			Message: "Roles not found in bearer token",
-			Code: http.StatusInternalServerError,
+			Code:    http.StatusInternalServerError,
 		}
 	}
 	access := rolemap.GetAllPermissions(roles)
@@ -52,13 +52,13 @@ func getLoginStatus(claims *jwt.MapClaims, rolemap *auth.RoleMapRepository) (*mo
 		Permissions: permissions,
 		User: &models.UserStatusUser{
 			PreferredUsername: preferredUsername,
-			Email: email,
-			Exp: exp,
+			Email:             email,
+			Exp:               exp,
 		},
 	}, nil
 }
 
-func shortenPermissions(pmatrix map[string]map[string]map[models.OperationType]struct{}) map[string]map[string][]string {
+func shortenPermissions(pmatrix auth.PermissionMatrix) map[string]map[string][]string {
 	res := make(map[string]map[string][]string)
 
 	for k, v := range pmatrix {
@@ -77,17 +77,17 @@ func shortenPermissions(pmatrix map[string]map[string]map[models.OperationType]s
 
 func shorterP(p models.OperationType) string {
 	switch p {
-		case models.Create:
-			return "c"
-		case models.Read:
-			return "r"
-		case models.Update:
-			return "u"
-		case models.Delete:
-			return "d"
-		case models.List:
-			return "l"
-		default:
-			return "x"
-		}
+	case models.Create:
+		return "c"
+	case models.Read:
+		return "r"
+	case models.Update:
+		return "u"
+	case models.Delete:
+		return "d"
+	case models.List:
+		return "l"
+	default:
+		return "x"
+	}
 }
