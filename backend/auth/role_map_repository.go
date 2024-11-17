@@ -56,10 +56,10 @@ func (rmr *RoleMapRepository) HasPermission(rolenames []string, operation *model
 	return false
 }
 
-func (rmr *RoleMapRepository) GetAllPermissions(role []string) map[string]map[string]map[models.OperationType]struct{} {
+func (rmr *RoleMapRepository) GetAllPermissions(roles []string) map[string]map[string]map[models.OperationType]struct{} {
 	pmatrix := make(map[string]map[string]map[models.OperationType]struct{})
 	first := true
-	for _, r := range role {
+	for _, r := range roles {
 		if _, exists := rmr.flattenedMap[r]; exists {
 			if first {
 				pmatrix = deepCopy(rmr.flattenedMap[r])
