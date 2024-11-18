@@ -4,6 +4,26 @@ import Menu from "./components/Menu/Menu.tsx";
 import EditorPage from "./pages/EditorPage.tsx";
 import ResourcePage from "./pages/ResourcePage.tsx";
 import AuthCallbackPage from "./pages/AuthCallbackPage.tsx";
+import axios from 'axios';
+
+// Konfiguracja interceptorów
+axios.interceptors.request.use((config) => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+}, (error) => {
+    return Promise.reject(error);
+});
+
+axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        console.error('Błąd w odpowiedzi:', error);
+        return Promise.reject(error);
+    }
+);
 
 function App() {
 
