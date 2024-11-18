@@ -2,7 +2,7 @@ import {Button, Card, message} from "antd";
 import style from "./Editor.module.css";
 import {Editor as MonacoEditor} from "@monaco-editor/react";
 import * as monaco from "monaco-editor";
-import {useCallback, useRef, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import LanguageSelector from "./LanguageSelector.tsx";
 import {stringifyJson, parseJson, parseYaml, stringifyYaml} from "../../functions/jsonYamlFunctions.ts";
 import {ResourceDetails} from "../../api/createResource.ts";
@@ -15,6 +15,10 @@ const Editor = ({name, text, endpoint}: {
     const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
     const [value, setValue] = useState<string>(text);
     const [language, setLanguage] = useState<string>("yaml");
+
+    useEffect(() => {
+        setValue(text);
+    }, [text]);
 
     const onMount = useCallback((editor: monaco.editor.IStandaloneCodeEditor) => {
         editorRef.current = editor;
@@ -96,6 +100,7 @@ const Editor = ({name, text, endpoint}: {
             </div>
             <MonacoEditor
                 height="65vh"
+                width="80wh"
                 theme="vs-dark"
                 language={language}
                 onMount={onMount}

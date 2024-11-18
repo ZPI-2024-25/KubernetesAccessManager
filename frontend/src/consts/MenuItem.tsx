@@ -14,7 +14,7 @@ function getItem(
         icon,
         children,
         label,
-        resourceLabel: resourcelabel
+        resourcelabel: resourcelabel
     } as MenuItem;
 }
 

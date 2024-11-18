@@ -3,6 +3,8 @@ import {Button, Table} from 'antd';
 import { ApiResponse, fetchResources } from '../../api';
 import {formatAge} from "../../functions/formatAge.ts";
 import {DeleteOutlined, EditOutlined, PlusOutlined} from "@ant-design/icons";
+import { useNavigate } from 'react-router-dom';
+
 
 interface TabProps {
     resourceLabel: string;
@@ -24,6 +26,7 @@ interface ColumnType {
 const Tab: React.FC<TabProps> = ({ resourceLabel }) => {
     const [columns, setColumns] = useState<ColumnType[]>([]);
     const [dataSource, setDataSource] = useState<DataSourceItem[]>([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!resourceLabel) return;
@@ -78,14 +81,23 @@ const Tab: React.FC<TabProps> = ({ resourceLabel }) => {
         fetchData();
     }, [resourceLabel]);
     const handleAdd = () => {console.log("POST");
+        navigate('/create');
     };
 
     const handleEdit = (record: DataSourceItem) => {
-        console.log("PUT", record);
+        const resourceType = resourceLabel;
+        const namespace = record.namespace as string;
+        const resourceName = record.name as string;
+
+        navigate(`/editor`, {
+            state: { resourceType, namespace, resourceName },
+        });
     };
+
 
     const handleDelete = (record: DataSourceItem) => {
         console.log("DELETE", record);
+        navigate('/delete');
     };
 
     return (
