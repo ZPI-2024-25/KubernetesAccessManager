@@ -1,6 +1,6 @@
 import Editor from "../components/Editor/Editor.tsx";
-import {createResource, ResourceDetails} from "../api/createResource.ts";
-import {updateResource} from "../api/updateResource.ts";
+import {createResource, ResourceDetails} from "../api/k8s/createResource.ts";
+import {updateResource} from "../api/k8s/updateResource.ts";
 import {getExampleResourceDefinition} from "../consts/exampleResourceDefinitions.ts";
 
 const EditorPage = () => {

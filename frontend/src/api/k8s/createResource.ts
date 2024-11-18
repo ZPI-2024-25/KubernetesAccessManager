@@ -1,5 +1,5 @@
 import axios from "axios";
-import {API_URL} from "../consts/apiConsts.ts";
+import {K8S_API_URL} from "../../consts/apiConsts.ts";
 
 export interface ResourceDetails {
     apiVersion: string;
@@ -18,8 +18,8 @@ export async function createResource(resourceType: string, namespace: string, re
     try {
         const namespaceQuery = namespace ? `?namespace=${namespace}` : '';
 
-        const response = await axios.post<ResourceDetails>(`${API_URL}/${resourceType}${namespaceQuery}`, resourceData);
-        console.log(`POST: ${API_URL}/${resourceType}?namespace=${namespace}`);
+        const response = await axios.post<ResourceDetails>(`${K8S_API_URL}/${resourceType}${namespaceQuery}`, resourceData);
+        console.log(`POST: ${K8S_API_URL}/${resourceType}?namespace=${namespace}`);
         console.log('Request data:', resourceData);
         console.log('Response data:', response.data);
         return response.data;

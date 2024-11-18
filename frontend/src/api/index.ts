@@ -1,1 +1,1 @@
-export * from './listResources.ts'
+export * from './k8s/listResources.ts'

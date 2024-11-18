@@ -5,7 +5,7 @@ import * as monaco from "monaco-editor";
 import {useCallback, useRef, useState} from "react";
 import LanguageSelector from "./LanguageSelector.tsx";
 import {stringifyJson, parseJson, parseYaml, stringifyYaml} from "../../functions/jsonYamlFunctions.ts";
-import {ResourceDetails} from "../../api/createResource.ts";
+import {ResourceDetails} from "../../api/k8s/createResource.ts";
 
 const Editor = ({name, text, endpoint}: {
     name: string,
