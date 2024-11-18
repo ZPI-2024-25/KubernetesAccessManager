@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Layout, Menu } from 'antd';
+import { Layout, Menu, Button } from 'antd';
 import styles from './Menu.module.css';
 import { items } from '../../consts/MenuItem';
 import { MenuItem } from '../../types';
-import {Link, Outlet} from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import { useLocation } from 'react-router-dom';
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -13,7 +13,6 @@ const LeftMenu: React.FC = () => {
     const [asideWidth, setAsideWidth] = useState<number>(270);
     const username = 'k8_userjjjjjjjjjjjjjjjiiiiiiiii';
     const location = useLocation();
-
 
     const generateMenuItems = (menuItems: MenuItem[]): MenuItem[] => {
         return menuItems.map((item) => {
@@ -69,6 +68,10 @@ const LeftMenu: React.FC = () => {
         return labels.join('/');
     };
 
+    const handleLogin = () => {
+        window.location.href = 'http://localhost:4000/realms/ZPI-realm/protocol/openid-connect/auth?client_id=ZPI-client&response_type=code&redirect_uri=http://localhost:5173/auth/callback';
+    };
+
     const selectedKeys = getSelectedKeys(items, location.pathname);
     const currentPageTitle = getCurrentPageTitleFromKeys(items, selectedKeys);
 
@@ -85,25 +88,28 @@ const LeftMenu: React.FC = () => {
                 width={`${asideWidth}px`}
             >
                 <div className={styles.logo}>
-          <span className={styles.logoText}>
-            {collapsed ? 'U' : username.length > 10 ? `${username.slice(0, 10)}...` : username}
-          </span>
+                    <span className={styles.logoText}>
+                        {collapsed ? 'U' : username.length > 10 ? `${username.slice(0, 10)}...` : username}
+                    </span>
                 </div>
                 <Menu
                     theme="dark"
                     selectedKeys={selectedKeys}
                     mode="inline"
-                    items={generateMenuItems(items)
-                    }
+                    items={generateMenuItems(items)}
                     style={{ paddingBottom: 50 }}
-
                 />
             </Sider>
             <Layout className={styles.contentLayout} style={{ marginLeft: asideWidth }}>
                 <Header className={styles.header}>
-                    <p style={{ paddingLeft: asideWidth }}>
-                        {currentPageTitle || 'Page name'}
-                    </p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <p style={{ paddingLeft: asideWidth }}>
+                            {currentPageTitle || 'Page name'}
+                        </p>
+                        <Button type="primary" onClick={handleLogin}>
+                            Login
+                        </Button>
+                    </div>
                 </Header>
                 <Content className={styles.content}>
                     <Outlet />
