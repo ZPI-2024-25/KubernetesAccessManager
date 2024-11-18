@@ -49,7 +49,7 @@ func isResourceTypeAllowed(resourceType string) bool {
 
 func GetResourceGroupVersion(resourceType string) (output schema.GroupVersionResource, namespaced bool, error *models.ModelError) {
 	if !isResourceTypeAllowed(resourceType) {
-		return schema.GroupVersionResource{}, false, &models.ModelError{Code: 400, Message: fmt.Sprintf("Invalid Resource Type")}
+		return schema.GroupVersionResource{}, false, &models.ModelError{Code: 400, Message: "Invalid Resource Type"}
 	}
 
 	config, err := GetConfig()
