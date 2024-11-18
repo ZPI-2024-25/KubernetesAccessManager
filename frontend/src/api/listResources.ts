@@ -3,21 +3,9 @@ import {API_URL} from "../consts/apiConsts.ts";
 
 export interface Resource {
     [key: string]: string;
-    active: string;
-    age: string;
-    bindings: string;
-    capacity: string;
-    claim: string;
-    cluster_ip: string;
-    completions: string;
-    conditions: string;
-    containers: string;
-    controlled_by: string;
-    cpu: string;
-    current: string;
-    default: string;
-    desired: string;
-    disk: string;
+    name: string,
+    namespace: string,
+    age: string
 }
 
 export interface ApiResponse {
