@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: role-mapper
+  namespace: default
+data:
+  role-map: |
+    admin:
+      name: "admin"
+      deny: 
+        - resource: "Pod"
+          type: "*"
+          namespace: "*"
+      permit:
+        - resource: "*"
+          type: "*"
+          namespace: "*"
+      subroles:
+        - "user"
+    user:
+      name: "user"
+      permit:
+        - resource: "Pod"
+          type: "read"
+          namespace: "default"
+      subroles:
+        - "guest"
+    guest:
+      name: "guest"
+      permit:
+        - resource: "Pod"
+          type: "list"
+          namespace: "default"
+
+  subrole-map: |
+    superadmin:
+      name: "superadmin"
+      permit:
+        - resource: "*"
+          type: "*"
+          namespace: "*"
+      subroles:
+        - "admin"
+    viewer:
+      name: "viewer"
+      permit:
+        - resource: "Pod"
+          type: "read"
+          namespace: "all"

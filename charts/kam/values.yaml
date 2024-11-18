@@ -7,10 +7,13 @@ podLabels: {}
 backend:
   replicaCount: 1
   image:
-    repository: ninjashadow/kubernetes-access-manager-backend
-    pullPolicy: IfNotPresent
+    repository: zpikam/backend
+    pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
+
+  env:
+    KEYCLOAK_URL: ""
 
   serviceAccount:
     create: true
@@ -52,8 +55,8 @@ backend:
 frontend:
   replicaCount: 1
   image:
-    repository: ninjashadow/kubernetes-access-manager-frontend
-    pullPolicy: IfNotPresent
+    repository: zpikam/frontend
+    pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
