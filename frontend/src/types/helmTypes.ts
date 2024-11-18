@@ -4,13 +4,11 @@ export interface HelmRelease {
     chart: string;
     status: string;
     updated: string;
-    revision: number;
+    revision: string;
     app_version: string;
 }
 
-export interface HelmReleaseList {
-    release_list: HelmRelease[];
-}
+export type HelmReleaseList = HelmRelease[];
 
 export interface Status {
     code: number;
