@@ -31,7 +31,6 @@ data:
         - resource: "Pod"
           type: "list"
           namespace: "default"
-
   subrole-map: |
     superadmin:
       name: "superadmin"

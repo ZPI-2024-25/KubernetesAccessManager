@@ -10,9 +10,10 @@ package api
 
 import (
 	"net/http"
+
+	"github.com/ZPI-2024-25/KubernetesAccessManager/controllers"
 )
 
 func CheckLoginStatus(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	controllers.CheckLoginStatus(w, r)
 }

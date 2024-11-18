@@ -2,20 +2,20 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"net/http"
 	sw "github.com/ZPI-2024-25/KubernetesAccessManager/api"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/auth"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/health"
 	"github.com/gorilla/handlers"
+	"log"
+	"net/http"
 )
 
 func main() {
 	healthServer := health.PrepareHealthEndpoints(
 		8082,
 	)
-	singleton, err := cluster.GetInstance()
+	clusterSingleton, err := cluster.GetInstance()
 	if err != nil {
 		fmt.Printf("Error when loading config: %v\n", err)
 		return
@@ -32,8 +32,10 @@ func main() {
 	}()
 	log.Printf("marking application liveness as UP")
 	health.ApplicationStatus.MarkAsUp()
+
 	log.Printf("Server started")
-	log.Printf("Authentication method: %s", singleton.GetAuthenticationMethod())
+	log.Printf("Authentication method: %s", clusterSingleton.GetAuthenticationMethod())
+
 	router := sw.NewRouter()
 
 	corsHandler := handlers.CORS(
