@@ -1,0 +1,17 @@
+.module {
+    all: unset;
+}
+
+.content {
+    height: 70%;
+    width: 50%;
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+.editorOptionsPanel {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 5px 10px 5px 10px;
+}

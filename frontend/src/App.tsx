@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import {MainPage} from "./pages/MainPage.tsx";
-// import {LoginPage} from "./pages/LoginPage.tsx";
 import Menu from "./components/Menu/Menu.tsx";
+import EditorPage from "./pages/EditorPage.tsx";
+import ResourcePage from "./pages/ResourcePage.tsx";
 
 function App() {
     return (
@@ -9,8 +10,9 @@ function App() {
             <Routes>
                 <Route path="/" element={<Menu />}>
                     <Route index element={<MainPage />} />
+                    <Route path=":resourceType" element={<ResourcePage />} />
                 </Route>
-                {/*<Route path="/login" element={<LoginPage />} />*/}
+                <Route path="/editor" element={<EditorPage />}/>
             </Routes>
         </Router>
     );

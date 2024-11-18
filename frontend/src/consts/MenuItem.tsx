@@ -1,10 +1,11 @@
 import React from "react";
-import {FileOutlined, PieChartOutlined, TeamOutlined, UserOutlined} from "@ant-design/icons";
-import {MenuItem} from "../types";
+import { FileOutlined, PieChartOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
+import { MenuItem } from "../types";
 
 function getItem(
     label: React.ReactNode,
     key: React.Key,
+    resourcelabel:string,
     icon?: React.ReactNode,
     children?: MenuItem[],
 ): MenuItem {
@@ -13,57 +14,67 @@ function getItem(
         icon,
         children,
         label,
+        resourceLabel: resourcelabel
     } as MenuItem;
 }
+
 export const items: MenuItem[] = [
-    getItem('Nodes', '1', <PieChartOutlined />),
-    getItem('Workloads', 'sub1', <UserOutlined />, [
-        getItem('Overview', '3'),
-        getItem('Pods', '4'),
-        getItem('Deployments', '5'),
-        getItem('StatefulSets', '6'),
-        getItem('ReplicaSets', '7'),
+    getItem('Cluster', '01', 'Cluster'),
+    getItem('Applications', '02', 'Applications'),
+    getItem('Nodes', '03', 'Node', <PieChartOutlined />),
+    getItem('Workloads', 'sub1', 'Workloads', <UserOutlined />, [
+        getItem('Overview', '04', 'Overview'),
+        getItem('Pods', '05', 'Pod'),
+        getItem('Deployments', '06', 'Deployment'),
+        getItem('Daemon Sets', '07', 'DaemonSet'),
+        getItem('Stateful Sets', '08', 'StatefulSet'),
+        getItem('Replica Sets', '09', 'ReplicaSet'),
+        getItem('Replication Controllers', '10', 'ReplicationController'),
+        getItem('Jobs', '11', 'Job'),
+        getItem('Cron Jobs', '12', 'CronJobs'),
     ]),
-    getItem('Config', 'sub2', <TeamOutlined />, [
-        getItem('Config Maps', '9'),
-        getItem('Secrets', '10'),
-        getItem('Resource Quotas', '11'),
-        getItem('Limit Ranges', '12'),
-        getItem('Horizontal Pod Autoscalers', '13'),
-        getItem('Pod Disruption Budgets', '14'),
-        getItem('Priority Classes', '15'),
-        getItem('Runtime Classes', '16'),
-        getItem('Mutating Webhook Configs', '17'),
-        getItem('Validating Webhook Configs', '18'),
+    getItem('Config', 'sub2', 'Configs', <TeamOutlined />, [
+        getItem('Config Maps', '13', 'ConfigMap'),
+        getItem('Secrets', '14', 'Secret'),
+        getItem('Resource Quotas', '15', 'ResourceQuota'),
+        getItem('Limit Ranges', '16', 'LimitRange'),
+        getItem('Horizontal Pod Autoscalers', '17', 'HorizontalPodAutoscaler'),
+        getItem('Vertical Pod Autoscalers', '18', 'VerticalPodAutoscaler'),
+        getItem('Pod Disruption Budgets', '19', 'PodDisruptionBudget'),
+        getItem('Priority Classes', '20', 'PriorityClass'),
+        getItem('Runtime Classes', '21', 'RuntimeClass'),
+        getItem('Leases', '22', 'Leases'),
+        getItem('Mutating Webhook Configs', '23', 'MutatingWebhookConfig'),
+        getItem('Validating Webhook Configs', '24', 'ValidatingWebhookConfig'),
     ]),
-    getItem('Network', 'sub3', <TeamOutlined />, [
-        getItem('Services', '19'),
-        getItem('Endpoints', '20'),
-        getItem('Ingresses', '21'),
-        getItem('Ingress Classes', '22'),
-        getItem('Network Policies', '23'),
-        getItem('Port Forwarding', '24'),
+    getItem('Network', 'sub3', 'Network', <TeamOutlined />, [
+        getItem('Services', '25', 'Service'),
+        getItem('Endpoints', '26', 'Endpoint'),
+        getItem('Ingresses', '27', 'Ingress'),
+        getItem('Ingress Classes', '28', 'IngressClass'),
+        getItem('Network Policies', '29', 'NetworkPolicy'),
+        getItem('Port Forwarding', '30', 'PortForwarding'),
     ]),
-    getItem('Storage', 'sub4', <TeamOutlined />, [
-        getItem('Persistent Volume Claims', '25'),
-        getItem('Persistent Volumes', '26'),
-        getItem('Storage Classes', '27'),
+    getItem('Storage', 'sub4', 'Storage', <TeamOutlined />, [
+        getItem('Persistent Volume Claims', '31', 'PersistentVolumeClaim'),
+        getItem('Persistent Volumes', '32', 'PersistentVolume'),
+        getItem('Storage Classes', '33', 'StorageClass'),
     ]),
-    getItem('Namespaces', '28', <FileOutlined />),
-    getItem('Events', '29', <FileOutlined />),
-    getItem('Helm', 'sub5', <FileOutlined />,[
-        getItem('Charts','30'),
-        getItem('Releases','31'),
+    getItem('Namespaces', '34', 'Namespace', <FileOutlined />),
+    getItem('Events', '35', 'Event', <FileOutlined />),
+    getItem('Helm', 'sub5', 'Helm', <FileOutlined />, [
+        getItem('Charts', '36', 'Chart'),
+        getItem('Releases', '37', 'Release'),
     ]),
-    getItem('Access Control', 'sub6', <TeamOutlined />, [
-        getItem('Service Accounts', '32'),
-        getItem('Cluster Roles', '33'),
-        getItem('Roles', '34'),
-        getItem('Cluster Role Bindings', '35'),
-        getItem('Role Bindings', '36'),
-        getItem('Pod Security Policies', '37'),
+    getItem('Access Control', 'sub6', 'AccessControl', <TeamOutlined />, [
+        getItem('Service Accounts', '38', 'ServiceAccount'),
+        getItem('Cluster Roles', '39', 'ClusterRole'),
+        getItem('Roles', '40', 'Role'),
+        getItem('Cluster Role Bindings', '41', 'ClusterRoleBinding'),
+        getItem('Role Bindings', '42', 'RoleBinding'),
+        getItem('Pod Security Policies', '43', 'PodSecurityPolicy'),
     ]),
-    getItem('Custom Resources', 'sub7', <TeamOutlined />, [
-        getItem('Definitions','38')
+    getItem('Custom Resources', 'sub7', 'CustomResource', <TeamOutlined />, [
+        getItem('Definitions', '44', 'CustomResourceDefinition')
     ]),
 ];
