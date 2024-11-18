@@ -5,7 +5,7 @@ import {formatAge} from "../../functions/formatAge.ts";
 import {DeleteOutlined, EditOutlined, PlusOutlined} from "@ant-design/icons";
 
 interface TabProps {
-    resourceLabel: string;
+    resourcelabel: string;
 }
 
 interface DataSourceItem {
@@ -21,15 +21,15 @@ interface ColumnType {
     render: (text: React.ReactNode, record: DataSourceItem) => React.ReactNode;
 }
 
-const Tab: React.FC<TabProps> = ({ resourceLabel }) => {
+const Tab: React.FC<TabProps> = ({ resourcelabel }) => {
     const [columns, setColumns] = useState<ColumnType[]>([]);
     const [dataSource, setDataSource] = useState<DataSourceItem[]>([]);
 
     useEffect(() => {
-        if (!resourceLabel) return;
+        if (!resourcelabel) return;
 
         const fetchData = async () => {
-            const response: ApiResponse = await fetchResources(resourceLabel);
+            const response: ApiResponse = await fetchResources(resourcelabel);
 
             const dynamicColumns: ColumnType[] = response.columns.map((column) => ({
                 title: column,
@@ -76,7 +76,7 @@ const Tab: React.FC<TabProps> = ({ resourceLabel }) => {
         };
 
         fetchData();
-    }, [resourceLabel]);
+    }, [resourcelabel]);
     const handleAdd = () => {console.log("POST");
     };
 

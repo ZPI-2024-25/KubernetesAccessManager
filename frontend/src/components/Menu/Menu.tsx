@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Layout, Menu } from 'antd';
-import { jwtDecode } from 'jwt-decode'
+import { jwtDecode } from 'jwt-decode';
 import styles from './Menu.module.css';
 import { items } from '../../consts/MenuItem';
 import { MenuItem } from '../../types';
@@ -27,18 +27,24 @@ const LeftMenu: React.FC = () => {
     };
 
     useEffect(() => {
-        const token = localStorage.getItem('access_token');
-        if (token) {
-            setIsLoggedIn(true);
-            const preferredUsername = decodeToken(token);
-            if (preferredUsername) {
-                setUsername(preferredUsername);
+        // Funkcja do aktualizacji stanu logowania
+        const updateLoginState = () => {
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                setIsLoggedIn(true);
+                const preferredUsername = decodeToken(token);
+                if (preferredUsername) {
+                    setUsername(preferredUsername);
+                }
+            } else {
+                setIsLoggedIn(false);
+                setUsername('Użytkownik');
             }
-        } else {
-            setIsLoggedIn(false);
-            setUsername('Użytkownik');
-        }
-    }, []);
+        };
+
+        // Zaktualizuj stan przy każdej zmianie ścieżki (np. po powrocie z logowania)
+        updateLoginState();
+    }, [location.pathname]); // Nasłuchujemy na zmianę ścieżki
 
     const handleLogin = () => {
         const redirectUri = `${window.location.origin}/auth/callback`;
@@ -65,7 +71,7 @@ const LeftMenu: React.FC = () => {
             return {
                 ...item,
                 label: (
-                    <Link to={`/${item.resourceLabel || ''}`}>
+                    <Link to={`/${item.resourcelabel || ''}`}>
                         {item.label}
                     </Link>
                 ),
@@ -75,7 +81,7 @@ const LeftMenu: React.FC = () => {
 
     const getSelectedKeys = (menuItems: MenuItem[], pathname: string): string[] => {
         for (const item of menuItems) {
-            const itemPath = `/${item.resourceLabel || ''}`;
+            const itemPath = `/${item.resourcelabel || ''}`;
             if (itemPath === pathname) {
                 return [item.key];
             }
