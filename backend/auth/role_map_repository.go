@@ -10,6 +10,7 @@ import (
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/watch"
 )
 
 type PermissionMatrix map[string]map[string]map[models.OperationType]struct{}
@@ -23,11 +24,13 @@ type RoleMapRepository struct {
 
 var (
 	instance *RoleMapRepository
-	once     sync.Once
+	once      sync.Once
+	mutex     sync.Mutex
 )
 
 func GetRoleMapInstance() (*RoleMapRepository, error) {
 	once.Do(func() {
+		mutex := &sync.Mutex{}
 		roleMapNamespace := common.GetOrDefaultEnv("ROLEMAP_NAMESPACE", "default")
 		roleMapName := common.GetOrDefaultEnv("ROLEMAP_NAME", "role-mapper")
 
@@ -36,13 +39,17 @@ func GetRoleMapInstance() (*RoleMapRepository, error) {
 			return
 		}
 		permissionMatrix := createPermissionMatrix(roleMap, subroleMap)
+		mutex.Lock()
 		instance = &RoleMapRepository{
 			RoleMap:      roleMap,
 			SubroleMap:   subroleMap,
 			flattenedMap: permissionMatrix,
 		}
+		mutex.Unlock()
 		log.Printf("RoleMapRepository initialized with %d roles %d subroles", len(instance.RoleMap), len(instance.SubroleMap))
 	})
+	mutex.Lock()
+	defer mutex.Unlock()
 	if instance == nil {
 		return nil, errors.New("RoleMapRepository is not initialized")
 	}
@@ -425,4 +432,53 @@ func GetRoleMapConfig(namespace string, name string) (map[string]*models.Role, m
 	}
 
 	return roleMap, subroleMap
+}
+
+func WatchForRolemapChanges() {
+	roleMapNamespace := common.GetOrDefaultEnv("ROLEMAP_NAMESPACE", "default")
+	roleMapName := common.GetOrDefaultEnv("ROLEMAP_NAME", "role-mapper")
+	cluster.WatchForChanges(roleMapNamespace, roleMapName, &mutex, updateRoleMapRepo)
+}
+
+func updateRoleMapRepo(eventChannel <-chan watch.Event, mutex *sync.Mutex, namespace, resourceName string) {
+	for {
+		event, open := <-eventChannel
+		if open {
+			switch event.Type {
+			case watch.Added:
+				doRoleMapRepoUpdate(mutex, namespace, resourceName)
+			case watch.Modified:
+				doRoleMapRepoUpdate(mutex, namespace, resourceName)
+			case watch.Deleted:
+				mutex.Lock()
+				instance = &RoleMapRepository{}
+				mutex.Unlock()
+			default:
+			}
+		} else {
+			// If eventChannel is closed, it means the server has closed the connection
+			return
+		}
+	}
+}
+
+func doRoleMapRepoUpdate(mutex *sync.Mutex, namespace, resourceName string) {
+	rolemap, subroleMap := GetRoleMapConfig(namespace, resourceName)
+	if rolemap == nil {
+		log.Printf("Error updating role map")
+	} else {
+		rolemapRepo, err := GetRoleMapInstance()
+		if err != nil {
+			log.Printf("Rolemap not initialized")
+			mutex.Lock()
+			instance = &RoleMapRepository{}
+			mutex.Unlock()
+		}
+		flattened := createPermissionMatrix(rolemap, subroleMap)
+		mutex.Lock()
+		defer mutex.Unlock()
+		rolemapRepo.RoleMap = rolemap
+		rolemapRepo.SubroleMap = subroleMap
+		rolemapRepo.flattenedMap = flattened
+	}
 }

@@ -24,6 +24,7 @@ func main() {
 	if err != nil {
 		log.Printf("Error when loading role map: %v\n", err)
 	}
+	go auth.WatchForRolemapChanges()
 	go func() {
 		log.Printf("health endpoints starting")
 		if err := healthServer.ListenAndServe(); err != nil {
