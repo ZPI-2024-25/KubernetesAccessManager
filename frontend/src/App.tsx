@@ -6,6 +6,7 @@ import ResourcePage from "./pages/ResourcePage.tsx";
 import AuthCallbackPage from "./pages/AuthCallbackPage.tsx";
 
 function App() {
+
     return (
         <Router>
             <Routes>
