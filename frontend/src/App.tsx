@@ -7,22 +7,21 @@ import AuthCallbackPage from "./pages/AuthCallbackPage.tsx";
 import axios from 'axios';
 import {AuthProvider} from "./components/AuthProvider/AuthProvider.tsx";
 
-// Konfiguracja interceptorów
-axios.interceptors.request.use((config) => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-}, (error) => {
-    return Promise.reject(error);
-});
-
-axios.interceptors.response.use(
-    (response) => response,
+axios.interceptors.request.use(
+    (config) => {
+        try {
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+        } catch (error) {
+            console.warn('Cant attach bearer token:', error);
+        }
+        return config;
+    },
     (error) => {
-        console.error('Błąd w odpowiedzi:', error);
-        return Promise.reject(error);
+        console.warn('Axios interceptor error:', error);
+        return Promise.resolve(error.config || {});
     }
 );
 

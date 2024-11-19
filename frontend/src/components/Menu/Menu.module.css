@@ -27,10 +27,10 @@
     font-size: 1.2rem;
     font-weight: bold;
     color: #fff;
-    white-space: nowrap;       /* Nie pozwala na wielowierszowe teksty */
-    overflow: hidden;          /* Ukrywa nadmiar tekstu */
-    text-overflow: ellipsis;   /* Dodaje "..." na końcu zbyt długiego tekstu */
-    display: inline-block;     /* Wymagane dla działania text-overflow */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
 }
 
 .ant-menu-item {

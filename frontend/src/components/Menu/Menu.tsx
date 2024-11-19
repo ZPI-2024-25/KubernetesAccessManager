@@ -11,7 +11,7 @@ const {Header, Content, Footer, Sider} = Layout;
 const LeftMenu: React.FC = () => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [asideWidth, setAsideWidth] = useState<number>(270);
-    const { user, isLoggedIn } = useAuth(); // Korzystamy z kontekstu do zarządzania stanem logowania
+    const { user, isLoggedIn } = useAuth();
     const location = useLocation();
 
     const generateMenuItems = (menuItems: MenuItem[]): MenuItem[] => {

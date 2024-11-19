@@ -5,7 +5,7 @@ import { message } from 'antd';
 
 type AuthContextType = {
     isLoggedIn: boolean;
-    user: { [key: string]: any } | null; // Możesz dostosować typ użytkownika, jeśli masz konkretne dane
+    user: { [key: string]: any } | null;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -15,7 +15,7 @@ const AuthContext = createContext<AuthContextType>({
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const navigate = useNavigate();
-    const refreshTimeout = useRef<NodeJS.Timeout | null>(null); // Przechowuje timeout do odświeżania
+    const refreshTimeout = useRef<NodeJS.Timeout | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(!!localStorage.getItem('access_token'));
     const [user, setUser] = useState<{ [key: string]: any } | null>(null);
 
@@ -27,37 +27,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         try {
             const decoded = decodeToken(token);
-            setUser(decoded); // Przypisujemy odkodowane dane użytkownika do stanu
+            setUser(decoded);
         } catch (error) {
-            console.error('Błąd podczas dekodowania tokena:', error);
+            console.error('Token decode error:', error);
             setUser(null);
         }
     };
 
     useEffect(() => {
         const onRefreshFailed = () => {
-            console.warn('Nie udało się odświeżyć tokenu, wylogowywanie...');
+            console.warn('Failed to refresh token, logging out...');
             localStorage.removeItem('access_token');
             localStorage.removeItem('refresh_token');
             setIsLoggedIn(false);
             setUser(null);
-            message.error('Zaloguj się ponownie');
+            message.error('Log in again');
         };
 
         const onRefreshSuccess = () => {
             const token = localStorage.getItem('access_token');
-            decodeAndSetUser(token); // Dekodujemy i ustawiamy użytkownika po odświeżeniu tokena
+            decodeAndSetUser(token);
             setIsLoggedIn(true);
         };
 
-        // Pierwsze dekodowanie użytkownika na podstawie istniejącego tokena
         decodeAndSetUser(localStorage.getItem('access_token'));
 
         scheduleTokenRefresh(onRefreshFailed, onRefreshSuccess, refreshTimeout);
 
         return () => {
             if (refreshTimeout.current) {
-                clearTimeout(refreshTimeout.current); // Wyczyść timeout przy demontażu komponentu
+                clearTimeout(refreshTimeout.current);
             }
         };
     }, [navigate]);
