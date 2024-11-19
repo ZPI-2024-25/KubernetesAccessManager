@@ -19,7 +19,7 @@ export const scheduleTokenRefresh = (
     const timeToExpire = tokenExpiry - currentTime; // Czas pozostały do wygaśnięcia
 
     // Odśwież token 30 sekund przed jego wygaśnięciem
-    const refreshTime = Math.max(timeToExpire - 30, Math.max( Math.ceil(timeToExpire*0.9), 0)); // Nie ustawiaj ujemnych czasów
+    const refreshTime = Math.max(timeToExpire - 30, Math.max( Math.ceil(timeToExpire*0.9) - 1, 0)); // Nie ustawiaj ujemnych czasów
 
     console.log(`Token wygasa za ${timeToExpire} sekund. Odświeżenie nastąpi za ${refreshTime} sekund.`);
 
