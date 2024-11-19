@@ -14,7 +14,7 @@ const (
 
 type Operation struct {
 	Resource  string        `json:"resource,omitempty"`
-	Type      OperationType `json:"type,omitempty"`
+	Type      OperationType `json:"operation,omitempty"`
 	Namespace string        `json:"namespace,omitempty"`
 }
 

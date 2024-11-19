@@ -6,6 +6,7 @@ import (
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"net/http"
 	"time"
+	"github.com/ZPI-2024-25/KubernetesAccessManager/common"
 )
 
 const (
@@ -85,6 +86,10 @@ func UninstallHelmReleaseController(w http.ResponseWriter, r *http.Request) {
 func handleHelmOperation(w http.ResponseWriter, r *http.Request, opType models.OperationType, operationFunc func(string, string) (interface{}, *models.ModelError)) {
 	releaseName := getReleaseName(r)
 	namespace := getNamespace(r)
+
+	if namespace == "" && opType != models.List {
+		namespace = common.DEFAULT_NAMESPACE
+	}
 
 	operation := models.Operation{
 		Resource:  "Helm",

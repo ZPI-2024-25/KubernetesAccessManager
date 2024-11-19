@@ -3,11 +3,13 @@ package controllers
 import (
 	"fmt"
 
+	"net/http"
+
 	"github.com/ZPI-2024-25/KubernetesAccessManager/auth"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
+	"github.com/ZPI-2024-25/KubernetesAccessManager/common"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"k8s.io/utils/env"
-	"net/http"
 )
 
 func GetResourceController(w http.ResponseWriter, r *http.Request) {
@@ -60,9 +62,13 @@ func handleResourceOperation(w http.ResponseWriter, r *http.Request, opType mode
 	resourceName := getResourceName(r)
 	namespace := getNamespace(r)
 
+	if namespace == "" && opType != models.List {
+		namespace = common.DEFAULT_NAMESPACE
+	}
+
 	operation := models.Operation{
 		Resource:  resourceType,
-		Namespace: namespace,
+		Namespace: namespace, // default for crud, empty for list
 		Type:      opType,
 	}
 

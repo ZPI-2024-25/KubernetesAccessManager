@@ -28,8 +28,8 @@ var (
 
 func GetRoleMapInstance() (*RoleMapRepository, error) {
 	once.Do(func() {
-		roleMapNamespace := common.GetOrDefaultEnv("ROLEMAP_NAMESPACE", "default")
-		roleMapName := common.GetOrDefaultEnv("ROLEMAP_NAME", "role-mapper")
+		roleMapNamespace := common.GetOrDefaultEnv("ROLEMAP_NAMESPACE", common.DEFAULT_ROLEMAP_NAMESPACE)
+		roleMapName := common.GetOrDefaultEnv("ROLEMAP_NAME", common.DEFAULT_ROLEMAP_NAME)
 
 		roleMap, subroleMap := GetRoleMapConfig(roleMapNamespace, roleMapName)
 		if roleMap == nil {
