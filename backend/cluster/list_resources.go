@@ -44,6 +44,7 @@ func ListResources(resourceType string, namespace string, getResourceInterface R
 	var resourceList models.ResourceList
 
 	resourceList.Columns = GetResourceListColumns(resourceType)
+	resourceList.ResourceList = []models.ResourceListResourceList{}
 
 	for _, resource := range resources.Items {
 		var resourceDetailsTruncated models.ResourceListResourceList
