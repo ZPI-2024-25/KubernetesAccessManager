@@ -1,64 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button, Layout, Menu } from 'antd';
-import { jwtDecode } from 'jwt-decode';
 import styles from './Menu.module.css';
 import { items } from '../../consts/MenuItem';
 import { MenuItem } from '../../types';
 import { Link, Outlet, useLocation } from "react-router-dom";
+import { useAuth } from '../AuthProvider/AuthProvider';
 
 const { Header, Content, Footer, Sider } = Layout;
 
 const LeftMenu: React.FC = () => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [asideWidth, setAsideWidth] = useState<number>(270);
-    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-    const [username, setUsername] = useState<string>('Użytkownik');
+    const { isLoggedIn } = useAuth(); // Korzystamy z kontekstu do zarządzania stanem logowania
     const location = useLocation();
-
-    // Funkcja dekodująca token JWT
-    const decodeToken = (token: string): string | null => {
-        try {
-            const decoded: { preferred_username?: string } = jwtDecode(token);
-            return decoded.preferred_username || null;
-        } catch (error) {
-            console.error("Nie udało się zdekodować tokena JWT:", error);
-            return null;
-        }
-    };
-
-    useEffect(() => {
-        // Funkcja do aktualizacji stanu logowania
-        const updateLoginState = () => {
-            const token = localStorage.getItem('access_token');
-            if (token) {
-                setIsLoggedIn(true);
-                const preferredUsername = decodeToken(token);
-                if (preferredUsername) {
-                    setUsername(preferredUsername);
-                }
-            } else {
-                setIsLoggedIn(false);
-                setUsername('Użytkownik');
-            }
-        };
-
-        // Zaktualizuj stan przy każdej zmianie ścieżki (np. po powrocie z logowania)
-        updateLoginState();
-    }, [location.pathname]); // Nasłuchujemy na zmianę ścieżki
-
-    const handleLogin = () => {
-        const redirectUri = `${window.location.origin}/auth/callback`;
-        window.location.href = `http://localhost:4000/realms/ZPI-realm/protocol/openid-connect/auth?client_id=ZPI-client&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}`;
-    };
-
-    const handleLogout = () => {
-        const logoutUrl = `http://localhost:4000/realms/ZPI-realm/protocol/openid-connect/logout?redirect_uri=${encodeURIComponent(window.location.origin)}`;
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        setIsLoggedIn(false);
-        setUsername('Użytkownik');
-        window.location.href = logoutUrl;
-    };
 
     const generateMenuItems = (menuItems: MenuItem[]): MenuItem[] => {
         return menuItems.map((item) => {
@@ -114,6 +68,18 @@ const LeftMenu: React.FC = () => {
         return labels.join('/');
     };
 
+    const handleLogin = () => {
+        const redirectUri = `${window.location.origin}/auth/callback`;
+        window.location.href = `http://localhost:4000/realms/ZPI-realm/protocol/openid-connect/auth?client_id=ZPI-client&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}`;
+    };
+
+    const handleLogout = () => {
+        const logoutUrl = `http://localhost:4000/realms/ZPI-realm/protocol/openid-connect/logout?redirect_uri=${encodeURIComponent(window.location.origin)}`;
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        window.location.href = logoutUrl;
+    };
+
     const selectedKeys = getSelectedKeys(items, location.pathname);
     const currentPageTitle = getCurrentPageTitleFromKeys(items, selectedKeys);
 
@@ -131,7 +97,7 @@ const LeftMenu: React.FC = () => {
             >
                 <div className={styles.logo}>
                     <span className={styles.logoText}>
-                        {collapsed ? 'U' : username.length > 10 ? `${username.slice(0, 10)}...` : username}
+                        {collapsed ? 'U' : 'Zalogowany użytkownik'}
                     </span>
                 </div>
                 <Menu
