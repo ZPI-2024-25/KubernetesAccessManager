@@ -6,7 +6,7 @@ import { MenuItem } from '../../types';
 import {Link, Outlet} from "react-router-dom";
 import { useLocation } from 'react-router-dom';
 
-const { Header, Content, Footer, Sider } = Layout;
+const { Header, Content, Sider } = Layout;
 
 const LeftMenu: React.FC = () => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
@@ -26,7 +26,7 @@ const LeftMenu: React.FC = () => {
             return {
                 ...item,
                 label: (
-                    <Link to={`/${item.resourceLabel || ''}`}>
+                    <Link to={`/${item.resourcelabel || ''}`}>
                         {item.label}
                     </Link>
                 ),
@@ -36,7 +36,7 @@ const LeftMenu: React.FC = () => {
 
     const getSelectedKeys = (menuItems: MenuItem[], pathname: string): string[] => {
         for (const item of menuItems) {
-            const itemPath = `/${item.resourceLabel || ''}`;
+            const itemPath = `/${item.resourcelabel || ''}`;
             if (itemPath === pathname) {
                 return [item.key];
             }
@@ -105,12 +105,17 @@ const LeftMenu: React.FC = () => {
                         {currentPageTitle || 'Page name'}
                     </p>
                 </Header>
-                <Content className={styles.content}>
+                <Content className={styles.content}
+                         style={{
+                             padding: '16px',
+                             minHeight: 'calc(100vh - 64px - 50px)',
+                             height: 'auto',
+                         }}>
                     <Outlet />
                 </Content>
-                <Footer className={styles.footer}>
-                    ZPI Kubernetes Access Manager ©{new Date().getFullYear()} Created by SDVM
-                </Footer>
+                {/*<Footer className={styles.footer}>*/}
+                {/*    ZPI Kubernetes Access Manager ©{new Date().getFullYear()} Created by SDVM*/}
+                {/*</Footer>*/}
             </Layout>
         </Layout>
     );

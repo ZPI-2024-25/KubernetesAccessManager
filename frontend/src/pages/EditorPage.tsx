@@ -3,8 +3,8 @@ import { useLocation } from "react-router-dom";
 import { message } from "antd";
 import Editor from "../components/Editor/Editor.tsx";
 import { updateResource } from "../api/updateResource.ts";
-import { ResourceDetails } from "../api/createResource.ts";
 import {getResource} from "../api/getResource.ts";
+import {ResourceDetails} from "../types/ResourceDetails.ts";
 
 const EditorPage = () => {
     const location = useLocation();
@@ -19,7 +19,7 @@ const EditorPage = () => {
 
         const fetchData = async () => {
             try {
-                const data = await getResource(resourceType, resourceName);
+                const data = await getResource(resourceType, resourceName, namespace);
                 setResourceData(data);
             } catch (error) {
                 console.error("Failed to fetch resource details:", error);
@@ -34,7 +34,7 @@ const EditorPage = () => {
         <div style={{ display: "flex" }}>
             <Editor
                 name={`Edit ${resourceName}`}
-                text={resourceData} // Передаем загруженные данные
+                text={resourceData}
                 endpoint={(data: ResourceDetails) =>
                     updateResource(resourceType, namespace, resourceName, data)
                 }

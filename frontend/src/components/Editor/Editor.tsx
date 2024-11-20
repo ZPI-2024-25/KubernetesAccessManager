@@ -5,7 +5,7 @@ import * as monaco from "monaco-editor";
 import {useCallback, useEffect, useRef, useState} from "react";
 import LanguageSelector from "./LanguageSelector.tsx";
 import {stringifyJson, parseJson, parseYaml, stringifyYaml} from "../../functions/jsonYamlFunctions.ts";
-import {ResourceDetails} from "../../api/createResource.ts";
+import {ResourceDetails} from "../../types/ResourceDetails.ts";
 
 const Editor = ({name, text, endpoint}: {
     name: string,
@@ -16,8 +16,11 @@ const Editor = ({name, text, endpoint}: {
     const [value, setValue] = useState<string>(text);
     const [language, setLanguage] = useState<string>("yaml");
 
+    // TODO: zamienić wzorzec na stworzenie
     useEffect(() => {
-        setValue(text);
+        console.log(text);
+        //setValue(text);
+        setValue(stringifyYaml((JSON.stringify(text, null, 2))));
     }, [text]);
 
     const onMount = useCallback((editor: monaco.editor.IStandaloneCodeEditor) => {

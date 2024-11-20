@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {Button, Table} from 'antd';
 import { ApiResponse, fetchResources } from '../../api';
 import {formatAge} from "../../functions/formatAge.ts";
-import {DeleteOutlined, EditOutlined, PlusOutlined} from "@ant-design/icons";
+import {DeleteOutlined, EditOutlined, FolderOutlined, PlusOutlined} from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom';
 
 
@@ -64,6 +64,11 @@ const Tab: React.FC<TabProps> = ({ resourceLabel }) => {
                             onClick={() => handleDelete(record)}
                             danger
                         />
+                        <Button
+                            type="link"
+                            icon={<FolderOutlined />}
+                            onClick={() => handleDetails(record)}
+                        />
                     </div>
                 ),
                 width: 100
@@ -88,16 +93,27 @@ const Tab: React.FC<TabProps> = ({ resourceLabel }) => {
         const resourceType = resourceLabel;
         const namespace = record.namespace as string;
         const resourceName = record.name as string;
+        console.log(resourceType,namespace,resourceName)
 
         navigate(`/editor`, {
             state: { resourceType, namespace, resourceName },
         });
     };
+    const handleDetails = (record: DataSourceItem) => {
+        console.log('Details', record);
+
+    };
 
 
     const handleDelete = (record: DataSourceItem) => {
         console.log("DELETE", record);
-        navigate('/delete');
+        const resourceType = resourceLabel;
+        const namespace = record.namespace as string;
+        const resourceName = record.name as string;
+
+        navigate(`/delete`, {
+            state: { resourceType, namespace, resourceName },
+        });
     };
 
     return (
@@ -111,10 +127,19 @@ const Tab: React.FC<TabProps> = ({ resourceLabel }) => {
                 Add
             </Button>
             <Table
-                columns={columns}
+                columns={columns.map((col, index) =>
+                    index === columns.length - 1 ? { ...col, fixed: 'right' } : col
+                )}
                 dataSource={dataSource}
-                scroll={{ x: 'max-content', y: 55 * 5 }}
-            />
+                scroll={{ x: 'max-content' }}
+                pagination={{
+                    showSizeChanger: true,
+                    pageSizeOptions: ['10', '20', '50'],
+                }}
+                style={{
+                    maxHeight: 'calc(100vh - 80px)',
+                    overflowY: 'auto',
+                }}            />
         </div>
     );
 };

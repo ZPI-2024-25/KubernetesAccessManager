@@ -1,8 +1,9 @@
 import axios from "axios";
+import {API_URL} from "../consts/apiConsts.ts";
 
-export const getResource = async (resourceType: string, resourceName: string) => {
+export const getResource = async (resourceType: string, resourceName: string, namespace: string) => {
     try {
-        const response = await axios.get(`/api/v1/k8s/${resourceType}/${resourceName}`, {
+        const response = await axios.get(`${API_URL}/${resourceType}/${resourceName}?namespace=${namespace}`, {
             headers: {
                 accept: 'application/json',
             },

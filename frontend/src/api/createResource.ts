@@ -1,18 +1,8 @@
 import axios from "axios";
 import {API_URL} from "../consts/apiConsts.ts";
+import {ResourceDetails} from "../types/ResourceDetails.ts";
 
-export interface ResourceDetails {
-    apiVersion: string;
-    kind: string;
-    metadata: {
-        name: string;
-        namespace: string;
-        [key: string]: unknown;
-    };
-    spec?: unknown;
-    status?: unknown;
-    [key: string]: unknown;
-}
+
 
 export async function createResource(resourceType: string, namespace: string, resourceData: unknown): Promise<ResourceDetails> {
     try {

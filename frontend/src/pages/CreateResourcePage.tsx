@@ -1,7 +1,8 @@
 import React from 'react';
 import Editor from "../components/Editor/Editor.tsx";
-import {createResource, ResourceDetails} from "../api/createResource.ts";
+import {createResource} from "../api/createResource.ts";
 import {getExampleResourceDefinition} from "../consts/exampleResourceDefinitions.ts";
+import {ResourceDetails} from "../types/ResourceDetails.ts";
 
 const CreateResourcePage: React.FC = () => {
     const resourceType = "Deployment";

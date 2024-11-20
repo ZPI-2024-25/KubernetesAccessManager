@@ -1,4 +1,3 @@
-// Node not included in the list
 export const getExampleResourceDefinition = (resourceType: string) => {
     const resourceDefinition = (() => {
         switch (resourceType) {
