@@ -1,4 +1,5 @@
 import {jwtDecode} from 'jwt-decode';
+import {KEYCLOAK_CLIENT_ID, KEYCLOAK_TOKEN_URL} from "../consts/apiConsts.ts";
 
 export const scheduleTokenRefresh = (
     onRefreshFailed: () => void,
@@ -14,57 +15,47 @@ export const scheduleTokenRefresh = (
         return;
     }
 
-    const currentTime = Math.floor(Date.now() / 1000); // Czas w sekundach
-    const tokenExpiry = decoded.exp; // Czas wygaśnięcia tokenu
-    const timeToExpire = tokenExpiry - currentTime; // Czas pozostały do wygaśnięcia
+    const currentTime = Math.floor(Date.now() / 1000);
+    const tokenExpiry = decoded.exp;
+    const timeToExpire = tokenExpiry - currentTime;
 
-    // Odśwież token 30 sekund przed jego wygaśnięciem
     const refreshTime = Math.max(timeToExpire - 30, Math.max( Math.ceil(timeToExpire*0.9) - 1, 0)); // Nie ustawiaj ujemnych czasów
 
-    console.log(`Token wygasa za ${timeToExpire} sekund. Odświeżenie nastąpi za ${refreshTime} sekund.`);
+    console.log(`Token expire in ${timeToExpire} seconds. Refresh will occur in  ${refreshTime} seconds.`);
 
     if (refreshTimeoutRef.current) {
-        clearTimeout(refreshTimeoutRef.current); // Wyczyść poprzedni timeout
+        clearTimeout(refreshTimeoutRef.current);
     }
 
     refreshTimeoutRef.current = setTimeout(async () => {
         const success = await refreshToken();
         if (!success) {
-            onRefreshFailed(); // Akcja na wypadek błędu odświeżenia
+            onRefreshFailed();
         } else {
-            onRefreshSuccess(); // Akcja na wypadek sukcesu
-            scheduleTokenRefresh(onRefreshFailed, onRefreshSuccess, refreshTimeoutRef); // Zaplanuj kolejne odświeżenie
+            onRefreshSuccess();
+            scheduleTokenRefresh(onRefreshFailed, onRefreshSuccess, refreshTimeoutRef);
         }
-    }, refreshTime * 1000); // Ustaw timeout w milisekundach
+    }, refreshTime * 1000);
 };
 
 export const decodeToken = (token: string) => {
     try {
         return jwtDecode(token);
     } catch (error) {
-        console.error("Błąd podczas dekodowania tokena:", error);
+        console.error("Error during token decode:", error);
         return null;
     }
-};
-
-export const isTokenExpired = (token: string) => {
-    const decoded = decodeToken(token);
-    if (!decoded || !decoded.exp) {
-        return true; // Traktuj brak daty wygaśnięcia jako token nieważny
-    }
-    const currentTime = Math.floor(Date.now() / 1000); // Czas w sekundach
-    return decoded.exp < currentTime;
 };
 
 export const refreshToken = async () => {
     const refreshToken = localStorage.getItem('refresh_token');
     if (!refreshToken) {
-        console.warn('Brak refresh tokena, użytkownik musi się zalogować ponownie.');
+        console.warn('No refresh token, user need to login once again.');
         return false;
     }
 
     try {
-        const response = await fetch('http://localhost:4000/realms/ZPI-realm/protocol/openid-connect/token', {
+        const response = await fetch(`${KEYCLOAK_TOKEN_URL}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -72,27 +63,26 @@ export const refreshToken = async () => {
             body: new URLSearchParams({
                 grant_type: 'refresh_token',
                 refresh_token: refreshToken,
-                client_id: 'ZPI-client',
+                client_id: `${KEYCLOAK_CLIENT_ID}`,
             }),
         });
 
         if (!response.ok) {
-            console.error('Błąd podczas odświeżania tokenu:', await response.text());
+            console.error('Error during token refreshment:', await response.text());
             return false;
         }
 
         const data = await response.json();
         if (data.access_token && data.refresh_token) {
-            // Zapisz nowe tokeny w localStorage
             localStorage.setItem('access_token', data.access_token);
             localStorage.setItem('refresh_token', data.refresh_token);
-            console.log('Tokeny zostały odświeżone.');
+            console.log('Token refreshed.');
             return true;
         }
 
         return false;
     } catch (error) {
-        console.error('Błąd podczas odświeżania tokenu:', error);
+        console.error('Error during token refreshment:', error);
         return false;
     }
 };

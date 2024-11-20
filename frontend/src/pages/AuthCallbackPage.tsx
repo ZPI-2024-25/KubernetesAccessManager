@@ -1,22 +1,23 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { message } from 'antd';
+import {KEYCLOAK_CLIENT_ID, KEYCLOAK_TOKEN_URL} from "../consts/apiConsts.ts";
 
 const AuthCallbackPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const hasHandledCallback = useRef(false); // Flaga zapobiegająca wielokrotnemu wywołaniu
+    const hasHandledCallback = useRef(false);
 
     useEffect(() => {
         const handleAuthCallback = async () => {
             if (hasHandledCallback.current) {
-                return; // Zatrzymaj, jeśli funkcja już została wywołana
+                return;
             }
             hasHandledCallback.current = true;
 
             const code = searchParams.get('code');
             if (!code) {
-                message.error('Brak kodu autoryzacyjnego w URL');
+                message.error('No authorization code in URL');
                 navigate('/login');
                 return;
             }
@@ -25,7 +26,7 @@ const AuthCallbackPage: React.FC = () => {
                 console.log('Code:', code);
                 console.log('Redirect URI:', `${window.location.origin}/auth/callback`);
 
-                const response = await fetch('http://localhost:4000/realms/ZPI-realm/protocol/openid-connect/token', {
+                const response = await fetch(`${KEYCLOAK_TOKEN_URL}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -34,33 +35,30 @@ const AuthCallbackPage: React.FC = () => {
                         grant_type: 'authorization_code',
                         code: code,
                         redirect_uri: `${window.location.origin}/auth/callback`,
-                        client_id: 'ZPI-client',
-                        // client_secret: 'your-client-secret', // Dodaj jeśli wymagany
+                        client_id: `${KEYCLOAK_CLIENT_ID}`,
                     }),
                 });
 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error('Błąd odpowiedzi Keycloak:', errorText);
-                    throw new Error('Błąd podczas komunikacji z Keycloak');
+                    console.error('Keycloak response error:', errorText);
+                    throw new Error('Error while communication with Keycloak');
                 }
 
                 const data = await response.json();
 
-                // Walidacja tokenów
                 if (!data.access_token || !data.refresh_token) {
-                    throw new Error('Odpowiedź nie zawiera wymaganych tokenów');
+                    throw new Error('Response does not contains token!');
                 }
 
-                // Zapisz tokeny do localStorage
                 localStorage.setItem('access_token', data.access_token);
                 localStorage.setItem('refresh_token', data.refresh_token);
 
-                message.success('Zalogowano pomyślnie');
-                navigate('/'); // Przekierowanie na stronę główną
+                message.success('Log in successfully');
+                navigate('/');
             } catch (error) {
-                console.error('Błąd podczas logowania:', error);
-                message.error('Nie udało się zalogować');
+                console.error('Error during log in:', error);
+                message.error('Cannot log in');
                 navigate('/login');
             }
         };
@@ -68,7 +66,7 @@ const AuthCallbackPage: React.FC = () => {
         handleAuthCallback();
     }, [searchParams, navigate]);
 
-    return <div>Przetwarzanie logowania...</div>;
+    return <div>Logging in progress...</div>;
 };
 
 export default AuthCallbackPage;

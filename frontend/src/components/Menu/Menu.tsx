@@ -5,7 +5,7 @@ import {items} from '../../consts/MenuItem';
 import {MenuItem} from '../../types';
 import {Link, Outlet, useLocation} from "react-router-dom";
 import {useAuth} from '../AuthProvider/AuthProvider';
-
+import {KEYCLOAK_LOGIN_URL, KEYCLOAK_LOGOUT_URL} from "../../consts/apiConsts.ts";
 const {Header, Content, Footer, Sider} = Layout;
 
 const LeftMenu: React.FC = () => {
@@ -70,11 +70,11 @@ const LeftMenu: React.FC = () => {
 
     const handleLogin = () => {
         const redirectUri = `${window.location.origin}/auth/callback`;
-        window.location.href = `http://localhost:4000/realms/ZPI-realm/protocol/openid-connect/auth?client_id=ZPI-client&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}`;
+        window.location.href = `${KEYCLOAK_LOGIN_URL}&redirect_uri=${encodeURIComponent(redirectUri)}`;
     };
 
     const handleLogout = () => {
-        const logoutUrl = `http://localhost:4000/realms/ZPI-realm/protocol/openid-connect/logout?redirect_uri=${encodeURIComponent(window.location.origin)}`;
+        const logoutUrl = `${KEYCLOAK_LOGOUT_URL}?redirect_uri=${encodeURIComponent(window.location.origin)}`;
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         window.location.href = logoutUrl;
@@ -98,12 +98,12 @@ const LeftMenu: React.FC = () => {
                 <div className={styles.logo}>
                     <span
                         className={styles.logoText}
-                        title={user?.preferred_username || 'Użytkownik'}
+                        title={user?.preferred_username || 'User'}
                         style={{
                             maxWidth: `${asideWidth - 20}px`,
                         }}
                     >
-                        {user?.preferred_username || 'Użytkownik'}
+                        {user?.preferred_username || 'User'}
                     </span>
                 </div>
 
@@ -123,11 +123,11 @@ const LeftMenu: React.FC = () => {
                         </p>
                         {isLoggedIn ? (
                             <Button type="primary" onClick={handleLogout}>
-                                Wyloguj
+                                Log out
                             </Button>
                         ) : (
                             <Button type="primary" onClick={handleLogin}>
-                                Zaloguj
+                                Log in
                             </Button>
                         )}
                     </div>
