@@ -1,5 +1,6 @@
 import axios from "axios";
 import {API_URL} from "../consts/apiConsts.ts";
+import {stringifyYaml} from "../functions/jsonYamlFunctions.ts";
 
 export const getResource = async (resourceType: string, resourceName: string, namespace: string) => {
     try {
@@ -10,8 +11,7 @@ export const getResource = async (resourceType: string, resourceName: string, na
         });
 
         console.log("Fetched Resource:", response.data);
-
-        return response.data.resourceDetails;
+        return stringifyYaml(response.data.resourceDetails);
     } catch (error) {
         console.error("Error fetching resource details:", error);
         throw error;

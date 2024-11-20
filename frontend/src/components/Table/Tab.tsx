@@ -124,7 +124,6 @@ const Tab: React.FC<TabProps> = ({ resourceLabel }) => {
                 onClick={handleAdd}
                 style={{ marginBottom: 16 }}
             >
-                Add
             </Button>
             <Table
                 columns={columns.map((col, index) =>

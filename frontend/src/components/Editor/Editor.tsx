@@ -19,8 +19,8 @@ const Editor = ({name, text, endpoint}: {
     // TODO: zamienić wzorzec na stworzenie
     useEffect(() => {
         console.log(text);
-        //setValue(text);
-        setValue(stringifyYaml((JSON.stringify(text, null, 2))));
+        setValue(text);
+        //setValue(stringifyYaml((JSON.stringify(text, null, 2))));
     }, [text]);
 
     const onMount = useCallback((editor: monaco.editor.IStandaloneCodeEditor) => {
