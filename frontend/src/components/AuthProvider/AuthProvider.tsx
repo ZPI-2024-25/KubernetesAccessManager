@@ -28,6 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
             const decoded = decodeToken(token);
             setUser(decoded);
+            setIsLoggedIn(true);
         } catch (error) {
             console.error('Token decode error:', error);
             setUser(null);

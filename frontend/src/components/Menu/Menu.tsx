@@ -117,7 +117,7 @@ const LeftMenu: React.FC = () => {
             </Sider>
             <Layout className={styles.contentLayout} style={{marginLeft: asideWidth}}>
             <Header className={styles.header}>
-                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%'}}>
                         <p style={{paddingLeft: asideWidth}}>
                             {currentPageTitle || 'Page name'}
                         </p>

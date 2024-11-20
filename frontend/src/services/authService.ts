@@ -11,7 +11,7 @@ export const scheduleTokenRefresh = (
 
     const decoded = decodeToken(accessToken);
     if (!decoded || !decoded.exp) {
-        console.warn('Nie można zdekodować tokenu lub brak daty wygaśnięcia');
+        console.warn('Cannot decode token or no expire date in token.');
         return;
     }
 
@@ -19,7 +19,7 @@ export const scheduleTokenRefresh = (
     const tokenExpiry = decoded.exp;
     const timeToExpire = tokenExpiry - currentTime;
 
-    const refreshTime = Math.max(timeToExpire - 30, Math.max( Math.ceil(timeToExpire*0.9) - 1, 0)); // Nie ustawiaj ujemnych czasów
+    const refreshTime = Math.max(timeToExpire - 30, Math.max( Math.ceil(timeToExpire*0.9) - 1, 0));
 
     console.log(`Token expire in ${timeToExpire} seconds. Refresh will occur in  ${refreshTime} seconds.`);
 
