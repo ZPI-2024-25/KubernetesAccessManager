@@ -1,131 +1,97 @@
 import {ReactNode, useEffect, useState} from 'react';
-import {Button, Table} from 'antd';
-import {fetchReleases} from '../../api';
-import {formatAge} from "../../functions/formatAge.ts";
+import {Button, message, Table} from 'antd';
+import {deleteRelease, fetchReleases} from '../../api';
 import {DeleteOutlined,} from "@ant-design/icons";
 import {MdOutlineRestore} from "react-icons/md";
-import {HelmRelease, HelmReleaseList} from "../../types";
+import {HelmDataSourceItem, HelmRelease, HelmReleaseList} from "../../types";
+import {helmColumns} from "../../consts/HelmColumns.ts";
 
-interface DataSourceItem {
-    key: string | number;
-    name: string;
-    namespace: string;
-    chart: string;
-    status: string;
-    updated: string;
-    revision: string;
-    app_version: string;
-}
-
-interface ColumnType {
-    title: string;
-    dataIndex: string;
-    key: string;
-    width: number;
-    render: (text: ReactNode, record: DataSourceItem) => ReactNode;
-}
-
-const Tab = ({showModal, setCurrent}: { showModal: () => void, setCurrent: (release: HelmRelease) => void }) => {
-    const columns: ColumnType[] = [{
-        title: 'Name',
-        dataIndex: 'name',
-        key: 'name',
-        width: 150,
-        render: (text: ReactNode): ReactNode => {
-            return text;
-        }
-    }, {
-        title: 'Namespace',
-        dataIndex: 'namespace',
-        key: 'namespace',
-        width: 150,
-        render: (text: ReactNode): ReactNode => {
-            return text;
-        }
-    }, {
-        title: 'Chart',
-        dataIndex: 'chart',
-        key: 'chart',
-        width: 150,
-        render: (text: ReactNode): ReactNode => {
-            return text;
-        }
-    }, {
-        title: 'Status',
-        dataIndex: 'status',
-        key: 'status',
-        width: 150,
-        render: (text: ReactNode): ReactNode => {
-            return text;
-        }
-    }, {
-        title: 'Updated',
-        dataIndex: 'updated',
-        key: 'updated',
-        width: 150,
-        render: (_text: ReactNode, record: DataSourceItem): ReactNode => {
-            return formatAge(record.updated as string);
-        },
-    }, {
-        title: 'Revision',
-        dataIndex: 'revision',
-        key: 'revision',
-        width: 150,
-        render: (text: ReactNode): ReactNode => {
-            return text;
-        }
-    }, {
-        title: 'App Version',
-        dataIndex: 'app_version',
-        key: 'app_version',
-        width: 150,
-        render: (text: ReactNode): ReactNode => {
-            return text;
-        }
-    }, {
+const HelmTab = ({showModal, setCurrent}: { showModal: () => void, setCurrent: (release: HelmRelease) => void }) => {
+    const columns = helmColumns.concat([{
         title: 'Actions',
         dataIndex: "",
         key: 'actions',
         width: 150,
-        render: (_, record: DataSourceItem) => (
+        render: (_: ReactNode, record: HelmDataSourceItem): ReactNode => (
             <div>
                 <Button
                     type="link"
-                    icon={<MdOutlineRestore/>}
+                    icon={<MdOutlineRestore />}
                     onClick={() => handleRollback(record)}
                 />
                 <Button
-                    type="link"
-                    icon={<DeleteOutlined/>}
-                    onClick={() => handleDelete(record)}
                     danger
+                    type="link"
+                    color="danger"
+                    icon={<DeleteOutlined />}
+                    onClick={() => handleDelete(record)}
+                    loading={loadingDelete.includes(record.key as string)}
                 />
             </div>
         ),
-    }]
-    const [dataSource, setDataSource] = useState<DataSourceItem[]>([]);
+    }]);
+    const [dataSource, setDataSource] = useState<HelmDataSourceItem[]>([]);
+    const [loadingDelete, setLoadingDelete] = useState<string[]>([]);
+    const [messageApi] = message.useMessage();
 
     useEffect(() => {
         const fetchData = async () => {
-            const response: HelmReleaseList = await fetchReleases('');
+            try { //*
+                const response: HelmReleaseList = await fetchReleases('');
 
-            const dynamicDataSource: DataSourceItem[] = response.map((resource, index) => ({
-                key: index,
-                ...resource,
-            }));
-            setDataSource(dynamicDataSource);
+                const dynamicDataSource: HelmDataSourceItem[] = response.map((resource, index) => ({
+                    key: index,
+                    ...resource,
+                }));
+                setDataSource(dynamicDataSource);
+            } catch (error) { //*
+                console.error('Error fetching releases:', error);
+                messageApi.error('Failed to fetch releases.', 2);
+            }
         };
 
         fetchData();
     }, []);
 
-    const handleRollback = (record: DataSourceItem) => {
+    const handleRollback = (record: HelmDataSourceItem) => {
         setCurrent(record)
         showModal();
     };
 
-    const handleDelete = (record: DataSourceItem) => {
-        console.log("DELETE", record);
+    const handleDelete = async (record: HelmDataSourceItem) => {
+        const {name, namespace, key} = record;
+        if (!name || !namespace) {
+            message.error('Invalid release.', 2);
+            return;
+        }
+
+        setLoadingDelete((prev) => [...prev, key as string]);
+
+        try {
+            const status = await deleteRelease(name, namespace);
+
+            if (status.code === 200) {
+                message.success('Release deleted successfully.', 2);
+
+                setDataSource(prevData => prevData.filter(item => item.key !== key));
+            } else if (status.code === 202) {
+                message.loading('Deletion in progress.', 2).then(async () => {
+                    const response: HelmReleaseList = await fetchReleases('');
+                    const dynamicDataSource: HelmDataSourceItem[] = response.map((resource, index) => ({
+                        key: index,
+                        ...resource,
+                    }));
+                    setDataSource(dynamicDataSource);
+                });
+            } else {
+                message.error('Failed to delete release.', 2);
+            }
+        } catch (error) {
+            console.error('Error during deletion:', error);
+            message.error('Rollback error.', 2);
+        } finally {
+            setLoadingDelete(prev => prev.filter(k => k !== key as string));
+        }
     };
 
     return (
@@ -134,8 +100,9 @@ const Tab = ({showModal, setCurrent}: { showModal: () => void, setCurrent: (rele
             columns={columns}
             dataSource={dataSource}
             scroll={{y: 55 * 5}}
+            rowKey="key"
         />
     );
 };
 
-export default Tab;
+export default HelmTab;
