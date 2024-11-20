@@ -1,8 +1,8 @@
 import axios from 'axios';
 import {HELM_API_URL} from "../../consts/apiConsts.ts";
-import {HelmReleaseHistoryList, Status, ReleaseNameRollbackBody} from "../../types";
+import {Status, ReleaseNameRollbackBody, HelmRelease} from "../../types";
 
-export async function rollbackRelease(version: number, releaseName: string, namespace: string): Promise<HelmReleaseHistoryList | Status> {
+export async function rollbackRelease(version: number, releaseName: string, namespace: string): Promise<HelmRelease | Status> {
     try {
         const namespaceQuery = namespace ? `?namespace=${namespace}` : '';
 
@@ -10,7 +10,7 @@ export async function rollbackRelease(version: number, releaseName: string, name
             version
         }
 
-        const response = await axios.post<HelmReleaseHistoryList | Status>(`${HELM_API_URL}/releases/${releaseName}/rollback${namespaceQuery}`, body);
+        const response = await axios.post<HelmRelease | Status>(`${HELM_API_URL}/releases/${releaseName}/rollback${namespaceQuery}`, body);
         console.log(`POST: ${HELM_API_URL}/releases/${releaseName}/rollback${namespaceQuery}`)
         console.log(response.data);
         return response.data;
