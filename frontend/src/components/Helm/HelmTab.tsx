@@ -1,11 +1,10 @@
 import {ReactNode, useEffect, useState} from 'react';
-import './Tab.css';
 import {Button, Table} from 'antd';
 import {fetchReleases} from '../../api';
 import {formatAge} from "../../functions/formatAge.ts";
 import {DeleteOutlined,} from "@ant-design/icons";
-import { MdOutlineRestore } from "react-icons/md";
-import {HelmReleaseList} from "../../types";
+import {MdOutlineRestore} from "react-icons/md";
+import {HelmRelease, HelmReleaseList} from "../../types";
 
 interface DataSourceItem {
     key: string | number;
@@ -26,9 +25,7 @@ interface ColumnType {
     render: (text: ReactNode, record: DataSourceItem) => ReactNode;
 }
 
-const Tab = () => {
-    const [pageSize, setPageSize] = useState<number>(15);
-
+const Tab = ({showModal, setCurrent}: { showModal: () => void, setCurrent: (release: HelmRelease) => void }) => {
     const columns: ColumnType[] = [{
         title: 'Name',
         dataIndex: 'name',
@@ -94,12 +91,12 @@ const Tab = () => {
             <div>
                 <Button
                     type="link"
-                    icon={<MdOutlineRestore />}
+                    icon={<MdOutlineRestore/>}
                     onClick={() => handleRollback(record)}
                 />
                 <Button
                     type="link"
-                    icon={<DeleteOutlined />}
+                    icon={<DeleteOutlined/>}
                     onClick={() => handleDelete(record)}
                     danger
                 />
@@ -123,7 +120,8 @@ const Tab = () => {
     }, []);
 
     const handleRollback = (record: DataSourceItem) => {
-        console.log("PUT", record);
+        setCurrent(record)
+        showModal();
     };
 
     const handleDelete = (record: DataSourceItem) => {
@@ -131,17 +129,12 @@ const Tab = () => {
     };
 
     return (
-        // <div className={styles.fullHeightContainer}>
-        //     <div className={styles.tableContainer}>
-                <Table
-                    className="ant-table"
-                    columns={columns}
-                    dataSource={dataSource}
-                    pagination={{pageSize: pageSize}}
-                    scroll={{y: 55 * 5}}
-                />
-        //     </div>
-        // </div>
+        <Table
+            className="ant-table"
+            columns={columns}
+            dataSource={dataSource}
+            scroll={{y: 55 * 5}}
+        />
     );
 };
 
