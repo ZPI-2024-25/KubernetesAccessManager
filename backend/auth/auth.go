@@ -105,6 +105,9 @@ func ExtractRoles(claims *jwt.MapClaims) ([]string, error) {
 		return nil, errors.New("resource_access claim missing or invalid")
 	}
 
+	if len(roles) == 0 {
+		return nil, errors.New("no roles found in token")
+	}
 	return roles, nil
 }
 
