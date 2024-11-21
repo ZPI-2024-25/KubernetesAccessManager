@@ -24,27 +24,28 @@ func ListResourcesController(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return nil, err
 		}
-		if namespace == "" {
-			// temporary solution to disable auth if we don't have keycloak running
-			if env.GetString("KEYCLOAK_URL", "") == "" {
-				return resources, nil
-			}
-			token, err := auth.GetJWTTokenFromHeader(r)
-			isValid, claims := auth.IsTokenValid(token)
-
-			if err != nil || !isValid {
-				return nil, &models.ModelError{
-					Message: "Unauthorized",
-					Code:    http.StatusUnauthorized,
-				}
-			}
-			filtered, errM := auth.FilterRestrictedResources(&resources, claims)
-			if errM != nil {
-				return nil, errM
-			}
-			return filtered, nil
+		if namespace != "" {
+			return resources, nil
 		}
-		return resources, nil
+
+		// temporary solution to disable auth if we don't have keycloak running
+		if env.GetString("KEYCLOAK_URL", "") == "" {
+			return resources, nil
+		}
+		token, err := auth.GetJWTTokenFromHeader(r)
+		isValid, claims := auth.IsTokenValid(token)
+
+		if err != nil || !isValid {
+			return nil, &models.ModelError{
+				Message: "Unauthorized",
+				Code:    http.StatusUnauthorized,
+			}
+		}
+		filtered, errM := auth.FilterRestrictedResources(&resources, claims)
+		if errM != nil {
+			return nil, errM
+		}
+		return filtered, nil
 	})
 }
 
