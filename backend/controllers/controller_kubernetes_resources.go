@@ -32,10 +32,10 @@ func ListResourcesController(w http.ResponseWriter, r *http.Request) {
 		if env.GetString("KEYCLOAK_URL", "") == "" {
 			return resources, nil
 		}
-		token, err := auth.GetJWTTokenFromHeader(r)
+		token, err2 := auth.GetJWTTokenFromHeader(r)
 		isValid, claims := auth.IsTokenValid(token)
 
-		if err != nil || !isValid {
+		if err2 != nil || !isValid {
 			return nil, &models.ModelError{
 				Message: "Unauthorized",
 				Code:    http.StatusUnauthorized,
