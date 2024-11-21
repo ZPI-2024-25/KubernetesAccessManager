@@ -2,8 +2,6 @@ import axios from "axios";
 import {API_URL} from "../consts/apiConsts.ts";
 import {ResourceDetails} from "../types/ResourceDetails.ts";
 
-
-
 export async function createResource(resourceType: string, namespace: string, resourceData: unknown): Promise<ResourceDetails> {
     try {
         const namespaceQuery = namespace ? `?namespace=${namespace}` : '';
