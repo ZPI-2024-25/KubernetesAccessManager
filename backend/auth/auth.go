@@ -123,3 +123,35 @@ func ExtractUserStatus(claims *jwt.MapClaims) (int32, string, string)  {
 	}
 	return exp, preferredUsername, email
 }
+
+func FilterRestrictedResources(resources *models.ResourceList, claims *jwt.MapClaims) (*models.ResourceList, *models.ModelError) {
+	roles, err := ExtractRoles(claims)
+	if err != nil {
+		return nil, &models.ModelError{
+			Code: http.StatusBadRequest, 
+			Message: "Error extracting roles from JWT token: " + err.Error(),
+		}
+	}
+
+	filteredResources := make([]models.ResourceListResourceList, 0)
+	for _, resource := range resources.ResourceList {
+		op := models.Operation{
+			Resource: resource.Resource,
+			Namespace: resource.Namespace,
+			Type: models.List,
+		}
+		hasPermission, err := IsUserAuthorized(op, roles)
+		if err != nil {
+			return nil, &models.ModelError{
+				Code: http.StatusInternalServerError,
+				Message: fmt.Sprintf("Error when checking permissions: %v", err),
+			}
+		}
+		if hasPermission {
+			filteredResources = append(filteredResources, resource)
+		}
+	}
+	resources.ResourceList = filteredResources
+	
+	return resources, nil
+}
