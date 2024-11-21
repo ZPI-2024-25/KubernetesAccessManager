@@ -25,6 +25,10 @@ func ListResourcesController(w http.ResponseWriter, r *http.Request) {
 			return nil, err
 		}
 		if namespace == "" {
+			// temporary solution to disable auth if we don't have keycloak running
+			if env.GetString("KEYCLOAK_URL", "") == "" {
+				return resources, nil
+			}
 			token, err := auth.GetJWTTokenFromHeader(r)
 			isValid, claims := auth.IsTokenValid(token)
 
