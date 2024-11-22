@@ -940,3 +940,376 @@ func TestDeepCopy(t *testing.T) {
 		})
 	}
 }
+func TestFromOperationConfigList(t *testing.T) {
+	tests := []struct {
+		name       string
+		operations []operationConfig
+		expected   []models.Operation
+	}{
+		{
+			name: "Single operation with namespace and resource",
+			operations: []operationConfig{
+				{
+					Namespace: "namespace1",
+					Resource:  "resource1",
+					Operations: []models.OperationType{
+						"read",
+					},
+				},
+			},
+			expected: []models.Operation{
+				{
+					Namespace: "namespace1",
+					Resource:  "resource1",
+					Type:      "read",
+				},
+			},
+		},
+		{
+			name: "Multiple operations with namespace and resource",
+			operations: []operationConfig{
+				{
+					Namespace: "namespace1",
+					Resource:  "resource1",
+					Operations: []models.OperationType{
+						"read",
+						"write",
+					},
+				},
+			},
+			expected: []models.Operation{
+				{
+					Namespace: "namespace1",
+					Resource:  "resource1",
+					Type:      "read",
+				},
+				{
+					Namespace: "namespace1",
+					Resource:  "resource1",
+					Type:      "write",
+				},
+			},
+		},
+		{
+			name: "Operation with wildcard namespace and resource",
+			operations: []operationConfig{
+				{
+					Namespace: "*",
+					Resource:  "*",
+					Operations: []models.OperationType{
+						"read",
+					},
+				},
+			},
+			expected: []models.Operation{
+				{
+					Namespace: "*",
+					Resource:  "*",
+					Type:      "read",
+				},
+			},
+		},
+		{
+			name: "Operation with empty namespace and resource",
+			operations: []operationConfig{
+				{
+					Namespace: "",
+					Resource:  "",
+					Operations: []models.OperationType{
+						"read",
+					},
+				},
+			},
+			expected: []models.Operation{
+				{
+					Namespace: "*",
+					Resource:  "*",
+					Type:      "read",
+				},
+			},
+		},
+		{
+			name: "Operation with no operations specified",
+			operations: []operationConfig{
+				{
+					Namespace: "namespace1",
+					Resource:  "resource1",
+					Operations: []models.OperationType{},
+				},
+			},
+			expected: []models.Operation{
+				{
+					Namespace: "namespace1",
+					Resource:  "resource1",
+					Type:      models.All,
+				},
+			},
+		},
+		{
+			name: "Multiple operation configs",
+			operations: []operationConfig{
+				{
+					Namespace: "namespace1",
+					Resource:  "resource1",
+					Operations: []models.OperationType{
+						"read",
+					},
+				},
+				{
+					Namespace: "namespace2",
+					Resource:  "resource2",
+					Operations: []models.OperationType{
+						"write",
+					},
+				},
+			},
+			expected: []models.Operation{
+				{
+					Namespace: "namespace1",
+					Resource:  "resource1",
+					Type:      "read",
+				},
+				{
+					Namespace: "namespace2",
+					Resource:  "resource2",
+					Type:      "write",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := fromOperationConfigList(tt.operations)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+func TestFromRoleMapConfig(t *testing.T) {
+	tests := []struct {
+		name     string
+		config   map[string]*roleConfig
+		expected map[string]*models.Role
+	}{
+		{
+			name: "Single role with permit and deny",
+			config: map[string]*roleConfig{
+				"admin": {
+					Name: "admin",
+					Permit: []operationConfig{
+						{
+							Namespace: "namespace1",
+							Resource:  "resource1",
+							Operations: []models.OperationType{
+								"read",
+							},
+						},
+					},
+					Deny: []operationConfig{
+						{
+							Namespace: "namespace2",
+							Resource:  "resource2",
+							Operations: []models.OperationType{
+								"write",
+							},
+						},
+					},
+					Subroles: []string{"user"},
+				},
+			},
+			expected: map[string]*models.Role{
+				"admin": {
+					Name: "admin",
+					Permit: []models.Operation{
+						{
+							Namespace: "namespace1",
+							Resource:  "resource1",
+							Type:      "read",
+						},
+					},
+					Deny: []models.Operation{
+						{
+							Namespace: "namespace2",
+							Resource:  "resource2",
+							Type:      "write",
+						},
+					},
+					Subroles: []string{"user"},
+				},
+			},
+		},
+		{
+			name: "Multiple roles",
+			config: map[string]*roleConfig{
+				"admin": {
+					Name: "admin",
+					Permit: []operationConfig{
+						{
+							Namespace: "namespace1",
+							Resource:  "resource1",
+							Operations: []models.OperationType{
+								"read",
+							},
+						},
+					},
+					Subroles: []string{"user"},
+				},
+				"user": {
+					Name: "user",
+					Permit: []operationConfig{
+						{
+							Namespace: "namespace2",
+							Resource:  "resource2",
+							Operations: []models.OperationType{
+								"write",
+							},
+						},
+					},
+				},
+			},
+			expected: map[string]*models.Role{
+				"admin": {
+					Name: "admin",
+					Permit: []models.Operation{
+						{
+							Namespace: "namespace1",
+							Resource:  "resource1",
+							Type:      "read",
+						},
+					},
+					Subroles: []string{"user"},
+				},
+				"user": {
+					Name: "user",
+					Permit: []models.Operation{
+						{
+							Namespace: "namespace2",
+							Resource:  "resource2",
+							Type:      "write",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Role with wildcard namespace and resource",
+			config: map[string]*roleConfig{
+				"admin": {
+					Name: "admin",
+					Permit: []operationConfig{
+						{
+							Namespace: "*",
+							Resource:  "*",
+							Operations: []models.OperationType{
+								"read",
+							},
+						},
+					},
+				},
+			},
+			expected: map[string]*models.Role{
+				"admin": {
+					Name: "admin",
+					Permit: []models.Operation{
+						{
+							Namespace: "*",
+							Resource:  "*",
+							Type:      "read",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Role with empty namespace and resource",
+			config: map[string]*roleConfig{
+				"admin": {
+					Name: "admin",
+					Permit: []operationConfig{
+						{
+							Namespace: "",
+							Resource:  "",
+							Operations: []models.OperationType{
+								"read",
+							},
+						},
+					},
+				},
+			},
+			expected: map[string]*models.Role{
+				"admin": {
+					Name: "admin",
+					Permit: []models.Operation{
+						{
+							Namespace: "*",
+							Resource:  "*",
+							Type:      "read",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Role with no operations specified",
+			config: map[string]*roleConfig{
+				"admin": {
+					Name: "admin",
+					Permit: []operationConfig{
+						{
+							Namespace: "namespace1",
+							Resource:  "resource1",
+							Operations: []models.OperationType{},
+						},
+					},
+				},
+			},
+			expected: map[string]*models.Role{
+				"admin": {
+					Name: "admin",
+					Permit: []models.Operation{
+						{
+							Namespace: "namespace1",
+							Resource:  "resource1",
+							Type:      models.All,
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Role with no name specified",
+			config: map[string]*roleConfig{
+				"rolename": {
+					Permit: []operationConfig{
+						{
+							Namespace: "namespace1",
+							Resource:  "resource1",
+							Operations: []models.OperationType{
+								"read",
+							},
+						},
+					},
+				},
+			},
+			expected: map[string]*models.Role{
+				"rolename": {
+					Name: "rolename",
+					Permit: []models.Operation{
+						{
+							Namespace: "namespace1",
+							Resource:  "resource1",
+							Type:      "read",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := fromRoleMapConfig(tt.config)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
