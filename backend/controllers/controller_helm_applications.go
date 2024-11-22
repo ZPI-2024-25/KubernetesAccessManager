@@ -2,11 +2,14 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/ZPI-2024-25/KubernetesAccessManager/helm"
-	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"net/http"
 	"time"
+
+	"github.com/ZPI-2024-25/KubernetesAccessManager/auth"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/common"
+	"github.com/ZPI-2024-25/KubernetesAccessManager/helm"
+	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
+	"k8s.io/utils/env"
 )
 
 const (
@@ -27,7 +30,29 @@ func GetHelmReleaseHistoryController(w http.ResponseWriter, r *http.Request) {
 
 func ListHelmReleasesController(w http.ResponseWriter, r *http.Request) {
 	handleHelmOperation(w, r, models.List, func(releaseName, namespace string) (interface{}, *models.ModelError) {
-		return helm.ListHelmReleases(namespace, helm.PrepareActionConfig)
+		releases, err := helm.ListHelmReleases(namespace, helm.PrepareActionConfig)
+		if err != nil {
+			return nil, err
+		}
+		if namespace != "" {
+			return releases, nil
+		}
+
+		// temporary solution to disable auth if we don't have keycloak running
+		if env.GetString("KEYCLOAK_URL", "") == "" {
+			return releases, nil
+		}
+		token, err2 := auth.GetJWTTokenFromHeader(r)
+		isValid, claims := auth.IsTokenValid(token)
+
+		if err2 != nil || !isValid {
+			return nil, &models.ModelError{
+				Message: "Unauthorized",
+				Code:    http.StatusUnauthorized,
+			}
+		}
+		filtered, errM := auth.FilterRestrictedReleases(releases, claims)
+		return filtered, errM
 	})
 }
 
@@ -91,15 +116,18 @@ func handleHelmOperation(w http.ResponseWriter, r *http.Request, opType models.O
 		namespace = common.DEFAULT_NAMESPACE
 	}
 
-	operation := models.Operation{
-		Resource:  "Helm",
-		Namespace: namespace,
-		Type:      opType,
-	}
+	// The only operation that can be done for all namespaces - list without namespace mentioned
+	if !(opType == models.List && namespace == "") {
+		operation := models.Operation{
+			Resource:  "Helm",
+			Namespace: namespace,
+			Type:      opType,
+		}
 
-	if err := authenticateAndAuthorize(r, operation); err != nil {
-		writeJSONResponse(w, int(err.Code), err)
-		return
+		if err := authenticateAndAuthorize(r, operation); err != nil {
+			writeJSONResponse(w, int(err.Code), err)
+			return
+		}
 	}
 
 	result, err := operationFunc(releaseName, namespace)

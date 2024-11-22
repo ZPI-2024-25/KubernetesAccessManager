@@ -41,7 +41,7 @@ func ListResourcesController(w http.ResponseWriter, r *http.Request) {
 				Code:    http.StatusUnauthorized,
 			}
 		}
-		filtered, errM := auth.FilterRestrictedResources(&resources, claims)
+		filtered, errM := auth.FilterRestrictedResources(&resources, claims, resourceType)
 		if errM != nil {
 			return nil, errM
 		}

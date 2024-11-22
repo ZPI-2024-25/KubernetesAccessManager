@@ -127,7 +127,50 @@ func ExtractUserStatus(claims *jwt.MapClaims) (int32, string, string)  {
 	return exp, preferredUsername, email
 }
 
-func FilterRestrictedResources(resources *models.ResourceList, claims *jwt.MapClaims) (*models.ResourceList, *models.ModelError) {
+type Namespaced interface {
+	GetNamespace() string
+}
+
+func FilterRestrictedResources(resources *models.ResourceList, claims *jwt.MapClaims, resourceType string) (*models.ResourceList, *models.ModelError) {
+	namespaces := make(map[string]struct{})
+	for _, resource := range resources.ResourceList {
+		namespaces[resource.Namespace] = struct{}{}
+	}
+	allowed, err := getAllowedNamespaces(claims, resourceType, models.List, namespaces)
+	if err != nil {
+		return nil, err
+	}
+	filteredResources := make([]models.ResourceListResourceList, 0)
+	for _, resource := range resources.ResourceList {
+		if _, ok := allowed[resource.Namespace]; ok {
+			filteredResources = append(filteredResources, resource)
+		}
+	}
+	resources.ResourceList = filteredResources
+	
+	return resources, nil
+}
+
+func FilterRestrictedReleases(releases []models.HelmRelease, claims *jwt.MapClaims) ([]models.HelmRelease, *models.ModelError) {
+	namespaces := make(map[string]struct{})
+	for _, release := range releases {
+		namespaces[release.Namespace] = struct{}{}
+	}
+	allowed, err := getAllowedNamespaces(claims, "Helm", models.List, namespaces)
+	if err != nil {
+		return nil, err
+	}
+	filteredReleases := make([]models.HelmRelease, 0)
+	for _, release := range releases {
+		if _, ok := allowed[release.Namespace]; ok {
+			filteredReleases = append(filteredReleases, release)
+		}
+	}
+	
+	return filteredReleases, nil
+}
+
+func getAllowedNamespaces(claims *jwt.MapClaims, resourceType string, opType models.OperationType, namespaces map[string]struct{}) (map[string]struct{}, *models.ModelError) {
 	roles, err := ExtractRoles(claims)
 	if err != nil {
 		return nil, &models.ModelError{
@@ -135,13 +178,12 @@ func FilterRestrictedResources(resources *models.ResourceList, claims *jwt.MapCl
 			Message: "Error extracting roles from JWT token: " + err.Error(),
 		}
 	}
-
-	filteredResources := make([]models.ResourceListResourceList, 0)
-	for _, resource := range resources.ResourceList {
+	allowed := make(map[string]struct{})
+	for ns := range namespaces{
 		op := models.Operation{
-			Resource: resource.Resource,
-			Namespace: resource.Namespace,
-			Type: models.List,
+			Resource: resourceType,
+			Namespace: ns,
+			Type: opType,
 		}
 		hasPermission, err := IsUserAuthorized(op, roles)
 		if err != nil {
@@ -151,10 +193,8 @@ func FilterRestrictedResources(resources *models.ResourceList, claims *jwt.MapCl
 			}
 		}
 		if hasPermission {
-			filteredResources = append(filteredResources, resource)
+			allowed[ns] = struct{}{}
 		}
 	}
-	resources.ResourceList = filteredResources
-	
-	return resources, nil
+	return allowed, nil
 }
