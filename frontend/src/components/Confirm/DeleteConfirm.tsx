@@ -10,6 +10,7 @@ interface DeleteConfirmModalProps {
 }
 
 const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
+                                                                   visible,
                                                                    resourceName,
                                                                    namespace,
                                                                    onConfirm,
@@ -18,6 +19,7 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
     return (
         <Modal
             title="Are you sure you want to delete this resource?"
+            visible={visible}
             onOk={onConfirm}
             onCancel={onCancel}
             okText="Ok"
