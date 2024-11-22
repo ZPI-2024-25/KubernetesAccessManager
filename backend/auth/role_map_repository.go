@@ -21,6 +21,19 @@ type RoleMapRepository struct {
 	flattenedMap map[string]PermissionMatrix
 }
 
+type operationConfig struct {
+	Namespace string `json:"namespace,omitempty"`
+	Resource  string `json:"resource,omitempty"`
+	Operations []models.OperationType `json:"operations,omitempty"`
+}
+
+type roleConfig struct {
+	Name     string      		`json:"name,omitempty"`
+	Permit   []operationConfig  `json:"permit,omitempty"`
+	Deny     []operationConfig  `json:"deny,omitempty"`
+	Subroles []string    		`json:"subroles,omitempty"`
+}
+
 var (
 	instance *RoleMapRepository
 	once     sync.Once
@@ -104,19 +117,6 @@ func createPermissionMatrix(
 		superMatrix[role.Name] = matrix
 	}
 	return superMatrix
-}
-
-type operationConfig struct {
-	Namespace string `json:"namespace,omitempty"`
-	Resource  string `json:"resource,omitempty"`
-	Operations []models.OperationType `json:"operations,omitempty"`
-}
-
-type roleConfig struct {
-	Name     string      		`json:"name,omitempty"`
-	Permit   []operationConfig  `json:"permit,omitempty"`
-	Deny     []operationConfig  `json:"deny,omitempty"`
-	Subroles []string    		`json:"subroles,omitempty"`
 }
 
 func GetRoleMapConfig(namespace string, name string) (map[string]*models.Role, map[string]*models.Role) {
