@@ -110,8 +110,9 @@ func handleHelmOperation(w http.ResponseWriter, r *http.Request, opType models.O
 		status := result.(models.Status)
 		statusCode = int(status.Code)
 	} else if opType == models.Update {
-		status := result.(models.Status)
-		statusCode = int(status.Code)
+		if mystery, ok := result.(models.Status); ok {
+			statusCode = int(mystery.Code)
+		}
 	}
 
 	writeJSONResponse(w, statusCode, result)
