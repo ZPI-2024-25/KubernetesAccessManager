@@ -106,13 +106,6 @@ func ExtractRoles(claims *jwt.MapClaims) ([]string, *models.ModelError) {
 			Message: "resource_access not found in token",
 		}
 	}
-
-	if len(roles) == 0 {
-		return nil, &models.ModelError{
-			Code: http.StatusForbidden,
-			Message: "No roles found in token",
-		}
-	}
 	return roles, nil
 }
 
@@ -175,6 +168,12 @@ func getAllowedNamespaces(claims *jwt.MapClaims, resourceType string, opType mod
 	roles, errM := ExtractRoles(claims)
 	if errM != nil {
 		return nil, errM
+	}
+	if len(roles) == 0 {
+		return nil, &models.ModelError{
+			Code: http.StatusForbidden,
+			Message: "No roles found in token",
+		}
 	}
 	roleMap, err := GetRoleMapInstance()
 	if err != nil {
