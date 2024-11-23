@@ -105,6 +105,9 @@ func ExtractRoles(claims *jwt.MapClaims) ([]string, error) {
 		return nil, errors.New("resource_access claim missing or invalid")
 	}
 
+	if len(roles) == 0 {
+		return nil, errors.New("no roles found in token")
+	}
 	return roles, nil
 }
 
@@ -122,4 +125,76 @@ func ExtractUserStatus(claims *jwt.MapClaims) (int32, string, string)  {
 		email = emailStr
 	}
 	return exp, preferredUsername, email
+}
+
+type Namespaced interface {
+	GetNamespace() string
+}
+
+func FilterRestrictedResources(resources *models.ResourceList, claims *jwt.MapClaims, resourceType string) (*models.ResourceList, *models.ModelError) {
+	namespaces := make(map[string]struct{})
+	for _, resource := range resources.ResourceList {
+		namespaces[resource.Namespace] = struct{}{}
+	}
+	allowed, err := getAllowedNamespaces(claims, resourceType, models.List, namespaces)
+	if err != nil {
+		return nil, err
+	}
+	filteredResources := make([]models.ResourceListResourceList, 0)
+	for _, resource := range resources.ResourceList {
+		if _, ok := allowed[resource.Namespace]; ok {
+			filteredResources = append(filteredResources, resource)
+		}
+	}
+	resources.ResourceList = filteredResources
+	
+	return resources, nil
+}
+
+func FilterRestrictedReleases(releases []models.HelmRelease, claims *jwt.MapClaims) ([]models.HelmRelease, *models.ModelError) {
+	namespaces := make(map[string]struct{})
+	for _, release := range releases {
+		namespaces[release.Namespace] = struct{}{}
+	}
+	allowed, err := getAllowedNamespaces(claims, "Helm", models.List, namespaces)
+	if err != nil {
+		return nil, err
+	}
+	filteredReleases := make([]models.HelmRelease, 0)
+	for _, release := range releases {
+		if _, ok := allowed[release.Namespace]; ok {
+			filteredReleases = append(filteredReleases, release)
+		}
+	}
+	
+	return filteredReleases, nil
+}
+
+func getAllowedNamespaces(claims *jwt.MapClaims, resourceType string, opType models.OperationType, namespaces map[string]struct{}) (map[string]struct{}, *models.ModelError) {
+	roles, err := ExtractRoles(claims)
+	if err != nil {
+		return nil, &models.ModelError{
+			Code: http.StatusBadRequest, 
+			Message: "Error extracting roles from JWT token: " + err.Error(),
+		}
+	}
+	allowed := make(map[string]struct{})
+	for ns := range namespaces{
+		op := models.Operation{
+			Resource: resourceType,
+			Namespace: ns,
+			Type: opType,
+		}
+		hasPermission, err := IsUserAuthorized(op, roles)
+		if err != nil {
+			return nil, &models.ModelError{
+				Code: http.StatusInternalServerError,
+				Message: fmt.Sprintf("Error when checking permissions: %v", err),
+			}
+		}
+		if hasPermission {
+			allowed[ns] = struct{}{}
+		}
+	}
+	return allowed, nil
 }
