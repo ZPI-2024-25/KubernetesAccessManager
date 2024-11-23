@@ -1,10 +1,9 @@
-// import LoginForm from "../components/LoginForm/LoginForm.tsx";
-//
-//
-// export const LoginPage = () => {
-//     return (
-//         <>
-//             <LoginForm/>
-//         </>
-//     );
-// };
+import "./LoginPage.css";
+
+export const LoginPage = () => {
+    return (
+        <div className="login-page">
+            <h1>Ciulu zaloguj się</h1>
+        </div>
+    );
+};

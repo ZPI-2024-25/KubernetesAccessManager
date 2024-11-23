@@ -4,6 +4,10 @@ import { message } from 'antd';
 import axios from 'axios';
 import * as Constants from "../consts/consts.ts";
 
+function timeout(delay: number) {
+    return new Promise( res => setTimeout(res, delay) );
+}
+
 const AuthCallbackPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
@@ -50,7 +54,7 @@ const AuthCallbackPage: React.FC = () => {
 
                 localStorage.setItem(Constants.ACCESS_TOKEN_STR, data.access_token);
                 localStorage.setItem(Constants.REFRESH_TOKEN_STR, data.refresh_token);
-
+                await timeout(1000);
                 message.success('Logged in successfully');
                 navigate('/');
             } catch (error) {

@@ -6,6 +6,7 @@ import { MenuItem } from '../../types';
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from '../AuthProvider/AuthProvider';
 
+
 const { Header, Content, Sider } = Layout;
 
 const LeftMenu: React.FC = () => {
@@ -71,6 +72,10 @@ const LeftMenu: React.FC = () => {
     const selectedKeys = getSelectedKeys(items, location.pathname);
     const currentPageTitle = getCurrentPageTitleFromKeys(items, selectedKeys);
 
+    const isLoginPage = location.pathname === "/login";
+
+    const menuItems = isLoginPage ? [] : generateMenuItems(items);
+
     return (
         <Layout className={styles.menuLayout}>
             <Sider
@@ -99,7 +104,7 @@ const LeftMenu: React.FC = () => {
                     theme="dark"
                     selectedKeys={selectedKeys}
                     mode="inline"
-                    items={generateMenuItems(items)}
+                    items={menuItems}
                     style={{ paddingBottom: 50 }}
                 />
             </Sider>
