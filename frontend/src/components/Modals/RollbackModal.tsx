@@ -26,10 +26,7 @@ const RollbackModal = ({open, setOpen, release}: {
             content: 'Rollback successful.',
             duration: 2,
             key: 'rollback',
-        }).then(r => {
-            console.log(r)
-            navigate(0)
-        });
+        })
     }
 
     const loading = () => {
@@ -38,10 +35,7 @@ const RollbackModal = ({open, setOpen, release}: {
             content: 'Rollback will continue in the background.',
             duration: 2,
             key: 'rollback',
-        }).then(r => {
-            console.log(r)
-            navigate(0)
-        });
+        })
     }
 
     const error = (message: string) => {
@@ -50,10 +44,7 @@ const RollbackModal = ({open, setOpen, release}: {
             content: message,
             duration: 2,
             key: 'rollback',
-        }).then(r => {
-            console.log(r)
-            navigate(0)
-        });
+        })
     }
 
     const handleOk = async () => {
@@ -75,6 +66,7 @@ const RollbackModal = ({open, setOpen, release}: {
         } finally {
             setConfirmLoading(false);
             setOpen(false);
+            navigate(0)
         }
     };
 
@@ -82,7 +74,7 @@ const RollbackModal = ({open, setOpen, release}: {
         <>
             {contextHolder}
             <Modal
-                title={release ? `Rollback ${release.name}` : 'Rollback'}
+                title={release ? `Rollback ${release.name} from ${release.namespace}` : 'Rollback'}
                 open={open}
                 onOk={release ? handleOk : undefined}
                 confirmLoading={confirmLoading}
@@ -92,7 +84,7 @@ const RollbackModal = ({open, setOpen, release}: {
                         <Button key="back" onClick={() => setOpen(false)}>
                             Cancel
                         </Button>,
-                        <Button key="submit" type="primary" loading={confirmLoading} onClick={handleOk}>
+                        <Button key="submit" type="primary" danger loading={confirmLoading} onClick={handleOk}>
                             Rollback
                         </Button>
                     ]

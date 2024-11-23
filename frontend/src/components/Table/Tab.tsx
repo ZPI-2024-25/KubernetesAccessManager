@@ -5,7 +5,7 @@ import { formatAge } from "../../functions/formatAge.ts";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom';
 import { deleteResource } from "../../api/k8s/deleteResource.ts";
-import DeleteConfirmModal from "../Confirm/DeleteConfirm.tsx";
+import DeleteConfirmModal from "../Modals/DeleteConfirm.tsx";
 
 interface TabProps {
     resourceLabel: string;

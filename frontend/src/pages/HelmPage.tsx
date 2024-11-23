@@ -1,20 +1,28 @@
 import HelmTab from "../components/Helm/HelmTab.tsx";
 import {useState} from "react";
-import RollbackModal from "../components/Helm/RollbackModal.tsx";
+import RollbackModal from "../components/Modals/RollbackModal.tsx";
 import {HelmRelease} from "../types";
+import UninstallModal from "../components/Modals/UninstallModal.tsx";
 
 const HelmPage = () => {
-    const [openModal, setOpenModal] = useState(false);
+    const [openRollbackModal, setOpenRollbackModal] = useState(false);
+    const [openUninstallModal, setOpenUninstallModal] = useState(false);
     const [currentRelease, setCurrentRelease] = useState<HelmRelease>();
 
-    const showModal = () => {
-        setOpenModal(true);
+    const showRollbackModal = () => {
+        setOpenRollbackModal(true);
     };
+
+    const showUninstallModal = () => {
+        setOpenUninstallModal(true)
+    }
 
     return (
         <div>
-            <HelmTab showModal={showModal} setCurrent={setCurrentRelease} />
-            <RollbackModal open={openModal} setOpen={setOpenModal} release={currentRelease}/>
+            <HelmTab showRollbackModal={showRollbackModal} showUninstallModal={showUninstallModal}
+                     setCurrent={setCurrentRelease}/>
+            <RollbackModal open={openRollbackModal} setOpen={setOpenRollbackModal} release={currentRelease}/>
+            <UninstallModal open={openUninstallModal} setOpen={setOpenUninstallModal} release={currentRelease}/>
         </div>
     );
 };
