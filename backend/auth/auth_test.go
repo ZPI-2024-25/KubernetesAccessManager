@@ -61,7 +61,6 @@ t.Run("TestExtractRoles", func(t *testing.T) {
 				}
 			}
 		}
-
 		// Assert that the roles match the expected output
 		assert.Equal(t, []string{"pod-reader", "manage-account", "manage-account-links"}, roles)
 	})
@@ -74,6 +73,60 @@ func TestJsonTokenRoleExtraction(t *testing.T) {
 		_, _ = jwt.ParseWithClaims(tokenStr, &claims, nil)
 		roles, _ := ExtractRoles(&claims)
 		expectedRoles := []string{"manage-account", "manage-account-links"}
+		assert.ElementsMatch(t, expectedRoles, roles)
+	})
+}
+func TestExtractRoles(t *testing.T) {
+	t.Run("TestExtractRolesWithResourceAccess", func(t *testing.T) {
+		claims := jwt.MapClaims{
+			"resource_access": map[string]interface{}{
+				"account-console": map[string]interface{}{
+					"roles": []interface{}{"pod-reader"},
+				},
+				"account": map[string]interface{}{
+					"roles": []interface{}{"manage-account", "manage-account-links"},
+				},
+			},
+		}
+		expectedRoles := []string{ "manage-account", "manage-account-links"}
+		roles, _ := ExtractRoles(&claims)
+		assert.ElementsMatch(t, expectedRoles, roles)
+	})
+
+	t.Run("TestExtractRolesWithRealmAccess", func(t *testing.T) {
+		claims := jwt.MapClaims{
+			"realm_access": map[string]interface{}{
+				"roles": []interface{}{"admin", "user"},
+			},
+		}
+		expectedRoles := []string{"admin", "user"}
+		roles, _ := ExtractRoles(&claims)
+		assert.ElementsMatch(t, expectedRoles, roles)
+	})
+
+	t.Run("TestExtractRolesWithBothAccess", func(t *testing.T) {
+		claims := jwt.MapClaims{
+			"realm_access": map[string]interface{}{
+				"roles": []interface{}{"admin", "user"},
+			},
+			"resource_access": map[string]interface{}{
+				"account-console": map[string]interface{}{
+					"roles": []interface{}{"pod-reader"},
+				},
+				"account": map[string]interface{}{
+					"roles": []interface{}{"manage-account", "manage-account-links"},
+				},
+			},
+		}
+		expectedRoles := []string{"admin", "user", "manage-account", "manage-account-links"}
+		roles, _ := ExtractRoles(&claims)
+		assert.ElementsMatch(t, expectedRoles, roles)
+	})
+
+	t.Run("TestExtractRolesWithNoRoles", func(t *testing.T) {
+		claims := jwt.MapClaims{}
+		expectedRoles := []string{}
+		roles, _ := ExtractRoles(&claims)
 		assert.ElementsMatch(t, expectedRoles, roles)
 	})
 }

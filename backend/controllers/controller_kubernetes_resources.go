@@ -133,19 +133,16 @@ func authenticateAndAuthorize(r *http.Request, operation models.Operation) *mode
 		}
 	}
 
-	roles, err := auth.ExtractRoles(claims)
-	if err != nil {
-		return &models.ModelError{
-			Code:    http.StatusBadRequest,
-			Message: "Roles not found in bearer token",
-		}
+	roles, errM := auth.ExtractRoles(claims)
+	if errM != nil {
+		return errM
 	}
 
 	authorized, err := auth.IsUserAuthorized(operation, roles)
 	if err != nil {
 		return &models.ModelError{
 			Code:    http.StatusInternalServerError,
-			Message: "Internal Server Error",
+			Message: "Internal Server Error: " + err.Error(),
 		}
 	}
 
