@@ -3,19 +3,24 @@ import { scheduleTokenRefresh, decodeToken } from '../../services/authService';
 import { useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import * as Constants from "../../consts/consts.ts";
+import { UserStatus } from "../../api/authStatus.ts";
 
 type AuthContextType = {
     isLoggedIn: boolean;
     user: { [key: string]: any } | null;
+    userStatus: UserStatus | null;
     handleLogin: () => void;
     handleLogout: () => void;
+    setUserStatus: (status: UserStatus) => void;
 };
 
 const AuthContext = createContext<AuthContextType>({
     isLoggedIn: false,
     user: null,
+    userStatus: null,
     handleLogin: () => {},
     handleLogout: () => {},
+    setUserStatus: () => {},
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -23,6 +28,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const refreshTimeout = useRef<NodeJS.Timeout | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(!!localStorage.getItem(Constants.ACCESS_TOKEN_STR));
     const [user, setUser] = useState<{ [key: string]: any } | null>(null);
+    const [userStatus, setUserStatus] = useState<UserStatus | null>(null);
+
 
     const decodeAndSetUser = (token: string | null) => {
         if (!token) {
@@ -91,7 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [navigate]);
 
     return (
-        <AuthContext.Provider value={{ isLoggedIn, user, handleLogin, handleLogout }}>
+        <AuthContext.Provider value={{ isLoggedIn, user, userStatus, handleLogin, handleLogout, setUserStatus }}>
             {children}
         </AuthContext.Provider>
     );

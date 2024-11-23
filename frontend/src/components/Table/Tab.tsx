@@ -6,6 +6,8 @@ import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom';
 import { deleteResource } from "../../api/deleteResource";
 import DeleteConfirmModal from "../Confirm/DeleteConfirm.tsx";
+import { useAuth } from '../AuthProvider/AuthProvider';
+import { hasPermission } from '../../auth/authorization';
 
 interface TabProps {
     resourcelabel: string;
@@ -30,6 +32,8 @@ const Tab: React.FC<TabProps> = ({ resourcelabel }) => {
     const [isModalVisible, setModalVisible] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState<DataSourceItem | null>(null);
     const navigate = useNavigate();
+    const { userStatus } = useAuth(); // Access userStatus from AuthContext
+
 
     useEffect(() => {
         if (!resourcelabel) return;
@@ -50,23 +54,27 @@ const Tab: React.FC<TabProps> = ({ resourcelabel }) => {
                 },
             }));
 
-            dynamicColumns.push({
+             dynamicColumns.push({
                 dataIndex: "",
                 title: 'Actions',
                 key: 'actions',
                 render: (_, record: DataSourceItem) => (
                     <div>
-                        <Button
-                            type="link"
-                            icon={<EditOutlined />}
-                            onClick={() => handleEdit(record)}
-                        />
-                        <Button
-                            type="link"
-                            icon={<DeleteOutlined />}
-                            onClick={() => showDeleteModal(record)}
-                            danger
-                        />
+                        {!userStatus || hasPermission(userStatus, record.namespace as string, resourcelabel, "u") && (
+                            <Button
+                                type="link"
+                                icon={<EditOutlined />}
+                                onClick={() => handleEdit(record)}
+                            />
+                        )}
+                        {!userStatus || hasPermission(userStatus, record.namespace as string, resourcelabel, "d") && (
+                            <Button
+                                type="link"
+                                icon={<DeleteOutlined />}
+                                onClick={() => showDeleteModal(record)}
+                                danger
+                            />
+                        )}
                     </div>
                 ),
                 width: 100
@@ -82,7 +90,7 @@ const Tab: React.FC<TabProps> = ({ resourcelabel }) => {
         };
 
         fetchData();
-    }, [resourcelabel]);
+    }, [resourcelabel, userStatus]);
 
     const handleAdd = () => {
         const resourceType = resourcelabel;
@@ -131,22 +139,24 @@ const Tab: React.FC<TabProps> = ({ resourcelabel }) => {
 
     return (
         <div>
-            <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={handleAdd}
-                size="large"
-                style={{
-                    position: "fixed",
-                    bottom: "16px",
-                    right: "16px",
-                    zIndex: 1000,
-                    borderRadius: "50px",
-                    padding: "0 16px",
-                }}
-            >
-                Add
-            </Button>
+            {!userStatus || hasPermission(userStatus, "*", resourcelabel, "c") && (
+                <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={handleAdd}
+                    size="large"
+                    style={{
+                        position: "fixed",
+                        bottom: "16px",
+                        right: "16px",
+                        zIndex: 1000,
+                        borderRadius: "50px",
+                        padding: "0 16px",
+                    }}
+                >
+                    Add
+                </Button>
+            )}
 
             <Table
                 columns={columns.map((col, index) =>

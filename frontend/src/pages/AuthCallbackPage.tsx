@@ -3,11 +3,16 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { message } from 'antd';
 import axios from 'axios';
 import * as Constants from "../consts/consts.ts";
+import { getAuthStatus, UserStatus } from "../api/authStatus.ts";
+import { useAuth } from "../components/AuthProvider/AuthProvider.tsx";
+
 
 const AuthCallbackPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const hasHandledCallback = useRef(false);
+    const { setUserStatus } = useAuth(); // Access setUserStatus from AuthContext
+
 
     useEffect(() => {
         const handleAuthCallback = async () => {
@@ -51,6 +56,9 @@ const AuthCallbackPage: React.FC = () => {
                 localStorage.setItem(Constants.ACCESS_TOKEN_STR, data.access_token);
                 localStorage.setItem(Constants.REFRESH_TOKEN_STR, data.refresh_token);
                 message.success('Logged in successfully');
+                const userStatus: UserStatus = await getAuthStatus();
+                setUserStatus(userStatus);
+                
                 navigate('/');
             } catch (error) {
                 console.error('Error during login:', error);

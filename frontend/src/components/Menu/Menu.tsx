@@ -5,6 +5,7 @@ import { items } from '../../consts/MenuItem';
 import { MenuItem } from '../../types';
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from '../AuthProvider/AuthProvider';
+import { hasAnyPermissionInAnyNamespace } from '../../auth/authorization';
 
 
 const { Header, Content, Sider } = Layout;
@@ -12,7 +13,7 @@ const { Header, Content, Sider } = Layout;
 const LeftMenu: React.FC = () => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [asideWidth, setAsideWidth] = useState<number>(270);
-    const { user, isLoggedIn, handleLogin, handleLogout } = useAuth();
+    const { user, isLoggedIn, handleLogin, handleLogout, userStatus } = useAuth();
     const location = useLocation();
 
     const generateMenuItems = (menuItems: MenuItem[]): MenuItem[] => {
@@ -23,15 +24,18 @@ const LeftMenu: React.FC = () => {
                     children: generateMenuItems(item.children),
                 };
             }
-            return {
-                ...item,
-                label: (
-                    <Link to={`/${item.resourcelabel || ''}`}>
-                        {item.label}
-                    </Link>
-                ),
-            };
-        });
+            if (!userStatus || hasAnyPermissionInAnyNamespace(userStatus, item.resourcelabel)) {
+                return {
+                    ...item,
+                    label: (
+                        <Link to={`/${item.resourcelabel || ''}`}>
+                            {item.label}
+                        </Link>
+                    ),
+                };
+            }
+            return null;
+        }).filter(Boolean) as MenuItem[];
     };
 
     const getSelectedKeys = (menuItems: MenuItem[], pathname: string): string[] => {
