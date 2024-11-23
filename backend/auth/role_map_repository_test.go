@@ -1313,3 +1313,122 @@ func TestFromRoleMapConfig(t *testing.T) {
 		})
 	}
 }
+func TestHasPermissionInAnyNamespace(t *testing.T) {
+	tests := []struct {
+		name       string
+		roleMap    map[string]*models.Role
+		subroleMap map[string]*models.Role
+		rolenames  []string
+		resource   string
+		op         models.OperationType
+		expected   bool
+	}{
+		{
+			name: "Permission granted in specific namespace",
+			roleMap: map[string]*models.Role{
+				"admin": {Name: "admin", Subroles: []string{"user"}},
+			},
+			subroleMap: map[string]*models.Role{
+				"user": {Name: "user", Permit: []models.Operation{{Type: "read", Resource: "resource1", Namespace: "namespace1"}}},
+			},
+			rolenames: []string{"admin"},
+			resource:  "resource1",
+			op:        "read",
+			expected:  true,
+		},
+		{
+			name: "Permission granted in wildcard namespace",
+			roleMap: map[string]*models.Role{
+				"admin": {Name: "admin", Subroles: []string{"user"}},
+			},
+			subroleMap: map[string]*models.Role{
+				"user": {Name: "user", Permit: []models.Operation{{Type: "read", Resource: "resource1", Namespace: "*"}}},
+			},
+			rolenames: []string{"admin"},
+			resource:  "resource1",
+			op:        "read",
+			expected:  true,
+		},
+		{
+			name: "Permission granted",
+			roleMap: map[string]*models.Role{
+				"admin": {Name: "admin", Subroles: []string{"user"}},
+			},
+			subroleMap: map[string]*models.Role{
+				"user": {Name: "user", Permit: []models.Operation{{Type: "read", Resource: "resource1", Namespace: "namespace2"}}},
+			},
+			rolenames: []string{"admin"},
+			resource:  "resource1",
+			op:        "read",
+			expected:  true,
+		},
+		{
+			name: "Permission denied no matching resource",
+			roleMap: map[string]*models.Role{
+				"admin": {Name: "admin", Subroles: []string{"user"}},
+			},
+			subroleMap: map[string]*models.Role{
+				"user": {Name: "user", Permit: []models.Operation{{Type: "read", Resource: "resource2", Namespace: "namespace1"}}},
+			},
+			rolenames: []string{"admin"},
+			resource:  "resource1",
+			op:        "read",
+			expected:  false,
+		},
+		{
+			name: "Permission denied no matching operation type",
+			roleMap: map[string]*models.Role{
+				"admin": {Name: "admin", Subroles: []string{"user"}},
+			},
+			subroleMap: map[string]*models.Role{
+				"user": {Name: "user", Permit: []models.Operation{{Type: "write", Resource: "resource1", Namespace: "namespace1"}}},
+			},
+			rolenames: []string{"admin"},
+			resource:  "resource1",
+			op:        "read",
+			expected:  false,
+		},
+		{
+			name: "Multiple roles with permission granted",
+			roleMap: map[string]*models.Role{
+				"admin":  {Name: "admin", Subroles: []string{"user"}},
+				"editor": {Name: "editor", Subroles: []string{"viewer"}},
+			},
+			subroleMap: map[string]*models.Role{
+				"user":   {Name: "user", Permit: []models.Operation{{Type: "read", Resource: "resource1", Namespace: "namespace1"}}},
+				"viewer": {Name: "viewer", Permit: []models.Operation{{Type: "read", Resource: "resource1", Namespace: "namespace1"}}},
+			},
+			rolenames: []string{"admin", "editor"},
+			resource:  "resource1",
+			op:        "read",
+			expected:  true,
+		},
+		{
+			name: "Multiple roles with permission denied",
+			roleMap: map[string]*models.Role{
+				"admin":  {Name: "admin", Subroles: []string{"user"}},
+				"editor": {Name: "editor", Subroles: []string{"viewer"}},
+			},
+			subroleMap: map[string]*models.Role{
+				"user":   {Name: "user", Permit: []models.Operation{{Type: "read", Resource: "resource2", Namespace: "namespace1"}}},
+				"viewer": {Name: "viewer", Permit: []models.Operation{{Type: "read", Resource: "resource2", Namespace: "namespace1"}}},
+			},
+			rolenames: []string{"admin", "editor"},
+			resource:  "resource1",
+			op:        "read",
+			expected:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rmr := &RoleMapRepository{
+				RoleMap:    tt.roleMap,
+				SubroleMap: tt.subroleMap,
+				flattenedMap: createPermissionMatrix(tt.roleMap, tt.subroleMap),
+			}
+			result := rmr.HasPermissionInAnyNamespace(tt.rolenames, tt.resource, tt.op)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}

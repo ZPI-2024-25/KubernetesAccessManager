@@ -89,6 +89,17 @@ func (rmr *RoleMapRepository) GetAllPermissions(roles []string) PermissionMatrix
 	return pmatrix
 }
 
+func (rmr *RoleMapRepository) HasPermissionInAnyNamespace(rolenames []string, resource string, op models.OperationType) bool {
+	for _, role := range rolenames {
+		for _, namespace := range rmr.flattenedMap[role] {
+			if _, exists := namespace[resource][op]; exists {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func flatHasPermission(op *models.Operation, matrix PermissionMatrix) bool {
 	var namespace string
 	if _, exists := matrix[op.Namespace]; exists {

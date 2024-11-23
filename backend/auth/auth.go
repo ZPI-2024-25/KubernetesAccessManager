@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -86,7 +85,7 @@ func IsUserAuthorized(operation models.Operation, roles []string) (bool, error) 
 	return false, nil
 }
 
-func ExtractRoles(claims *jwt.MapClaims) ([]string, error) {
+func ExtractRoles(claims *jwt.MapClaims) ([]string, *models.ModelError) {
 	var roles []string
 	client := common.GetOrDefaultEnv("KEYCLOAK_CLIENTNAME", "account")
 	if resourceAccess, ok := (*claims)["resource_access"].(map[string]interface{}); ok {
@@ -102,11 +101,17 @@ func ExtractRoles(claims *jwt.MapClaims) ([]string, error) {
 			}
 		}
 	} else {
-		return nil, errors.New("resource_access claim missing or invalid")
+		return nil, &models.ModelError{
+			Code: http.StatusBadRequest,
+			Message: "resource_access not found in token",
+		}
 	}
 
 	if len(roles) == 0 {
-		return nil, errors.New("no roles found in token")
+		return nil, &models.ModelError{
+			Code: http.StatusForbidden,
+			Message: "No roles found in token",
+		}
 	}
 	return roles, nil
 }
@@ -125,10 +130,6 @@ func ExtractUserStatus(claims *jwt.MapClaims) (int32, string, string)  {
 		email = emailStr
 	}
 	return exp, preferredUsername, email
-}
-
-type Namespaced interface {
-	GetNamespace() string
 }
 
 func FilterRestrictedResources(resources *models.ResourceList, claims *jwt.MapClaims, resourceType string) (*models.ResourceList, *models.ModelError) {
@@ -171,13 +172,24 @@ func FilterRestrictedReleases(releases []models.HelmRelease, claims *jwt.MapClai
 }
 
 func getAllowedNamespaces(claims *jwt.MapClaims, resourceType string, opType models.OperationType, namespaces map[string]struct{}) (map[string]struct{}, *models.ModelError) {
-	roles, err := ExtractRoles(claims)
+	roles, errM := ExtractRoles(claims)
+	if errM != nil {
+		return nil, errM
+	}
+	roleMap, err := GetRoleMapInstance()
 	if err != nil {
 		return nil, &models.ModelError{
-			Code: http.StatusBadRequest, 
-			Message: "Error extracting roles from JWT token: " + err.Error(),
+			Code: http.StatusInternalServerError,
+			Message: err.Error(),
 		}
 	}
+	if !roleMap.HasPermissionInAnyNamespace(roles, resourceType, opType) {
+		return nil, &models.ModelError{
+			Code: http.StatusForbidden,
+			Message: fmt.Sprintf("User does not have permission to %v resources", opType),
+		}
+	}
+
 	allowed := make(map[string]struct{})
 	for ns := range namespaces{
 		op := models.Operation{
