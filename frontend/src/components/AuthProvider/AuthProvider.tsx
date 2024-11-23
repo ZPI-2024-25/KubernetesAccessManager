@@ -2,15 +2,20 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import { scheduleTokenRefresh, decodeToken } from '../../services/authService';
 import { useNavigate } from 'react-router-dom';
 import { message } from 'antd';
+import { KEYCLOAK_LOGIN_URL, KEYCLOAK_LOGOUT_URL } from "../../consts/apiConsts";
 
 type AuthContextType = {
     isLoggedIn: boolean;
     user: { [key: string]: any } | null;
+    handleLogin: () => void;
+    handleLogout: () => void;
 };
 
 const AuthContext = createContext<AuthContextType>({
     isLoggedIn: false,
     user: null,
+    handleLogin: () => {},
+    handleLogout: () => {},
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -22,6 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const decodeAndSetUser = (token: string | null) => {
         if (!token) {
             setUser(null);
+            setIsLoggedIn(false);
             return;
         }
 
@@ -31,8 +37,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setIsLoggedIn(true);
         } catch (error) {
             console.error('Token decode error:', error);
+            message.error(`Token decode error: ${error}`);
             setUser(null);
         }
+    };
+
+    const handleLogin = () => {
+        const redirectUri = `${window.location.origin}/auth/callback`;
+        window.location.href = `${KEYCLOAK_LOGIN_URL}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+    };
+
+    const handleLogout = () => {
+        const logoutUrl = `${KEYCLOAK_LOGOUT_URL}?redirect_uri=${encodeURIComponent(window.location.origin)}`;
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        setIsLoggedIn(false);
+        setUser(null);
+        window.location.href = logoutUrl;
     };
 
     useEffect(() => {
@@ -48,7 +69,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const onRefreshSuccess = () => {
             const token = localStorage.getItem('access_token');
             decodeAndSetUser(token);
-            setIsLoggedIn(true);
         };
 
         decodeAndSetUser(localStorage.getItem('access_token'));
@@ -63,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [navigate]);
 
     return (
-        <AuthContext.Provider value={{ isLoggedIn, user }}>
+        <AuthContext.Provider value={{ isLoggedIn, user, handleLogin, handleLogout }}>
             {children}
         </AuthContext.Provider>
     );

@@ -1,17 +1,17 @@
-import React, {useState} from 'react';
-import {Button, Layout, Menu} from 'antd';
+import React, { useState } from 'react';
+import { Button, Layout, Menu } from 'antd';
 import styles from './Menu.module.css';
-import {items} from '../../consts/MenuItem';
-import {MenuItem} from '../../types';
-import {Link, Outlet, useLocation} from "react-router-dom";
-import {useAuth} from '../AuthProvider/AuthProvider';
-import {KEYCLOAK_LOGIN_URL, KEYCLOAK_LOGOUT_URL} from "../../consts/apiConsts.ts";
-const {Header, Content, Footer, Sider} = Layout;
+import { items } from '../../consts/MenuItem';
+import { MenuItem } from '../../types';
+import { Link, Outlet, useLocation } from "react-router-dom";
+import { useAuth } from '../AuthProvider/AuthProvider';
+
+const { Header, Content, Footer, Sider } = Layout;
 
 const LeftMenu: React.FC = () => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [asideWidth, setAsideWidth] = useState<number>(270);
-    const { user, isLoggedIn } = useAuth();
+    const { user, isLoggedIn, handleLogin, handleLogout } = useAuth();
     const location = useLocation();
 
     const generateMenuItems = (menuItems: MenuItem[]): MenuItem[] => {
@@ -68,18 +68,6 @@ const LeftMenu: React.FC = () => {
         return labels.join('/');
     };
 
-    const handleLogin = () => {
-        const redirectUri = `${window.location.origin}/auth/callback`;
-        window.location.href = `${KEYCLOAK_LOGIN_URL}&redirect_uri=${encodeURIComponent(redirectUri)}`;
-    };
-
-    const handleLogout = () => {
-        const logoutUrl = `${KEYCLOAK_LOGOUT_URL}?redirect_uri=${encodeURIComponent(window.location.origin)}`;
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        window.location.href = logoutUrl;
-    };
-
     const selectedKeys = getSelectedKeys(items, location.pathname);
     const currentPageTitle = getCurrentPageTitleFromKeys(items, selectedKeys);
 
@@ -112,13 +100,13 @@ const LeftMenu: React.FC = () => {
                     selectedKeys={selectedKeys}
                     mode="inline"
                     items={generateMenuItems(items)}
-                    style={{paddingBottom: 50}}
+                    style={{ paddingBottom: 50 }}
                 />
             </Sider>
-            <Layout className={styles.contentLayout} style={{marginLeft: asideWidth}}>
-            <Header className={styles.header}>
-                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%'}}>
-                        <p style={{paddingLeft: asideWidth}}>
+            <Layout className={styles.contentLayout} style={{ marginLeft: asideWidth }}>
+                <Header className={styles.header}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
+                        <p style={{ paddingLeft: asideWidth }}>
                             {currentPageTitle || 'Page name'}
                         </p>
                         {isLoggedIn ? (
@@ -133,7 +121,7 @@ const LeftMenu: React.FC = () => {
                     </div>
                 </Header>
                 <Content className={styles.content}>
-                    <Outlet/>
+                    <Outlet />
                 </Content>
                 <Footer className={styles.footer}>
                     ZPI Kubernetes Access Manager ©{new Date().getFullYear()} Created by SDVM

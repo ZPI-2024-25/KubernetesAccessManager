@@ -4,26 +4,10 @@ import Menu from "./components/Menu/Menu.tsx";
 import EditorPage from "./pages/EditorPage.tsx";
 import ResourcePage from "./pages/ResourcePage.tsx";
 import AuthCallbackPage from "./pages/AuthCallbackPage.tsx";
-import axios from 'axios';
+import {initializeAxiosInterceptors} from './axiosConfig.ts';
 import {AuthProvider} from "./components/AuthProvider/AuthProvider.tsx";
 
-axios.interceptors.request.use(
-    (config) => {
-        try {
-            const token = localStorage.getItem('access_token');
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
-            }
-        } catch (error) {
-            console.warn('Cant attach bearer token:', error);
-        }
-        return config;
-    },
-    (error) => {
-        console.warn('Axios interceptor error:', error);
-        return Promise.resolve(error.config || {});
-    }
-);
+initializeAxiosInterceptors();
 
 function App() {
 
