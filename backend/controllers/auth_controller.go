@@ -56,6 +56,13 @@ func getLoginStatus(claims *jwt.MapClaims, rolemap *auth.RoleMapRepository) (*mo
 }
 
 func toPermissionModel(pmatrix auth.PermissionMatrix) map[string]map[string][]string {
+	if len(pmatrix) == 0 {
+		return map[string]map[string][]string{
+			"*": {
+				"*": make([]string, 0),
+			},
+		}
+	}
 	result := make(map[string]map[string][]string)
 
 	for namespace, resources := range pmatrix {

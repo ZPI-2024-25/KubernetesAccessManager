@@ -88,26 +88,29 @@ func IsUserAuthorized(operation models.Operation, roles []string) (bool, error) 
 func ExtractRoles(claims *jwt.MapClaims) ([]string, *models.ModelError) {
 	var roles []string
 	client := common.GetOrDefaultEnv("KEYCLOAK_CLIENTNAME", "account")
+	if realmAccess, ok := (*claims)["realm_access"].(map[string]interface{}); ok {
+		extractRolesFromMapInterface(realmAccess, "roles", &roles)
+	}
 	if resourceAccess, ok := (*claims)["resource_access"].(map[string]interface{}); ok {
 		if resource, ok := resourceAccess[client]; ok {
 			if resourceMap, ok := resource.(map[string]interface{}); ok {
-				if resourceRoles, ok := resourceMap["roles"].([]interface{}); ok {
-					for _, role := range resourceRoles {
-						if roleStr, ok := role.(string); ok {
-							roles = append(roles, roleStr)
-						}
-					}
-				}
+				extractRolesFromMapInterface(resourceMap, "roles", &roles)
 			}
-		}
-	} else {
-		return nil, &models.ModelError{
-			Code: http.StatusBadRequest,
-			Message: "resource_access not found in token",
 		}
 	}
 	return roles, nil
 }
+
+func extractRolesFromMapInterface(claims map[string]interface{}, rolekey string, roles *[]string){
+	if realm, ok := claims[rolekey].([]interface{}); ok {
+		for _, role := range realm {
+			if roleStr, ok := role.(string); ok {
+				*roles = append((*roles), roleStr)
+			}
+		}
+	}
+}
+
 
 func ExtractUserStatus(claims *jwt.MapClaims) (int32, string, string)  {
 	var exp int32
