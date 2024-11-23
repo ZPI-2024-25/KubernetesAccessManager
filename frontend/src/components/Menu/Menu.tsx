@@ -6,7 +6,7 @@ import { MenuItem } from '../../types';
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from '../AuthProvider/AuthProvider';
 
-const { Header, Content, Footer, Sider } = Layout;
+const { Header, Content, Sider } = Layout;
 
 const LeftMenu: React.FC = () => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
@@ -120,12 +120,17 @@ const LeftMenu: React.FC = () => {
                         )}
                     </div>
                 </Header>
-                <Content className={styles.content}>
+                <Content className={styles.content}
+                         style={{
+                             padding: '16px',
+                             minHeight: 'calc(100vh - 64px - 50px)',
+                             height: 'auto',
+                         }}>
                     <Outlet />
                 </Content>
-                <Footer className={styles.footer}>
-                    ZPI Kubernetes Access Manager ©{new Date().getFullYear()} Created by SDVM
-                </Footer>
+                {/*<Footer className={styles.footer}>*/}
+                {/*    ZPI Kubernetes Access Manager ©{new Date().getFullYear()} Created by SDVM*/}
+                {/*</Footer>*/}
             </Layout>
         </Layout>
     );
