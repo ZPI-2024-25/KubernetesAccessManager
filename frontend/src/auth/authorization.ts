@@ -11,7 +11,25 @@ export function hasPermission(userStatus: UserStatus, namespace: string, resourc
 export function hasPermissionInAnyNamespace(userStatus: UserStatus, resource: string, operation: "c" | "r" | "u" | "d" | "l"): boolean {
     const permissions = userStatus.permissions;
     for (const namespace in permissions) {
-        if (permissions[namespace][resource] && permissions[namespace][resource].includes(operation)) {
+        if (permissions[namespace][resource]) {
+            if (permissions[namespace][resource].includes(operation)) {
+                return true;
+            }
+        } else if (permissions[namespace]["*"].includes(operation)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+export function hasAnyPermissionInAnyNamespace(userStatus: UserStatus, resource: string): boolean {
+    const permissions = userStatus.permissions;
+    for (const namespace in permissions) {
+        if (permissions[namespace][resource]) {
+            if (permissions[namespace][resource].length > 0) {
+                return true;
+            }
+        } else if (permissions[namespace]["*"].length > 0) {
             return true;
         }
     }
@@ -20,9 +38,13 @@ export function hasPermissionInAnyNamespace(userStatus: UserStatus, resource: st
 
 export function hasPermissionInAnyResource(userStatus: UserStatus, namespace: string, operation: "c" | "r" | "u" | "d" | "l"): boolean {
     const permissions = userStatus.permissions;
-    const lookupNs = permissions[namespace] ? namespace : "*";
-    for (const resource in permissions[lookupNs]) {
-        if (permissions[lookupNs][resource].includes(operation)) {
+    for (const resource in permissions[namespace]) {
+        if (permissions[namespace][resource].includes(operation)) {
+            return true;
+        }
+    }
+    for (const resource in permissions["*"]) {
+        if (!permissions[namespace][resource] && permissions["*"][resource].includes(operation)) {
             return true;
         }
     }
@@ -33,7 +55,11 @@ export function allowedNamespaces(userStatus: UserStatus, operation: "c" | "r" |
     const permissions = userStatus.permissions;
     const namespaces: string[] = [];
     for (const namespace in permissions) {
-        if (permissions[namespace][resource] && permissions[namespace][resource].includes(operation)) {
+        if (permissions[namespace][resource]) {
+            if (permissions[namespace][resource].includes(operation)) {
+                namespaces.push(namespace);
+            }
+        } else if (permissions[namespace]["*"].includes(operation)) {
             namespaces.push(namespace);
         }
     }
@@ -42,10 +68,14 @@ export function allowedNamespaces(userStatus: UserStatus, operation: "c" | "r" |
 
 export function allowedResources(userStatus: UserStatus, operation: "c" | "r" | "u" | "d" | "l", namespace: string): string[] {
     const permissions = userStatus.permissions;
-    const lookupNs = permissions[namespace] ? namespace : "*";
     const resources: string[] = [];
-    for (const resource in permissions[lookupNs]) {
-        if (permissions[lookupNs][resource].includes(operation)) {
+    for (const resource in permissions[namespace]) {
+        if (permissions[namespace][resource].includes(operation)) {
+            resources.push(resource);
+        }
+    }
+    for (const resource in permissions["*"]) {
+        if (!permissions[namespace][resource] && permissions["*"][resource].includes(operation)) {
             resources.push(resource);
         }
     }
@@ -58,4 +88,3 @@ export function allowedOperations(userStatus: UserStatus, namespace: string, res
     const lookupRes = permissions[lookupNs] && permissions[lookupNs][resource] ? resource : "*";
     return permissions[lookupNs][lookupRes] || [];
 }
-
