@@ -102,7 +102,7 @@ const Editor = ({name, text, endpoint}: {
             <div className={style.editorOptionsPanel}>
                 <LanguageSelector language={language} onSelect={onLanguageChange}/>
                 <div style={{display: 'flex', gap: '8px'}}>
-                    <Button type="default" onClick={() => navigate(-1)}>Back</Button> {/* Кнопка Back */}
+                    <Button type="default" onClick={() => navigate(-1)}>Back</Button>
                     <Button type="primary" onClick={onSave}>Save</Button>
                 </div>
             </div>
