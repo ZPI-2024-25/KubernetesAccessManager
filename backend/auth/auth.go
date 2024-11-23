@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -86,30 +85,32 @@ func IsUserAuthorized(operation models.Operation, roles []string) (bool, error) 
 	return false, nil
 }
 
-func ExtractRoles(claims *jwt.MapClaims) ([]string, error) {
+func ExtractRoles(claims *jwt.MapClaims) ([]string, *models.ModelError) {
 	var roles []string
 	client := common.GetOrDefaultEnv("KEYCLOAK_CLIENTNAME", "account")
+	if realmAccess, ok := (*claims)["realm_access"].(map[string]interface{}); ok {
+		extractRolesFromMapInterface(realmAccess, "roles", &roles)
+	}
 	if resourceAccess, ok := (*claims)["resource_access"].(map[string]interface{}); ok {
 		if resource, ok := resourceAccess[client]; ok {
 			if resourceMap, ok := resource.(map[string]interface{}); ok {
-				if resourceRoles, ok := resourceMap["roles"].([]interface{}); ok {
-					for _, role := range resourceRoles {
-						if roleStr, ok := role.(string); ok {
-							roles = append(roles, roleStr)
-						}
-					}
-				}
+				extractRolesFromMapInterface(resourceMap, "roles", &roles)
 			}
 		}
-	} else {
-		return nil, errors.New("resource_access claim missing or invalid")
-	}
-
-	if len(roles) == 0 {
-		return nil, errors.New("no roles found in token")
 	}
 	return roles, nil
 }
+
+func extractRolesFromMapInterface(claims map[string]interface{}, rolekey string, roles *[]string){
+	if realm, ok := claims[rolekey].([]interface{}); ok {
+		for _, role := range realm {
+			if roleStr, ok := role.(string); ok {
+				*roles = append((*roles), roleStr)
+			}
+		}
+	}
+}
+
 
 func ExtractUserStatus(claims *jwt.MapClaims) (int32, string, string)  {
 	var exp int32
@@ -125,10 +126,6 @@ func ExtractUserStatus(claims *jwt.MapClaims) (int32, string, string)  {
 		email = emailStr
 	}
 	return exp, preferredUsername, email
-}
-
-type Namespaced interface {
-	GetNamespace() string
 }
 
 func FilterRestrictedResources(resources *models.ResourceList, claims *jwt.MapClaims, resourceType string) (*models.ResourceList, *models.ModelError) {
@@ -171,13 +168,30 @@ func FilterRestrictedReleases(releases []models.HelmRelease, claims *jwt.MapClai
 }
 
 func getAllowedNamespaces(claims *jwt.MapClaims, resourceType string, opType models.OperationType, namespaces map[string]struct{}) (map[string]struct{}, *models.ModelError) {
-	roles, err := ExtractRoles(claims)
-	if err != nil {
+	roles, errM := ExtractRoles(claims)
+	if errM != nil {
+		return nil, errM
+	}
+	if len(roles) == 0 {
 		return nil, &models.ModelError{
-			Code: http.StatusBadRequest, 
-			Message: "Error extracting roles from JWT token: " + err.Error(),
+			Code: http.StatusForbidden,
+			Message: "No roles found in token",
 		}
 	}
+	roleMap, err := GetRoleMapInstance()
+	if err != nil {
+		return nil, &models.ModelError{
+			Code: http.StatusInternalServerError,
+			Message: err.Error(),
+		}
+	}
+	if !roleMap.HasPermissionInAnyNamespace(roles, resourceType, opType) {
+		return nil, &models.ModelError{
+			Code: http.StatusForbidden,
+			Message: fmt.Sprintf("User does not have permission to %v resources", opType),
+		}
+	}
+
 	allowed := make(map[string]struct{})
 	for ns := range namespaces{
 		op := models.Operation{

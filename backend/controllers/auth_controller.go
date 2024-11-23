@@ -38,10 +38,7 @@ func CheckLoginStatus(w http.ResponseWriter, r *http.Request) {
 func getLoginStatus(claims *jwt.MapClaims, rolemap *auth.RoleMapRepository) (*models.UserStatus, *models.ModelError) {
 	roles, err := auth.ExtractRoles(claims)
 	if err != nil {
-		return nil, &models.ModelError{
-			Message: "Error extracting roles from JWT token: " + err.Error(),
-			Code:    http.StatusBadRequest,
-		}
+		return nil, err
 	}
 	access := rolemap.GetAllPermissions(roles)
 	auth.PrunePermissions(access)
@@ -59,6 +56,13 @@ func getLoginStatus(claims *jwt.MapClaims, rolemap *auth.RoleMapRepository) (*mo
 }
 
 func toPermissionModel(pmatrix auth.PermissionMatrix) map[string]map[string][]string {
+	if len(pmatrix) == 0 {
+		return map[string]map[string][]string{
+			"*": {
+				"*": make([]string, 0),
+			},
+		}
+	}
 	result := make(map[string]map[string][]string)
 
 	for namespace, resources := range pmatrix {
