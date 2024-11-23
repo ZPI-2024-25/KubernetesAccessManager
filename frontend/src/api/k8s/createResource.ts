@@ -1,6 +1,6 @@
 import axios from "axios";
 import {K8S_API_URL} from "../../consts/apiConsts.ts";
-import {ResourceDetails} from "../types/ResourceDetails.ts";
+import {ResourceDetails} from "../../types/ResourceDetails.ts"
 
 export async function createResource(resourceType: string, namespace: string, resourceData: unknown): Promise<ResourceDetails> {
     try {

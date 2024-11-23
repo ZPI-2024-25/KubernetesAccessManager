@@ -4,7 +4,7 @@ import { ApiResponse, fetchResources } from '../../api';
 import { formatAge } from "../../functions/formatAge.ts";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom';
-import { deleteResource } from "../../api/deleteResource";
+import { deleteResource } from "../../api/k8s/deleteResource.ts";
 import DeleteConfirmModal from "../Confirm/DeleteConfirm.tsx";
 
 interface TabProps {
