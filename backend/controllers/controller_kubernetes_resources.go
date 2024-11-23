@@ -3,11 +3,13 @@ package controllers
 import (
 	"fmt"
 
+	"net/http"
+
 	"github.com/ZPI-2024-25/KubernetesAccessManager/auth"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
+	"github.com/ZPI-2024-25/KubernetesAccessManager/common"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"k8s.io/utils/env"
-	"net/http"
 )
 
 func GetResourceController(w http.ResponseWriter, r *http.Request) {
@@ -18,7 +20,32 @@ func GetResourceController(w http.ResponseWriter, r *http.Request) {
 
 func ListResourcesController(w http.ResponseWriter, r *http.Request) {
 	handleResourceOperation(w, r, models.List, func(resourceType, namespace, _ string) (interface{}, *models.ModelError) {
-		return cluster.ListResources(resourceType, namespace, cluster.GetResourceInterface)
+		resources, err := cluster.ListResources(resourceType, namespace, cluster.GetResourceInterface)
+		if err != nil {
+			return nil, err
+		}
+		if namespace != "" {
+			return resources, nil
+		}
+
+		// temporary solution to disable auth if we don't have keycloak running
+		if env.GetString("KEYCLOAK_URL", "") == "" {
+			return resources, nil
+		}
+		token, err2 := auth.GetJWTTokenFromHeader(r)
+		isValid, claims := auth.IsTokenValid(token)
+
+		if err2 != nil || !isValid {
+			return nil, &models.ModelError{
+				Message: "Unauthorized",
+				Code:    http.StatusUnauthorized,
+			}
+		}
+		filtered, errM := auth.FilterRestrictedResources(&resources, claims, resourceType)
+		if errM != nil {
+			return nil, errM
+		}
+		return filtered, nil
 	})
 }
 
@@ -60,15 +87,21 @@ func handleResourceOperation(w http.ResponseWriter, r *http.Request, opType mode
 	resourceName := getResourceName(r)
 	namespace := getNamespace(r)
 
-	operation := models.Operation{
-		Resource:  resourceType,
-		Namespace: namespace,
-		Type:      opType,
+	if namespace == "" && opType != models.List {
+		namespace = common.DEFAULT_NAMESPACE
 	}
+	// The only operation that can be done for all namespaces - list without namespace mentioned
+	if !(opType == models.List && namespace == "") {
+		operation := models.Operation{
+			Resource:  resourceType,
+			Namespace: namespace,
+			Type:      opType,
+		}
 
-	if err := authenticateAndAuthorize(r, operation); err != nil {
-		writeJSONResponse(w, int(err.Code), err)
-		return
+		if err := authenticateAndAuthorize(r, operation); err != nil {
+			writeJSONResponse(w, int(err.Code), err)
+			return
+		}
 	}
 
 	result, err := operationFunc(resourceType, namespace, resourceName)
@@ -100,19 +133,16 @@ func authenticateAndAuthorize(r *http.Request, operation models.Operation) *mode
 		}
 	}
 
-	roles, err := auth.ExtractRoles(claims)
-	if err != nil {
-		return &models.ModelError{
-			Code:    http.StatusBadRequest,
-			Message: "Roles not found in bearer token",
-		}
+	roles, errM := auth.ExtractRoles(claims)
+	if errM != nil {
+		return errM
 	}
 
 	authorized, err := auth.IsUserAuthorized(operation, roles)
 	if err != nil {
 		return &models.ModelError{
 			Code:    http.StatusInternalServerError,
-			Message: "Internal Server Error",
+			Message: "Internal Server Error: " + err.Error(),
 		}
 	}
 

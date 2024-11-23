@@ -1,5 +1,4 @@
-// Node not included in the list
-export const getExampleResourceDefinition = (resourceType: string) => {
+export const exampleResourceDefinition = (resourceType: string): string => {
     const resourceDefinition = (() => {
         switch (resourceType) {
             case "Pod":

@@ -24,3 +24,5 @@ dist-ssr
 /node_modules/
 /.vite/
 .env
+tsconfig.app.tsbuildinfo
+tsconfig.node.tsbuildinfo

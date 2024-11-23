@@ -9,19 +9,22 @@ data:
       name: "admin"
       deny: 
         - resource: "Pod"
-          type: "*"
-          namespace: "*"
+          namespace: "default"
+          operations: ["delete", "create"]
       permit:
         - resource: "*"
-          type: "*"
           namespace: "*"
+          operations: ["*"]
+        - resource: "Pod"
+          namespace: "default"
+          operations: ["list", "read"]
       subroles:
         - "user"
     user:
       name: "user"
       permit:
         - resource: "Pod"
-          type: "read"
+          operations: ["read"]
           namespace: "default"
       subroles:
         - "guest"
@@ -29,14 +32,14 @@ data:
       name: "guest"
       permit:
         - resource: "Pod"
-          type: "list"
+          operations: ["list"]
           namespace: "default"
   subrole-map: |
     superadmin:
       name: "superadmin"
       permit:
         - resource: "*"
-          type: "*"
+          operations: ["*"]
           namespace: "*"
       subroles:
         - "admin"
@@ -44,5 +47,4 @@ data:
       name: "viewer"
       permit:
         - resource: "Pod"
-          type: "read"
-          namespace: "all"
+          operations: ["read"]
