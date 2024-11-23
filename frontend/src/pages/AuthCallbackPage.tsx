@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { message } from 'antd';
-import {KEYCLOAK_CLIENT_ID, KEYCLOAK_TOKEN_URL} from "../consts/apiConsts.ts";
+import axios from 'axios';
+import * as Constants from "../consts/consts.ts";
 
 const AuthCallbackPage: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -26,38 +27,34 @@ const AuthCallbackPage: React.FC = () => {
                 console.log('Code:', code);
                 console.log('Redirect URI:', `${window.location.origin}/auth/callback`);
 
-                const response = await fetch(`${KEYCLOAK_TOKEN_URL}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams({
+                const response = await axios.post(
+                    `${Constants.KEYCLOAK_TOKEN_URL}`,
+                    new URLSearchParams({
                         grant_type: 'authorization_code',
                         code: code,
                         redirect_uri: `${window.location.origin}/auth/callback`,
-                        client_id: `${KEYCLOAK_CLIENT_ID}`,
+                        client_id: `${Constants.KEYCLOAK_CLIENT_ID}`,
                     }),
-                });
+                    {
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                    }
+                );
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Keycloak response error:', errorText);
-                    throw new Error('Error while communication with Keycloak');
-                }
-
-                const data = await response.json();
+                const data = response.data;
 
                 if (!data.access_token || !data.refresh_token) {
-                    throw new Error('Response does not contains token!');
+                    throw new Error('Response does not contain tokens!');
                 }
 
-                localStorage.setItem('access_token', data.access_token);
-                localStorage.setItem('refresh_token', data.refresh_token);
+                localStorage.setItem(Constants.ACCESS_TOKEN_STR, data.access_token);
+                localStorage.setItem(Constants.REFRESH_TOKEN_STR, data.refresh_token);
 
-                message.success('Log in successfully');
+                message.success('Logged in successfully');
                 navigate('/');
             } catch (error) {
-                console.error('Error during log in:', error);
+                console.error('Error during login:', error);
                 message.error('Cannot log in');
                 navigate('/login');
             }

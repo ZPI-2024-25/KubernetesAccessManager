@@ -3,9 +3,11 @@ import Editor from "../components/Editor/Editor.tsx";
 import {createResource} from "../api/createResource.ts";
 import {exampleResourceDefinition} from "../consts/exampleResourceDefinitions.ts";
 import {ResourceDetails} from "../types/ResourceDetails.ts";
+import {useLocation} from "react-router-dom";
 
 const CreateResourcePage: React.FC = () => {
-    const resourceType = "Deployment";
+    const location = useLocation();
+    const { resourceType } = location.state || {};
     const namespace = "";
 
     return (

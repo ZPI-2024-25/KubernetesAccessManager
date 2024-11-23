@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {API_URL} from "../consts/apiConsts.ts";
+import * as Constants from "../consts/consts.ts";
 
 export interface Resource {
     [key: string]: string;
@@ -14,8 +14,8 @@ export interface ApiResponse {
 }
 
 export async function fetchResources(resourceType: string): Promise<ApiResponse> {
-    const response = await axios.get<ApiResponse>(`${API_URL}/${resourceType}`);
-    console.log(`GET: ${API_URL}/${resourceType}`)
+    const response = await axios.get<ApiResponse>(`${Constants.API_URL}/${resourceType}`);
+    console.log(`GET: ${Constants.API_URL}/${resourceType}`)
     console.log(response.data);
     return response.data;
 }

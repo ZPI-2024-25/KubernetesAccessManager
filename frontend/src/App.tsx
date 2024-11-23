@@ -5,7 +5,7 @@ import EditorPage from "./pages/EditorPage.tsx";
 import ResourcePage from "./pages/ResourcePage.tsx";
 import CreateResourcePage from "./pages/CreateResourcePage.tsx";
 import AuthCallbackPage from "./pages/AuthCallbackPage.tsx";
-import {initializeAxiosInterceptors} from './axiosConfig.ts';
+import {initializeAxiosInterceptors} from './config/axiosConfig.ts';
 import {AuthProvider} from "./components/AuthProvider/AuthProvider.tsx";
 
 initializeAxiosInterceptors();

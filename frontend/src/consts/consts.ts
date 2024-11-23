@@ -5,3 +5,6 @@ export const KEYCLOAK_LOGIN_URL = import.meta.env.KEYCLOAK_LOGIN_URL || `${KEYCL
 export const KEYCLOAK_LOGOUT_URL = import.meta.env.KEYCLOAK_LOGOUT_URL || `${KEYCLOAK_URL}realms/ZPI-realm/protocol/openid-connect/logout`
 export const KEYCLOAK_TOKEN_URL = import.meta.env.KEYCLOAK_TOKEN_URL || `${KEYCLOAK_URL}realms/ZPI-realm/protocol/openid-connect/token`
 export const KEYCLOAK_CLIENT_ID = import.meta.env.KEYCLOAK_CLIENT_ID || 'ZPI-client'
+
+export const ACCESS_TOKEN_STR = 'access_token';
+export const REFRESH_TOKEN_STR = 'refresh_token';

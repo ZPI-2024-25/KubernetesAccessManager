@@ -85,7 +85,10 @@ const Tab: React.FC<TabProps> = ({ resourcelabel }) => {
     }, [resourcelabel]);
 
     const handleAdd = () => {
-        navigate('/create');
+        const resourceType = resourcelabel;
+        navigate(`/create`, {
+            state: { resourceType },
+        });
     };
 
     const handleEdit = (record: DataSourceItem) => {

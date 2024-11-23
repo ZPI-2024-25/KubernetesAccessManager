@@ -1,4 +1,5 @@
 import axios from 'axios';
+import * as Constants from "../consts/consts.ts";
 
 let interceptorsInitialized = false;
 
@@ -11,7 +12,7 @@ export function initializeAxiosInterceptors() {
     axios.interceptors.request.use(
         (config) => {
             try {
-                const token = localStorage.getItem('access_token');
+                const token = localStorage.getItem(Constants.ACCESS_TOKEN_STR);
                 if (token) {
                     config.headers.Authorization = `Bearer ${token}`;
                 }

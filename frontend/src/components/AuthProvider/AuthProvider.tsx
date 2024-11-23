@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import { scheduleTokenRefresh, decodeToken } from '../../services/authService';
 import { useNavigate } from 'react-router-dom';
 import { message } from 'antd';
-import { KEYCLOAK_LOGIN_URL, KEYCLOAK_LOGOUT_URL } from "../../consts/apiConsts";
+import * as Constants from "../../consts/consts.ts";
 
 type AuthContextType = {
     isLoggedIn: boolean;
@@ -21,7 +21,7 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const navigate = useNavigate();
     const refreshTimeout = useRef<NodeJS.Timeout | null>(null);
-    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(!!localStorage.getItem('access_token'));
+    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(!!localStorage.getItem(Constants.ACCESS_TOKEN_STR));
     const [user, setUser] = useState<{ [key: string]: any } | null>(null);
 
     const decodeAndSetUser = (token: string | null) => {
@@ -44,13 +44,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const handleLogin = () => {
         const redirectUri = `${window.location.origin}/auth/callback`;
-        window.location.href = `${KEYCLOAK_LOGIN_URL}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+        window.location.href = `${Constants.KEYCLOAK_LOGIN_URL}&redirect_uri=${encodeURIComponent(redirectUri)}`;
     };
 
     const handleLogout = () => {
-        const logoutUrl = `${KEYCLOAK_LOGOUT_URL}?redirect_uri=${encodeURIComponent(window.location.origin)}`;
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
+        const logoutUrl = `${Constants.KEYCLOAK_LOGOUT_URL}?redirect_uri=${encodeURIComponent(window.location.origin)}`;
+        localStorage.removeItem(Constants.ACCESS_TOKEN_STR);
+        localStorage.removeItem(Constants.REFRESH_TOKEN_STR);
         setIsLoggedIn(false);
         setUser(null);
         window.location.href = logoutUrl;
@@ -59,19 +59,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         const onRefreshFailed = () => {
             console.warn('Failed to refresh token, logging out...');
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
+            localStorage.removeItem(Constants.ACCESS_TOKEN_STR);
+            localStorage.removeItem(Constants.REFRESH_TOKEN_STR);
             setIsLoggedIn(false);
             setUser(null);
             message.error('Log in again');
         };
 
         const onRefreshSuccess = () => {
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem(Constants.ACCESS_TOKEN_STR);
             decodeAndSetUser(token);
         };
 
-        decodeAndSetUser(localStorage.getItem('access_token'));
+        decodeAndSetUser(localStorage.getItem(Constants.ACCESS_TOKEN_STR));
 
         scheduleTokenRefresh(onRefreshFailed, onRefreshSuccess, refreshTimeout);
 
