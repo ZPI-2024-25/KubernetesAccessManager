@@ -1418,6 +1418,32 @@ func TestHasPermissionInAnyNamespace(t *testing.T) {
 			op:        "read",
 			expected:  false,
 		},
+		{
+			name: "Permission granted in specific namespace wildcard resource",
+			roleMap: map[string]*models.Role{
+				"admin": {Name: "admin", Subroles: []string{"user"}},
+			},
+			subroleMap: map[string]*models.Role{
+				"user": {Name: "user", Permit: []models.Operation{{Type: "read", Resource: "*", Namespace: "namespace1"}}},
+			},
+			rolenames: []string{"admin"},
+			resource:  "resource1",
+			op:        "read",
+			expected:  true,
+		},
+		{
+			name: "Permission granted in specific namespace wildcard resource",
+			roleMap: map[string]*models.Role{
+				"admin": {Name: "admin", Subroles: []string{"user"}},
+			},
+			subroleMap: map[string]*models.Role{
+				"user": {Name: "user", Permit: []models.Operation{{Type: "read", Resource: "*", Namespace: "*"}}},
+			},
+			rolenames: []string{"admin"},
+			resource:  "resource1",
+			op:        "read",
+			expected:  true,
+		},
 	}
 
 	for _, tt := range tests {
