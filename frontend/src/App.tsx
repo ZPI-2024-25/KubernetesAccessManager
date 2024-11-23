@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { MainPage } from "./pages/MainPage.tsx";
 import Menu from "./components/Menu/Menu.tsx";
 import EditorPage from "./pages/EditorPage.tsx";
@@ -6,18 +6,11 @@ import ResourcePage from "./pages/ResourcePage.tsx";
 import CreateResourcePage from "./pages/CreateResourcePage.tsx";
 import AuthCallbackPage from "./pages/AuthCallbackPage.tsx";
 import { initializeAxiosInterceptors } from './config/axiosConfig.ts';
-import { AuthProvider, useAuth } from "./components/AuthProvider/AuthProvider.tsx";
+import { AuthProvider } from "./components/AuthProvider/AuthProvider.tsx";
 import { LoginPage } from "./pages/LoginPage.tsx";
+import PrivateRoute from "./components/PrivateRoute/PrivateRoute.tsx";
 
 initializeAxiosInterceptors();
-
-function PrivateRoute() {
-    const { isLoggedIn } = useAuth();
-    if (!isLoggedIn) {
-        return <Navigate to="/login" replace />;
-    }
-    return <Outlet />;
-}
 
 function App() {
     return (

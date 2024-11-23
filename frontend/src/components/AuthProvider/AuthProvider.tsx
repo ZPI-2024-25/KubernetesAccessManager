@@ -49,12 +49,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const handleLogout = () => {
         const logoutUrl = `${Constants.KEYCLOAK_LOGOUT_URL}?redirect_uri=${encodeURIComponent(window.location.origin)}`;
-        localStorage.removeItem(Constants.ACCESS_TOKEN_STR);
-        localStorage.removeItem(Constants.REFRESH_TOKEN_STR);
-        setIsLoggedIn(false);
-        setUser(null);
+        sessionStorage.setItem("shouldClearAuthData", "true");
         window.location.href = logoutUrl;
     };
+
+    window.addEventListener("load", () => {
+        if (sessionStorage.getItem("shouldClearAuthData") === "true") {
+            localStorage.removeItem(Constants.ACCESS_TOKEN_STR);
+            localStorage.removeItem(Constants.REFRESH_TOKEN_STR);
+            setUser(null);
+            setIsLoggedIn(false);
+            sessionStorage.removeItem("shouldClearAuthData");
+        }
+    });
+
 
     useEffect(() => {
         const onRefreshFailed = () => {

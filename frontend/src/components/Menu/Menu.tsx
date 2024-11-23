@@ -87,6 +87,7 @@ const LeftMenu: React.FC = () => {
                     setAsideWidth(asideWidth === 80 ? 270 : 80);
                 }}
                 width={`${asideWidth}px`}
+                style={{ display: !isLoggedIn ? 'none' : 'block' }}
             >
                 <div className={styles.logo}>
                     <span
@@ -108,10 +109,13 @@ const LeftMenu: React.FC = () => {
                     style={{ paddingBottom: 50 }}
                 />
             </Sider>
-            <Layout className={styles.contentLayout} style={{ marginLeft: asideWidth }}>
+            <Layout
+                className={styles.contentLayout}
+                style={{ marginLeft: !isLoggedIn ? '0' : `${asideWidth}px` }}
+            >
                 <Header className={styles.header}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
-                        <p style={{ paddingLeft: asideWidth }}>
+                        <p style={{ paddingLeft: isLoggedIn ? '0' : `${asideWidth}px` }}>
                             {currentPageTitle || 'Page name'}
                         </p>
                         {isLoggedIn ? (
@@ -125,12 +129,14 @@ const LeftMenu: React.FC = () => {
                         )}
                     </div>
                 </Header>
-                <Content className={styles.content}
-                         style={{
-                             padding: '16px',
-                             minHeight: 'calc(100vh - 64px - 50px)',
-                             height: 'auto',
-                         }}>
+                <Content
+                    className={styles.content}
+                    style={{
+                        padding: '16px',
+                        minHeight: 'calc(100vh - 64px - 50px)',
+                        height: 'auto',
+                    }}
+                >
                     <Outlet />
                 </Content>
                 {/*<Footer className={styles.footer}>*/}
