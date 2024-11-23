@@ -5,7 +5,7 @@ import React from "react";
 export interface MenuItem {
     key: string;
     label:React.ReactNode;
-    resourceLabel:string;
+    resourcelabel:string;
     icon?: React.ReactNode;
     children?: MenuItem[];
 }

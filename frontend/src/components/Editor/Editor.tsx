@@ -2,10 +2,11 @@ import {Button, Card, message} from "antd";
 import style from "./Editor.module.css";
 import {Editor as MonacoEditor} from "@monaco-editor/react";
 import * as monaco from "monaco-editor";
-import {useCallback, useRef, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import LanguageSelector from "./LanguageSelector.tsx";
 import {stringifyJson, parseJson, parseYaml, stringifyYaml} from "../../functions/jsonYamlFunctions.ts";
-import {ResourceDetails} from "../../api/createResource.ts";
+import {ResourceDetails} from "../../types/ResourceDetails.ts";
+import {useNavigate} from "react-router-dom";
 
 const Editor = ({name, text, endpoint}: {
     name: string,
@@ -15,6 +16,14 @@ const Editor = ({name, text, endpoint}: {
     const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
     const [value, setValue] = useState<string>(text);
     const [language, setLanguage] = useState<string>("yaml");
+    const navigate = useNavigate();
+
+    // TODO: zamienić wzorzec na stworzenie
+    useEffect(() => {
+        console.log(text);
+        setValue(text);
+        //setValue(stringifyYaml((JSON.stringify(text, null, 2))));
+    }, [text]);
 
     const onMount = useCallback((editor: monaco.editor.IStandaloneCodeEditor) => {
         editorRef.current = editor;
@@ -89,13 +98,17 @@ const Editor = ({name, text, endpoint}: {
     }, []);
 
     return (
-        <Card className={style.content} title={name}>
+        <Card className={style.content} style={{marginTop: '64px',}} title={name}>
             <div className={style.editorOptionsPanel}>
                 <LanguageSelector language={language} onSelect={onLanguageChange}/>
-                <Button type="primary" onClick={onSave}>Save</Button>
+                <div style={{display: 'flex', gap: '8px'}}>
+                    <Button type="default" onClick={() => navigate(-1)}>Back</Button>
+                    <Button type="primary" onClick={onSave}>Save</Button>
+                </div>
             </div>
             <MonacoEditor
                 height="65vh"
+                width="80wh"
                 theme="vs-dark"
                 language={language}
                 onMount={onMount}
