@@ -1,5 +1,5 @@
 import axios from "axios";
-import {HELM_API_URL} from "../../consts/apiConsts.ts";
+import {HELM_API_URL} from "../../consts/consts.ts";
 import {Status} from "../../types";
 
 export async function deleteRelease(releaseName: string, namespace: string): Promise<Status> {

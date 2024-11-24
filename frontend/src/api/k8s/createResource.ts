@@ -1,5 +1,5 @@
 import axios from "axios";
-import * as Constants from "../../consts/apiConsts.ts";
+import * as Constants from "../../consts/consts.ts";
 import {ResourceDetails} from "../../types/ResourceDetails.ts"
 
 export async function createResource(resourceType: string, namespace: string, resourceData: unknown): Promise<ResourceDetails> {

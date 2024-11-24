@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {HELM_API_URL} from "../../consts/apiConsts.ts";
+import {HELM_API_URL} from "../../consts/consts.ts";
 import {Status, ReleaseNameRollbackBody, HelmRelease} from "../../types";
 
 export async function rollbackRelease(version: number, releaseName: string, namespace: string): Promise<HelmRelease | Status> {

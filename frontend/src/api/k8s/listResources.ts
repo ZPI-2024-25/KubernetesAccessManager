@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {K8S_API_URL} from "../../consts/apiConsts.ts";
+import * as Constants from "../../consts/consts.ts";
 
 export interface Resource {
     [key: string]: string;
@@ -16,8 +16,8 @@ export interface ApiResponse {
 export async function fetchResources(resourceType: string, namespace?: string): Promise<ApiResponse> {
     const namespaceQuery = namespace ? `?namespace=${namespace}` : '';
 
-    const response = await axios.get<ApiResponse>(`${K8S_API_URL}/${resourceType}${namespaceQuery}`);
-    console.log(`GET: ${K8S_API_URL}/${resourceType}${namespaceQuery}`)
+    const response = await axios.get<ApiResponse>(`${Constants.K8S_API_URL}/${resourceType}${namespaceQuery}`);
+    console.log(`GET: ${Constants.K8S_API_URL}/${resourceType}${namespaceQuery}`)
     console.log(response.data);
     return response.data;
 }

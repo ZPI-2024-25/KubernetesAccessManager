@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {HELM_API_URL} from "../../consts/apiConsts.ts";
+import {HELM_API_URL} from "../../consts/consts.ts";
 import {HelmReleaseList} from "../../types";
 
 export async function fetchReleases(namespace: string): Promise<HelmReleaseList> {

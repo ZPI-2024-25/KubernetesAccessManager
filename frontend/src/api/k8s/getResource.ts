@@ -1,5 +1,5 @@
 import axios from "axios";
-import * as Constants from "../../consts/apiConsts.ts";
+import * as Constants from "../../consts/consts.ts";
 import {stringifyYaml} from "../../functions/jsonYamlFunctions.ts";
 
 export const getResource = async (resourceType: string, resourceName: string, namespace: string) => {
