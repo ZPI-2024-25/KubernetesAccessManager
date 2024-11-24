@@ -9,7 +9,7 @@ import {MenuItem} from "../types";
 function getItem(
     label: React.ReactNode,
     key: React.Key,
-    resourcelabel: string,
+    resourcelabel:string,
     icon?: React.ReactNode,
     children?: MenuItem[],
 ): MenuItem {

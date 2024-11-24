@@ -6,7 +6,7 @@ export const MainPage = () => {
     return (
         <>
             {/*{content}*/}
-            <Tab resourceLabel={""}/>
+            <Tab resourcelabel={""}/>
         </>
     );
 };

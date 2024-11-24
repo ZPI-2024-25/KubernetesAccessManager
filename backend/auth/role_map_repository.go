@@ -22,16 +22,16 @@ type RoleMapRepository struct {
 }
 
 type operationConfig struct {
-	Namespace string `json:"namespace,omitempty"`
-	Resource  string `json:"resource,omitempty"`
+	Namespace  string                 `json:"namespace,omitempty"`
+	Resource   string                 `json:"resource,omitempty"`
 	Operations []models.OperationType `json:"operations,omitempty"`
 }
 
 type roleConfig struct {
-	Name     string      		`json:"name,omitempty"`
-	Permit   []operationConfig  `json:"permit,omitempty"`
-	Deny     []operationConfig  `json:"deny,omitempty"`
-	Subroles []string    		`json:"subroles,omitempty"`
+	Name     string            `json:"name,omitempty"`
+	Permit   []operationConfig `json:"permit,omitempty"`
+	Deny     []operationConfig `json:"deny,omitempty"`
+	Subroles []string          `json:"subroles,omitempty"`
 }
 
 var (

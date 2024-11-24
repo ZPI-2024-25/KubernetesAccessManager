@@ -8,7 +8,7 @@ import { deleteResource } from "../../api/k8s/deleteResource.ts";
 import DeleteConfirmModal from "../Modals/DeleteConfirm.tsx";
 
 interface TabProps {
-    resourceLabel: string;
+    resourcelabel: string;
 }
 
 interface DataSourceItem {
@@ -24,7 +24,7 @@ interface ColumnType {
     render: (text: React.ReactNode, record: DataSourceItem) => React.ReactNode;
 }
 
-const Tab: React.FC<TabProps> = ({ resourceLabel }) => {
+const Tab: React.FC<TabProps> = ({ resourcelabel }) => {
     const [columns, setColumns] = useState<ColumnType[]>([]);
     const [dataSource, setDataSource] = useState<DataSourceItem[]>([]);
     const [isModalVisible, setModalVisible] = useState(false);
@@ -32,10 +32,10 @@ const Tab: React.FC<TabProps> = ({ resourceLabel }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!resourceLabel) return;
+        if (!resourcelabel) return;
 
         const fetchData = async () => {
-            const response: ApiResponse = await fetchResources(resourceLabel);
+            const response: ApiResponse = await fetchResources(resourcelabel);
 
             const dynamicColumns: ColumnType[] = response.columns.map((column) => ({
                 title: column,
@@ -82,14 +82,17 @@ const Tab: React.FC<TabProps> = ({ resourceLabel }) => {
         };
 
         fetchData();
-    }, [resourceLabel]);
+    }, [resourcelabel]);
 
     const handleAdd = () => {
-        navigate('/create');
+        const resourceType = resourcelabel;
+        navigate(`/create`, {
+            state: { resourceType },
+        });
     };
 
     const handleEdit = (record: DataSourceItem) => {
-        const resourceType = resourceLabel;
+        const resourceType = resourcelabel;
         const namespace = record.namespace as string;
         const resourceName = record.name as string;
 
@@ -111,7 +114,7 @@ const Tab: React.FC<TabProps> = ({ resourceLabel }) => {
     const handleDeleteConfirm = async () => {
         if (selectedRecord) {
             try {
-                await deleteResource(resourceLabel, selectedRecord.name as string, selectedRecord.namespace as string);
+                await deleteResource(resourcelabel, selectedRecord.name as string, selectedRecord.namespace as string);
                 setDataSource((prev) => prev.filter(item => item.key !== selectedRecord.key));
                 setModalVisible(false);
                 setSelectedRecord(null);

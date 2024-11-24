@@ -1,9 +1,9 @@
 import axios from "axios";
-import {K8S_API_URL} from "../../consts/apiConsts.ts";
+import * as Constants from "../../consts/apiConsts.ts";
 
 export const deleteResource = async (resourceType: string, resourceName: string, namespace: string) => {
     try {
-        const response = await axios.delete(`${K8S_API_URL}/${resourceType}/${resourceName}?namespace=${namespace}`, {
+        const response = await axios.delete(`${Constants.K8S_API_URL}/${resourceType}/${resourceName}?namespace=${namespace}`, {
             headers: {
                 accept: 'application/json',
             },
