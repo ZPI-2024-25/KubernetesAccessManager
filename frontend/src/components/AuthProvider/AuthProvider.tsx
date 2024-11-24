@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { scheduleTokenRefresh, decodeToken } from '../../services/authService';
-import { useNavigate } from 'react-router-dom';
-import { message } from 'antd';
+import React, {createContext, useContext, useEffect, useRef, useState} from 'react';
+import {decodeToken, scheduleTokenRefresh} from '../../services/authService';
+import {useNavigate} from 'react-router-dom';
+import {message} from 'antd';
 import * as Constants from "../../consts/consts.ts";
 
 type AuthContextType = {
@@ -48,21 +48,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const handleLogout = () => {
-        const logoutUrl = `${Constants.KEYCLOAK_LOGOUT_URL}?redirect_uri=${encodeURIComponent(window.location.origin)}`;
-        sessionStorage.setItem("shouldClearAuthData", "true");
-        window.location.href = logoutUrl;
+        const idToken = localStorage.getItem(Constants.ID_TOKEN_STR);
+        window.location.href = `${Constants.KEYCLOAK_LOGOUT_URL}?id_token_hint=${idToken}&post_logout_redirect_uri=${encodeURIComponent(window.location.origin)}`;
+        localStorage.removeItem(Constants.ACCESS_TOKEN_STR);
+        localStorage.removeItem(Constants.REFRESH_TOKEN_STR);
+        setUser(null);
+        setIsLoggedIn(false);
     };
-
-    window.addEventListener("load", () => {
-        if (sessionStorage.getItem("shouldClearAuthData") === "true") {
-            localStorage.removeItem(Constants.ACCESS_TOKEN_STR);
-            localStorage.removeItem(Constants.REFRESH_TOKEN_STR);
-            setUser(null);
-            setIsLoggedIn(false);
-            sessionStorage.removeItem("shouldClearAuthData");
-        }
-    });
-
 
     useEffect(() => {
         const onRefreshFailed = () => {

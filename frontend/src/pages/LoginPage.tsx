@@ -15,7 +15,7 @@ export const LoginPage = () => {
 
     return (
         <div className="login-page">
-            <h1>Ciulu zaloguj się</h1>
+            <h1>Zaloguj się</h1>
         </div>
     );
 };
