@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
-import { Layout, Menu } from 'antd';
+import { Button, Layout, Menu } from 'antd';
 import styles from './Menu.module.css';
 import { items } from '../../consts/MenuItem';
 import { MenuItem } from '../../types';
-import {Link, Outlet} from "react-router-dom";
-import { useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from "react-router-dom";
+import { useAuth } from '../AuthProvider/AuthProvider';
+
 
 const { Header, Content, Sider } = Layout;
 
 const LeftMenu: React.FC = () => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [asideWidth, setAsideWidth] = useState<number>(270);
-    const username = 'k8_userjjjjjjjjjjjjjjjiiiiiiiii';
+    const { user, isLoggedIn, handleLogin, handleLogout } = useAuth();
     const location = useLocation();
-
 
     const generateMenuItems = (menuItems: MenuItem[]): MenuItem[] => {
         return menuItems.map((item) => {
@@ -72,6 +72,10 @@ const LeftMenu: React.FC = () => {
     const selectedKeys = getSelectedKeys(items, location.pathname);
     const currentPageTitle = getCurrentPageTitleFromKeys(items, selectedKeys);
 
+    const isLoginPage = location.pathname === "/login";
+
+    const menuItems = isLoginPage ? [] : generateMenuItems(items);
+
     return (
         <Layout className={styles.menuLayout}>
             <Sider
@@ -83,34 +87,56 @@ const LeftMenu: React.FC = () => {
                     setAsideWidth(asideWidth === 80 ? 270 : 80);
                 }}
                 width={`${asideWidth}px`}
+                style={{ display: !isLoggedIn ? 'none' : 'block' }}
             >
                 <div className={styles.logo}>
-          <span className={styles.logoText}>
-            {collapsed ? 'U' : username.length > 10 ? `${username.slice(0, 10)}...` : username}
-          </span>
+                    <span
+                        className={styles.logoText}
+                        title={user?.preferred_username || 'User'}
+                        style={{
+                            maxWidth: `${asideWidth - 20}px`,
+                        }}
+                    >
+                        {user?.preferred_username || 'User'}
+                    </span>
                 </div>
+
                 <Menu
                     theme="dark"
                     selectedKeys={selectedKeys}
                     mode="inline"
-                    items={generateMenuItems(items)
-                    }
+                    items={menuItems}
                     style={{ paddingBottom: 50 }}
-
                 />
             </Sider>
-            <Layout className={styles.contentLayout} style={{ marginLeft: asideWidth }}>
+            <Layout
+                className={styles.contentLayout}
+                style={{ marginLeft: !isLoggedIn ? '0' : `${asideWidth}px` }}
+            >
                 <Header className={styles.header}>
-                    <p style={{ paddingLeft: asideWidth }}>
-                        {currentPageTitle || 'Page name'}
-                    </p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
+                        <p style={{ paddingLeft: isLoggedIn ? '0' : `${asideWidth}px` }}>
+                            {currentPageTitle || 'Page name'}
+                        </p>
+                        {isLoggedIn ? (
+                            <Button type="primary" onClick={handleLogout}>
+                                Log out
+                            </Button>
+                        ) : (
+                            <Button type="primary" onClick={handleLogin}>
+                                Log in
+                            </Button>
+                        )}
+                    </div>
                 </Header>
-                <Content className={styles.content}
-                         style={{
-                             padding: '16px',
-                             minHeight: 'calc(100vh - 64px - 50px)',
-                             height: 'auto',
-                         }}>
+                <Content
+                    className={styles.content}
+                    style={{
+                        padding: '16px',
+                        minHeight: 'calc(100vh - 64px - 50px)',
+                        height: 'auto',
+                    }}
+                >
                     <Outlet />
                 </Content>
                 {/*<Footer className={styles.footer}>*/}

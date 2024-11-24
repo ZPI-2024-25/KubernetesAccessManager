@@ -8,7 +8,7 @@ const ResourcePage = () => {
 
     return (
         <div>
-            { resourceType ? <Tab resourceLabel={resourceType}/> : "Resource not found" }
+            { resourceType ? <Tab resourcelabel={resourceType}/> : "Resource not found" }
         </div>
     );
 };
