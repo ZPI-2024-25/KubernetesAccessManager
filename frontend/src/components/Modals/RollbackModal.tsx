@@ -1,14 +1,10 @@
 import {Button, InputNumber, message, Modal, Space} from 'antd';
 import {useEffect, useState} from "react";
-import {HelmRelease} from "../../types";
+import {HelmModalProps} from "../../types";
 import {rollbackRelease} from "../../api";
-import {useNavigate} from "react-router";
+import {useNavigate} from "react-router-dom";
 
-const RollbackModal = ({open, setOpen, release}: {
-    open: boolean,
-    setOpen: (open: boolean) => void,
-    release: HelmRelease | undefined
-}) => {
+const RollbackModal = ({open, setOpen, release}: HelmModalProps) => {
     const [confirmLoading, setConfirmLoading] = useState(false);
     const [revision, setRevision] = useState(0);
     const [messageApi, contextHolder] = message.useMessage();
@@ -20,53 +16,42 @@ const RollbackModal = ({open, setOpen, release}: {
         setRevision(newRevision);
     }, [release]);
 
-    const success = () => {
+    const showMessage = (
+        type: 'success' | 'error' | 'loading',
+        content: string,
+        duration = 2
+    ) => {
         messageApi.open({
-            type: 'success',
-            content: 'Rollback successful.',
-            duration: 2,
+            type,
+            content,
+            duration,
             key: 'rollback',
-        })
-    }
-
-    const loading = () => {
-        messageApi.open({
-            type: 'loading',
-            content: 'Rollback will continue in the background.',
-            duration: 2,
-            key: 'rollback',
-        })
-    }
-
-    const error = (message: string) => {
-        messageApi.open({
-            type: 'error',
-            content: message,
-            duration: 2,
-            key: 'rollback',
-        })
-    }
+        }).then(() => {
+            navigate(0);
+        });
+    };
 
     const handleOk = async () => {
+        if (!release) return;
+
         setConfirmLoading(true);
 
         try {
             const result = await rollbackRelease(revision, release?.name || "", release?.namespace || "");
 
             if ('chart' in result) {
-                success();
+                showMessage('success', 'Rollback successful.');
             } else if ('status' in result && 'message' in result) {
-                loading();
+                showMessage('loading', 'Rollback will continue in the background.');
             } else {
-                error('Rollback failed.');
+                showMessage('error', 'Rollback failed.');
             }
         } catch (err) {
             console.error('Error during rollback:', err);
-            error('Rollback error.');
+            showMessage('error', 'Rollback error.');
         } finally {
             setConfirmLoading(false);
             setOpen(false);
-            navigate(0)
         }
     };
 
@@ -76,7 +61,6 @@ const RollbackModal = ({open, setOpen, release}: {
             <Modal
                 title={release ? `Rollback ${release.name} from ${release.namespace}` : 'Rollback'}
                 open={open}
-                onOk={release ? handleOk : undefined}
                 confirmLoading={confirmLoading}
                 onCancel={() => setOpen(false)}
                 footer={
@@ -84,7 +68,8 @@ const RollbackModal = ({open, setOpen, release}: {
                         <Button key="back" onClick={() => setOpen(false)}>
                             Cancel
                         </Button>,
-                        <Button key="submit" type="primary" danger loading={confirmLoading} onClick={handleOk}>
+                        <Button key="submit" type="primary" danger loading={confirmLoading} onClick={handleOk}
+                                disabled={!release}>
                             Rollback
                         </Button>
                     ]
@@ -92,7 +77,7 @@ const RollbackModal = ({open, setOpen, release}: {
             >
                 <Space>
                     <span><b>Revision:</b></span>
-                    <InputNumber min={1} value={revision} onChange={(value) => setRevision(value ? value : 0)} />
+                    <InputNumber min={1} value={revision} onChange={(value) => setRevision(value ? value : 0)}/>
                 </Space>
             </Modal>
         </>

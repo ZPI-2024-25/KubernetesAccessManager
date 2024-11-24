@@ -1,66 +1,51 @@
 import {Button, message, Modal} from 'antd';
 import {useState} from "react";
-import {HelmRelease} from "../../types";
+import {HelmModalProps} from "../../types";
 import {deleteRelease} from "../../api";
-import {useNavigate} from "react-router";
+import {useNavigate} from "react-router-dom";
 
-const UninstallModal = ({open, setOpen, release}: {
-    open: boolean,
-    setOpen: (open: boolean) => void,
-    release: HelmRelease | undefined
-}) => {
+const UninstallModal = ({open, setOpen, release}: HelmModalProps) => {
     const [confirmLoading, setConfirmLoading] = useState(false);
     const [messageApi, contextHolder] = message.useMessage();
 
     const navigate = useNavigate();
 
-    const success = () => {
+    const showMessage = (
+        type: 'success' | 'error' | 'loading',
+        content: string,
+        duration = 2
+    ) => {
         messageApi.open({
-            type: 'success',
-            content: 'Uninstalled release.',
-            duration: 2,
+            type,
+            content,
+            duration,
             key: 'delete',
-        })
-    }
-
-    const loading = () => {
-        messageApi.open({
-            type: 'loading',
-            content: 'Uninstalling release will continue in the background.',
-            duration: 2,
-            key: 'delete',
-        })
-    }
-
-    const error = (message: string) => {
-        messageApi.open({
-            type: 'error',
-            content: message,
-            duration: 2,
-            key: 'delete',
-        })
-    }
+        }).then(() => {
+            navigate(0);
+        });
+    };
 
     const handleOk = async () => {
+        if (!release) return;
+
         setConfirmLoading(true);
 
         try {
             const result = await deleteRelease(release?.name || "", release?.namespace || "");
 
             if (result.code === 200) {
-                success();
+                showMessage('success', 'Uninstalled release.');
             } else if (result.code === 202) {
-                loading();
+                showMessage('loading', 'Uninstalling release will continue in the background.');
             } else {
-                error('Uninstall failed.');
+                showMessage('error', 'Uninstall failed.');
             }
         } catch (err) {
             console.error('Error during uninstalling:', err);
-            error('Uninstall error.');
+            showMessage('error', 'Uninstall error.');
         } finally {
             setConfirmLoading(false);
             setOpen(false);
-            navigate(0)
         }
     };
 
@@ -70,7 +55,6 @@ const UninstallModal = ({open, setOpen, release}: {
             <Modal
                 title={release ? `Uninstall ${release.name} from ${release.namespace}` : 'Uninstall'}
                 open={open}
-                onOk={release ? handleOk : undefined}
                 confirmLoading={confirmLoading}
                 onCancel={() => setOpen(false)}
                 footer={
@@ -78,7 +62,8 @@ const UninstallModal = ({open, setOpen, release}: {
                         <Button key="back" onClick={() => setOpen(false)}>
                             Cancel
                         </Button>,
-                        <Button key="submit" type="primary" danger loading={confirmLoading} onClick={handleOk}>
+                        <Button key="submit" type="primary" danger loading={confirmLoading} onClick={handleOk}
+                                disabled={!release}>
                             Uninstall
                         </Button>
                     ]
