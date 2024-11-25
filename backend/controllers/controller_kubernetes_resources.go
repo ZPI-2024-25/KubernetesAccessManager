@@ -20,17 +20,13 @@ func GetResourceController(w http.ResponseWriter, r *http.Request) {
 
 func ListResourcesController(w http.ResponseWriter, r *http.Request) {
 	handleResourceOperation(w, r, models.List, func(resourceType, namespace, _ string) (interface{}, *models.ModelError) {
-		resources, err := cluster.ListResources(resourceType, namespace, cluster.GetResourceInterface)
-		if err != nil {
-			return nil, err
-		}
 		if namespace != "" {
-			return resources, nil
+			return cluster.ListResources(resourceType, namespace, cluster.GetResourceInterface)
 		}
 
 		// temporary solution to disable auth if we don't have keycloak running
 		if env.GetString("KEYCLOAK_URL", "") == "" {
-			return resources, nil
+			return cluster.ListResources(resourceType, namespace, cluster.GetResourceInterface)
 		}
 		token, err2 := auth.GetJWTTokenFromHeader(r)
 		isValid, claims := auth.IsTokenValid(token)
@@ -40,6 +36,11 @@ func ListResourcesController(w http.ResponseWriter, r *http.Request) {
 				Message: "Unauthorized",
 				Code:    http.StatusUnauthorized,
 			}
+		}
+
+		resources, err := cluster.ListResources(resourceType, namespace, cluster.GetResourceInterface)
+		if err != nil {
+			return nil, err
 		}
 		filtered, errM := auth.FilterRestrictedResources(&resources, claims, resourceType)
 		if errM != nil {
