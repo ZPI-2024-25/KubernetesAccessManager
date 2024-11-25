@@ -30,17 +30,13 @@ func GetHelmReleaseHistoryController(w http.ResponseWriter, r *http.Request) {
 
 func ListHelmReleasesController(w http.ResponseWriter, r *http.Request) {
 	handleHelmOperation(w, r, models.List, func(releaseName, namespace string) (interface{}, *models.ModelError) {
-		releases, err := helm.ListHelmReleases(namespace, helm.PrepareActionConfig)
-		if err != nil {
-			return nil, err
-		}
 		if namespace != "" {
-			return releases, nil
+			return helm.ListHelmReleases(namespace, helm.PrepareActionConfig)
 		}
 
 		// temporary solution to disable auth if we don't have keycloak running
 		if env.GetString("KEYCLOAK_URL", "") == "" {
-			return releases, nil
+			return helm.ListHelmReleases(namespace, helm.PrepareActionConfig)
 		}
 		token, err2 := auth.GetJWTTokenFromHeader(r)
 		isValid, claims := auth.IsTokenValid(token)
@@ -50,6 +46,10 @@ func ListHelmReleasesController(w http.ResponseWriter, r *http.Request) {
 				Message: "Unauthorized",
 				Code:    http.StatusUnauthorized,
 			}
+		}
+		releases, err := helm.ListHelmReleases(namespace, helm.PrepareActionConfig)
+		if err != nil {
+			return nil, err
 		}
 		filtered, errM := auth.FilterRestrictedReleases(releases, claims)
 		return filtered, errM
