@@ -11,7 +11,7 @@ const AuthCallbackPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const hasHandledCallback = useRef(false);
-    const { setUserStatus } = useAuth(); // Access setUserStatus from AuthContext
+    const { setUserStatus } = useAuth();
 
 
     useEffect(() => {
@@ -56,8 +56,12 @@ const AuthCallbackPage: React.FC = () => {
                 localStorage.setItem(Constants.ACCESS_TOKEN_STR, data.access_token);
                 localStorage.setItem(Constants.REFRESH_TOKEN_STR, data.refresh_token);
                 message.success('Logged in successfully');
-                const userStatus: UserStatus = await getAuthStatus();
-                setUserStatus(userStatus);
+                getAuthStatus().then((userStatus: UserStatus) => {
+                    setUserStatus(userStatus);
+                    localStorage.setItem(Constants.USER_STATUS_STR, JSON.stringify(userStatus));
+                }).catch((error) => {
+                    console.error('Error fetching user status:', error);
+                });
                 
                 navigate('/');
             } catch (error) {

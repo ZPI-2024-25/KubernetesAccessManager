@@ -64,14 +64,14 @@ const Tab: React.FC<TabProps> = ({ resourcelabel }) => {
                             type="link"
                             icon={<EditOutlined />}
                             onClick={() => handleEdit(record)}
-                            disabled={!userStatus || !hasPermission(userStatus, record.namespace as string, resourcelabel, "u")}
+                            disabled={userStatus !== null && !hasPermission(userStatus, record.namespace as string, resourcelabel, "u")}
                         />
                         <Button
                             type="link"
                             icon={<DeleteOutlined />}
                             onClick={() => showDeleteModal(record)}
                             danger
-                            disabled={!userStatus || !hasPermission(userStatus, record.namespace as string, resourcelabel, "d")}
+                            disabled={userStatus !== null && !hasPermission(userStatus, record.namespace as string, resourcelabel, "d")}
                         />
                     </div>
                 ),

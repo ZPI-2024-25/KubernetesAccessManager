@@ -3,7 +3,7 @@ import { scheduleTokenRefresh, decodeToken } from '../../services/authService';
 import { useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import * as Constants from "../../consts/consts.ts";
-import { UserStatus } from "../../api/authStatus.ts";
+import { UserStatus, getAuthStatus } from "../../api/authStatus.ts";
 
 type AuthContextType = {
     isLoggedIn: boolean;
@@ -29,7 +29,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(!!localStorage.getItem(Constants.ACCESS_TOKEN_STR));
     const [user, setUser] = useState<{ [key: string]: any } | null>(null);
     const [userStatus, setUserStatus] = useState<UserStatus | null>(null);
-
 
     const decodeAndSetUser = (token: string | null) => {
         if (!token) {
@@ -64,8 +63,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (sessionStorage.getItem("shouldClearAuthData") === "true") {
             localStorage.removeItem(Constants.ACCESS_TOKEN_STR);
             localStorage.removeItem(Constants.REFRESH_TOKEN_STR);
+            localStorage.removeItem(Constants.USER_STATUS_STR);
             setUser(null);
             setIsLoggedIn(false);
+            setUserStatus(null);
             sessionStorage.removeItem("shouldClearAuthData");
         }
     });
@@ -76,17 +77,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.warn('Failed to refresh token, logging out...');
             localStorage.removeItem(Constants.ACCESS_TOKEN_STR);
             localStorage.removeItem(Constants.REFRESH_TOKEN_STR);
+            localStorage.removeItem(Constants.USER_STATUS_STR);
             setIsLoggedIn(false);
             setUser(null);
+            setUserStatus(null);
             message.error('Log in again');
         };
 
         const onRefreshSuccess = () => {
             const token = localStorage.getItem(Constants.ACCESS_TOKEN_STR);
             decodeAndSetUser(token);
+            getAuthStatus().then((userStatus: UserStatus) => {
+                setUserStatus(userStatus);
+                localStorage.setItem(Constants.USER_STATUS_STR, JSON.stringify(userStatus));
+            }).catch((error) => {
+                console.error('Error fetching user status:', error);
+            });
         };
 
         decodeAndSetUser(localStorage.getItem(Constants.ACCESS_TOKEN_STR));
+
+        setUserStatus(JSON.parse(localStorage.getItem(Constants.USER_STATUS_STR) || 'null'));
 
         scheduleTokenRefresh(onRefreshFailed, onRefreshSuccess, refreshTimeout);
 

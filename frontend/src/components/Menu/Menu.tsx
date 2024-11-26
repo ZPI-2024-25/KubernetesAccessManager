@@ -31,7 +31,7 @@ const LeftMenu: React.FC = () => {
                 {item.label}
                 </Link>
             ),
-            disabled: !userStatus || !hasAnyPermissionInAnyNamespace(userStatus, item.resourcelabel),
+            disabled: userStatus !== null && !hasAnyPermissionInAnyNamespace(userStatus, item.resourcelabel),
             };
         });
     };
