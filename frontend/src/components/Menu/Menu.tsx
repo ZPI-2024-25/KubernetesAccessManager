@@ -115,7 +115,7 @@ const LeftMenu: React.FC = () => {
             >
                 <Header className={styles.header}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
-                        <p style={{ paddingLeft: isLoggedIn ? '0' : `${asideWidth}px` }}>
+                        <p style={{ paddingLeft: isLoggedIn ? `${asideWidth}px` : '0'}}>
                             {currentPageTitle || 'Page name'}
                         </p>
                         {isLoggedIn ? (

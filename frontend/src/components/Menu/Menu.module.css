@@ -69,8 +69,7 @@
     position: fixed;
     top: 0;
     left: 0;
-    transition: all 0.2s;
-    z-index: 1000;
+    transition: all 0.2s
 }
 
 .header p{
