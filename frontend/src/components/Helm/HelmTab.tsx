@@ -36,7 +36,7 @@ const HelmTab = ({showRollbackModal, showUninstallModal, setCurrent}: {
 
     useEffect(() => {
         const fetchData = async () => {
-            try { //*
+            try {
                 const response: HelmReleaseList = await fetchReleases('');
 
                 const dynamicDataSource: HelmDataSourceItem[] = response.map((resource, index) => ({
@@ -44,7 +44,7 @@ const HelmTab = ({showRollbackModal, showUninstallModal, setCurrent}: {
                     ...resource,
                 }));
                 setDataSource(dynamicDataSource);
-            } catch (error) { //*
+            } catch (error) {
                 console.error('Error fetching releases:', error);
                 message.error('Failed to fetch releases.', 2);
             }
