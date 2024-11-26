@@ -1,5 +1,5 @@
 import axios from "axios";
-import { API_URL } from "../consts/apiConsts.ts";
+import * as Constants from "../consts/consts.ts";
 
 export interface UserStatus {
     permissions: {
@@ -16,7 +16,7 @@ export interface UserStatus {
 
 export async function getAuthStatus(): Promise<UserStatus> {
     try {
-        const response = await axios.get<UserStatus>(`${API_URL}/auth/status`);
+        const response = await axios.get<UserStatus>(`${Constants.API_URL_AUTH}/status`);
         console.log('GET: /auth/status');
         console.log('Response data:', response.data);
         return response.data;

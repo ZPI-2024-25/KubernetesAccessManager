@@ -19,23 +19,21 @@ const LeftMenu: React.FC = () => {
     const generateMenuItems = (menuItems: MenuItem[]): MenuItem[] => {
         return menuItems.map((item) => {
             if (item.children) {
-                return {
-                    ...item,
-                    children: generateMenuItems(item.children),
-                };
+            return {
+                ...item,
+                children: generateMenuItems(item.children),
+            };
             }
-            if (!userStatus || hasAnyPermissionInAnyNamespace(userStatus, item.resourcelabel)) {
-                return {
-                    ...item,
-                    label: (
-                        <Link to={`/${item.resourcelabel || ''}`}>
-                            {item.label}
-                        </Link>
-                    ),
-                };
-            }
-            return null;
-        }).filter(Boolean) as MenuItem[];
+            return {
+            ...item,
+            label: (
+                <Link to={`/${item.resourcelabel || ''}`}>
+                {item.label}
+                </Link>
+            ),
+            disabled: !userStatus || !hasAnyPermissionInAnyNamespace(userStatus, item.resourcelabel),
+            };
+        });
     };
 
     const getSelectedKeys = (menuItems: MenuItem[], pathname: string): string[] => {

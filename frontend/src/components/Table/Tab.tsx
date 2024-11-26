@@ -60,21 +60,19 @@ const Tab: React.FC<TabProps> = ({ resourcelabel }) => {
                 key: 'actions',
                 render: (_, record: DataSourceItem) => (
                     <div>
-                        {!userStatus || hasPermission(userStatus, record.namespace as string, resourcelabel, "u") && (
-                            <Button
-                                type="link"
-                                icon={<EditOutlined />}
-                                onClick={() => handleEdit(record)}
-                            />
-                        )}
-                        {!userStatus || hasPermission(userStatus, record.namespace as string, resourcelabel, "d") && (
-                            <Button
-                                type="link"
-                                icon={<DeleteOutlined />}
-                                onClick={() => showDeleteModal(record)}
-                                danger
-                            />
-                        )}
+                        <Button
+                            type="link"
+                            icon={<EditOutlined />}
+                            onClick={() => handleEdit(record)}
+                            disabled={!userStatus || !hasPermission(userStatus, record.namespace as string, resourcelabel, "u")}
+                        />
+                        <Button
+                            type="link"
+                            icon={<DeleteOutlined />}
+                            onClick={() => showDeleteModal(record)}
+                            danger
+                            disabled={!userStatus || !hasPermission(userStatus, record.namespace as string, resourcelabel, "d")}
+                        />
                     </div>
                 ),
                 width: 100
