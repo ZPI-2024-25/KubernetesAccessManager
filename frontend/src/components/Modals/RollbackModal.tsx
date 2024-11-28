@@ -1,35 +1,21 @@
-import {Button, InputNumber, message, Modal, Space} from 'antd';
+import {Button, InputNumber, Modal, Space} from 'antd';
 import {useEffect, useState} from "react";
 import {HelmModalProps} from "../../types";
 import {rollbackRelease} from "../../api";
 import {useNavigate} from "react-router-dom";
+import useShowMessage from "../../hooks/useShowMessage.ts";
 
 const RollbackModal = ({open, setOpen, release}: HelmModalProps) => {
     const [confirmLoading, setConfirmLoading] = useState(false);
     const [revision, setRevision] = useState(0);
-    const [messageApi, contextHolder] = message.useMessage();
 
     const navigate = useNavigate();
+    const {showMessage, contextHolder} = useShowMessage();
 
     useEffect(() => {
         const newRevision = parseInt(release?.revision || "0");
         setRevision(newRevision);
     }, [release]);
-
-    const showMessage = (
-        type: 'success' | 'error' | 'loading',
-        content: string,
-        duration = 2
-    ) => {
-        messageApi.open({
-            type,
-            content,
-            duration,
-            key: 'rollback',
-        }).then(() => {
-            navigate(0);
-        });
-    };
 
     const handleOk = async () => {
         if (!release) return;
@@ -40,15 +26,15 @@ const RollbackModal = ({open, setOpen, release}: HelmModalProps) => {
             const result = await rollbackRelease(revision, release?.name || "", release?.namespace || "");
 
             if ('chart' in result) {
-                showMessage('success', 'Rollback successful.');
+                showMessage({type: 'success', content: 'Rollback successful.', key: 'rollback', afterClose: () => navigate(0)});
             } else if ('status' in result && 'message' in result) {
-                showMessage('loading', 'Rollback will continue in the background.');
+                showMessage({type: 'loading', content: 'Rollback will continue in the background.', key: 'rollback', afterClose: () => navigate(0)});
             } else {
-                showMessage('error', 'Rollback failed.');
+                showMessage({type: 'error', content: 'Rollback failed.', key: 'rollback', afterClose: () => navigate(0)});
             }
         } catch (err) {
             console.error('Error during rollback:', err);
-            showMessage('error', 'Rollback error.');
+            showMessage({type: 'error', content: 'Rollback error.', key: 'rollback' , afterClose: () => navigate(0)});
         } finally {
             setConfirmLoading(false);
             setOpen(false);
@@ -59,7 +45,7 @@ const RollbackModal = ({open, setOpen, release}: HelmModalProps) => {
         <>
             {contextHolder}
             <Modal
-                title={release ? `Rollback ${release.name} from ${release.namespace}` : 'Rollback'}
+                title={release ? `Rollback ${release.name} in ${release.namespace}` : 'Rollback'}
                 open={open}
                 confirmLoading={confirmLoading}
                 onCancel={() => setOpen(false)}
