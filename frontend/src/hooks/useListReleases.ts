@@ -4,7 +4,7 @@ import {useEffect, useState} from "react";
 import {fetchReleases} from "../api";
 import {message} from "antd";
 
-export const useFetchReleases = () => {
+export const useListReleases = () => {
     const [dataSource, setDataSource] = useState<HelmDataSourceItem[]>([]);
 
     useEffect(() => {

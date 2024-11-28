@@ -19,7 +19,7 @@ export const useListResource = (resourcelabel: string ) => {
                 key: column,
                 width: 150,
                 render: (text: React.ReactNode, record: ResourceDataSourceItem): React.ReactNode => {
-                    if (column.toLowerCase().includes('age')) {
+                    if (column.toLowerCase() == ('age')) {
                         return formatAge(record[column] as string);
                     }
                     return text;

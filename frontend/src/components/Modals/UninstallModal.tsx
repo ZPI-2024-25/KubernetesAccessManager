@@ -5,7 +5,7 @@ import {deleteRelease} from "../../api";
 import {useNavigate} from "react-router-dom";
 import useShowMessage from "../../hooks/useShowMessage.ts";
 
-const UninstallModal = ({open, setOpen, release}: HelmModalProps) => {
+const UninstallModal = ({open, setOpen, release, removeRelease}: HelmModalProps) => {
     const [confirmLoading, setConfirmLoading] = useState(false);
 
     const navigate = useNavigate();
@@ -20,7 +20,10 @@ const UninstallModal = ({open, setOpen, release}: HelmModalProps) => {
             const result = await deleteRelease(release?.name || "", release?.namespace || "");
 
             if (result.code === 200) {
-                showMessage({type: 'success', content: 'Uninstalled release.', key: 'uninstall', afterClose: () => navigate(0)});
+                if (removeRelease) {
+                    removeRelease(release);
+                }
+                showMessage({type: 'success', content: 'Uninstalled release.', key: 'uninstall'});
             } else if (result.code === 202) {
                 showMessage({type: 'loading', content: 'Uninstall will continue in the background.', key: 'uninstall', afterClose: () => navigate(0)});
             } else {
