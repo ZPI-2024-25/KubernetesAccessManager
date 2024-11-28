@@ -1,5 +1,3 @@
-import {ReactNode} from "react";
-
 export interface HelmRelease {
     name: string;
     namespace: string;
@@ -33,16 +31,4 @@ export interface HelmReleaseHistoryList {
 
 export interface ReleaseNameRollbackBody {
     version: number;
-}
-
-export interface HelmDataSourceItem extends HelmRelease{
-    key: string | number;
-}
-
-export interface HelmColumnType {
-    title: string;
-    dataIndex: string;
-    key: string;
-    width: number;
-    render: (text: ReactNode, record: HelmDataSourceItem) => ReactNode;
 }

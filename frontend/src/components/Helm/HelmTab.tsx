@@ -1,21 +1,22 @@
-import {ReactNode, useEffect, useState} from 'react';
-import {Button, message, Table} from 'antd';
-import {fetchReleases} from '../../api';
+import {ReactNode} from 'react';
+import {Button, Table} from 'antd';
 import {DeleteOutlined,} from "@ant-design/icons";
 import {MdOutlineRestore} from "react-icons/md";
-import {HelmDataSourceItem, HelmRelease, HelmReleaseList} from "../../types";
-import {helmColumns} from "../../consts/HelmColumns.ts";
+import {HelmDataSourceItem, HelmRelease} from "../../types";
+import {useFetchReleases} from "../../hooks/useFetchReleases.ts";
 
 const HelmTab = ({showRollbackModal, showUninstallModal, setCurrent}: {
     showRollbackModal: () => void,
     showUninstallModal: () => void,
     setCurrent: (release: HelmRelease) => void
 }) => {
+    const {helmColumns, dataSource} = useFetchReleases();
+
     const columns = helmColumns.concat([{
         title: 'Actions',
         dataIndex: "",
         key: 'actions',
-        width: 150,
+        width: 60,
         render: (_: ReactNode, record: HelmDataSourceItem): ReactNode => (
             <div>
                 <Button
@@ -32,26 +33,6 @@ const HelmTab = ({showRollbackModal, showUninstallModal, setCurrent}: {
             </div>
         ),
     }]);
-    const [dataSource, setDataSource] = useState<HelmDataSourceItem[]>([]);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response: HelmReleaseList = await fetchReleases('');
-
-                const dynamicDataSource: HelmDataSourceItem[] = response.map((resource, index) => ({
-                    key: index,
-                    ...resource,
-                }));
-                setDataSource(dynamicDataSource);
-            } catch (error) {
-                console.error('Error fetching releases:', error);
-                message.error('Failed to fetch releases.', 2);
-            }
-        };
-
-        fetchData();
-    }, []);
 
     const handleRollback = (record: HelmDataSourceItem) => {
         setCurrent(record)

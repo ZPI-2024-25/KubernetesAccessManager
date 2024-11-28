@@ -6,39 +6,27 @@ export const helmColumns: HelmColumnType[] = [{
     title: 'Name',
     dataIndex: 'name',
     key: 'name',
-    width: 150,
-    render: (text: ReactNode): ReactNode => {
-        return text;
-    }
+    width: 150
 }, {
     title: 'Namespace',
     dataIndex: 'namespace',
     key: 'namespace',
-    width: 150,
-    render: (text: ReactNode): ReactNode => {
-        return text;
-    }
+    width: 100
 }, {
     title: 'Chart',
     dataIndex: 'chart',
     key: 'chart',
-    width: 150,
-    render: (text: ReactNode): ReactNode => {
-        return text;
-    }
+    width: 150
 }, {
     title: 'Status',
     dataIndex: 'status',
     key: 'status',
-    width: 150,
-    render: (text: ReactNode): ReactNode => {
-        return text;
-    }
+    width: 100
 }, {
     title: 'Updated',
     dataIndex: 'updated',
     key: 'updated',
-    width: 150,
+    width: 50,
     render: (_text: ReactNode, record: HelmDataSourceItem): ReactNode => {
         return formatAge(record.updated as string);
     },
@@ -46,17 +34,11 @@ export const helmColumns: HelmColumnType[] = [{
     title: 'Revision',
     dataIndex: 'revision',
     key: 'revision',
-    width: 150,
-    render: (text: ReactNode): ReactNode => {
-        return text;
-    }
+    width: 50
 }, {
     title: 'App Version',
     dataIndex: 'app_version',
     key: 'app_version',
-    width: 150,
-    render: (text: ReactNode): ReactNode => {
-        return text;
-    }
+    width: 50
 },
 ]

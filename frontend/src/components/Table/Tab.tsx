@@ -1,88 +1,40 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button, Table } from 'antd';
-import { ApiResponse, fetchResources } from '../../api';
-import { formatAge } from "../../functions/formatAge.ts";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom';
 import { deleteResource } from "../../api/k8s/deleteResource.ts";
 import DeleteConfirmModal from "../Modals/DeleteConfirm.tsx";
+import {ResourceDataSourceItem} from "../../types";
+import {useListResource} from "../../hooks/useListResource.ts";
 
-interface TabProps {
-    resourcelabel: string;
-}
-
-interface DataSourceItem {
-    key: string | number;
-    [key: string]: unknown;
-}
-
-interface ColumnType {
-    title: string;
-    dataIndex: string;
-    key: string;
-    width: number;
-    render: (text: React.ReactNode, record: DataSourceItem) => React.ReactNode;
-}
-
-const Tab: React.FC<TabProps> = ({ resourcelabel }) => {
-    const [columns, setColumns] = useState<ColumnType[]>([]);
-    const [dataSource, setDataSource] = useState<DataSourceItem[]>([]);
+const Tab = ({ resourcelabel } : {resourcelabel: string}) => {
     const [isModalVisible, setModalVisible] = useState(false);
-    const [selectedRecord, setSelectedRecord] = useState<DataSourceItem | null>(null);
+    const [selectedRecord, setSelectedRecord] = useState<ResourceDataSourceItem | null>(null);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        if (!resourcelabel) return;
+    const { columns, dataSource, setDataSource } = useListResource(resourcelabel);
 
-        const fetchData = async () => {
-            const response: ApiResponse = await fetchResources(resourcelabel);
-
-            const dynamicColumns: ColumnType[] = response.columns.map((column) => ({
-                title: column,
-                dataIndex: column,
-                key: column,
-                width: 150,
-                render: (text: React.ReactNode, record: DataSourceItem): React.ReactNode => {
-                    if (column.toLowerCase().includes('age')) {
-                        return formatAge(record[column] as string);
-                    }
-                    return text;
-                },
-            }));
-
-            dynamicColumns.push({
-                dataIndex: "",
-                title: 'Actions',
-                key: 'actions',
-                render: (_, record: DataSourceItem) => (
-                    <div>
-                        <Button
-                            type="link"
-                            icon={<EditOutlined />}
-                            onClick={() => handleEdit(record)}
-                        />
-                        <Button
-                            type="link"
-                            icon={<DeleteOutlined />}
-                            onClick={() => showDeleteModal(record)}
-                            danger
-                        />
-                    </div>
-                ),
-                width: 100
-            });
-
-            const dynamicDataSource: DataSourceItem[] = response.resource_list.map((resource, index) => ({
-                key: index,
-                ...resource,
-            }));
-
-            setColumns(dynamicColumns);
-            setDataSource(dynamicDataSource);
-        };
-
-        fetchData();
-    }, [resourcelabel]);
+    const columnsWithActions = columns.concat({
+        dataIndex: "",
+        title: 'Actions',
+        key: 'actions',
+        render: (_, record: ResourceDataSourceItem) => (
+            <div>
+                <Button
+                    type="link"
+                    icon={<EditOutlined />}
+                    onClick={() => handleEdit(record)}
+                />
+                <Button
+                    type="link"
+                    icon={<DeleteOutlined />}
+                    onClick={() => showDeleteModal(record)}
+                    danger
+                />
+            </div>
+        ),
+        width: 100
+    });
 
     const handleAdd = () => {
         const resourceType = resourcelabel;
@@ -91,7 +43,7 @@ const Tab: React.FC<TabProps> = ({ resourcelabel }) => {
         });
     };
 
-    const handleEdit = (record: DataSourceItem) => {
+    const handleEdit = (record: ResourceDataSourceItem) => {
         const resourceType = resourcelabel;
         const namespace = record.namespace as string;
         const resourceName = record.name as string;
@@ -106,7 +58,7 @@ const Tab: React.FC<TabProps> = ({ resourcelabel }) => {
     //     console.log('Details', record);
     // };
 
-    const showDeleteModal = (record: DataSourceItem) => {
+    const showDeleteModal = (record: ResourceDataSourceItem) => {
         setSelectedRecord(record);
         setModalVisible(true);
     };
@@ -149,7 +101,7 @@ const Tab: React.FC<TabProps> = ({ resourcelabel }) => {
             </Button>
 
             <Table
-                columns={columns.map((col, index) =>
+                columns={columnsWithActions.map((col, index) =>
                     index === columns.length - 1 ? { ...col, fixed: 'right' } : col
                 )}
                 dataSource={dataSource}
