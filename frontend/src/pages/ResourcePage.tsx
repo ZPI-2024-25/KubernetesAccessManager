@@ -7,6 +7,8 @@ import {DeleteOutlined, EditOutlined, PlusOutlined} from "@ant-design/icons";
 import {useNavigate} from "react-router-dom";
 import DeleteModal from "../components/Modals/DeleteModal.tsx";
 import Tab from "../components/Table/Tab.tsx";
+import {hasPermission} from "../functions/authorization.ts";
+import {useAuth} from "../components/AuthProvider/AuthProvider.tsx";
 
 const ResourcePage = () => {
     const {resourceType} = useParams();
@@ -15,25 +17,38 @@ const ResourcePage = () => {
 
     const navigate = useNavigate();
     const {columns, dataSource, setDataSource} = useListResource(typeof resourceType === "string" ? resourceType : "");
+    const {userStatus} = useAuth();
     const columnsWithActions = columns.concat({
         dataIndex: "",
         title: 'Actions',
         key: 'actions',
-        render: (_, record: ResourceDataSourceItem) => (
-            <div>
-                <Button
-                    type="link"
-                    icon={<EditOutlined/>}
-                    onClick={() => handleEdit(record)}
-                />
-                <Button
-                    type="link"
-                    icon={<DeleteOutlined/>}
-                    onClick={() => handleDelete(record)}
-                    danger
-                />
-            </div>
-        ),
+        render: (_, record: ResourceDataSourceItem) => {
+            const editDisabled = userStatus !== null && typeof resourceType === "string" && !hasPermission(userStatus, record.namespace as string, resourceType, "u");
+            const deleteDisabled = userStatus !== null && typeof resourceType === "string" && !hasPermission(userStatus, record.namespace as string, resourceType, "d");
+            return (
+                <div>
+                    <Button
+                        type="link"
+                        icon={<EditOutlined/>}
+                        onClick={() => {
+                            if (!editDisabled) {
+                                handleEdit(record);
+                            }}}
+                        disabled={editDisabled}
+                    />
+                    <Button
+                        type="link"
+                        icon={<DeleteOutlined/>}
+                        onClick={() => {
+                            if (!deleteDisabled) {
+                                handleDelete(record);
+                            }}}
+                        disabled={deleteDisabled}
+                        danger
+                    />
+                </div>
+                )}
+        ,
         width: 100
     });
 
