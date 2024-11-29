@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { MainPage } from "./pages/MainPage.tsx";
 import Menu from "./components/Menu/Menu.tsx";
 import EditorPage from "./pages/EditorPage.tsx";
 import ResourcePage from "./pages/ResourcePage.tsx";
@@ -22,7 +21,7 @@ function App() {
                     <Route path="/" element={<Menu />}>
                         <Route path="/login" element={<LoginPage />} />
                         <Route element={<PrivateRoute />}>
-                            <Route index element={<MainPage />} />
+                            <Route index element={<div/>} /> {/* Temporary fix until proper login page and main page is done */}
                             <Route path="Helm" element={<HelmPage />} />
                             <Route path=":resourceType" element={<ResourcePage />} />
                             <Route path="/editor" element={<EditorPage />} />
