@@ -1,12 +1,19 @@
 package cluster
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"sync"
+
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/kubernetes"
 )
 
 func getAllowedResourceTypes() map[string]struct{} {
@@ -104,4 +111,26 @@ func handleKubernetesError(err error) *models.ModelError {
 		return &models.ModelError{Code: 401, Message: fmt.Sprintf("Unauthorized: %s", err)}
 	}
 	return &models.ModelError{Code: 500, Message: fmt.Sprintf("Internal server error: %s", err)}
+}
+
+func WatchForChanges(namespace, resourceName string, mutex *sync.Mutex, updateFunc func(<-chan watch.Event, *sync.Mutex, string, string)) {
+	for {
+		config, err := GetConfig()
+		if err != nil {
+			log.Printf("Watch: Unable to get config")
+			return
+		}	
+		clientset, err := kubernetes.NewForConfig(config)
+		if err != nil {
+			log.Printf("Watch: Unable to create clientset")
+			return
+		}	
+		watcher, err := clientset.CoreV1().ConfigMaps(namespace).Watch(context.TODO(),
+			metav1.SingleObject(metav1.ObjectMeta{Name: resourceName, Namespace: namespace}))
+		if err != nil {
+			log.Printf("Error creating watcher: %v", err)
+			return
+		}
+		updateFunc(watcher.ResultChan(), mutex, namespace, resourceName)
+	}
 }
