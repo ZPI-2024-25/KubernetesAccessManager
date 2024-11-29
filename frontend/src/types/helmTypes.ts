@@ -16,7 +16,3 @@ export interface HelmReleaseHistory {
     app_version: string;
     description: string;
 }
-
-export interface ReleaseNameRollbackBody {
-    version: number;
-}
