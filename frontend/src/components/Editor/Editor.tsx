@@ -5,7 +5,7 @@ import * as monaco from "monaco-editor";
 import {useCallback, useEffect, useRef, useState} from "react";
 import LanguageSelector from "./LanguageSelector.tsx";
 import {stringifyJson, parseJson, parseYaml, stringifyYaml} from "../../functions/jsonYamlFunctions.ts";
-import {ResourceDetails} from "../../types/ResourceDetails.ts";
+import {ResourceDetails} from "../../types";
 import {useNavigate} from "react-router-dom";
 
 const Editor = ({name, text, endpoint}: {

@@ -1,6 +1,6 @@
 import axios from "axios";
 import * as Constants from "../../consts/consts.ts";
-import {ResourceDetails} from "../../types/ResourceDetails.ts";
+import {ResourceDetails} from "../../types";
 
 export async function updateResource(resourceType: string, namespace: string, resourceName: string, resourceData: unknown): Promise<ResourceDetails> {
     try {

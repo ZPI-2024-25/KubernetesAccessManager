@@ -1,23 +1,17 @@
 import axios from 'axios';
-import * as Constants from "../../consts/consts.ts";
+import {K8S_API_URL} from "../../consts/consts.ts";
+import {ResourceList} from "../../types";
+import {parseApiError} from "../../functions/apiErrorParser.ts";
 
-export interface Resource {
-    [key: string]: string;
-    name: string,
-    namespace: string,
-    age: string
-}
-
-export interface ApiResponse {
-    columns: string[];
-    resource_list: Resource[];
-}
-
-export async function fetchResources(resourceType: string, namespace?: string): Promise<ApiResponse> {
-    const namespaceQuery = namespace ? `?namespace=${namespace}` : '';
-
-    const response = await axios.get<ApiResponse>(`${Constants.K8S_API_URL}/${resourceType}${namespaceQuery}`);
-    console.log(`GET: ${Constants.K8S_API_URL}/${resourceType}${namespaceQuery}`)
-    console.log(response.data);
-    return response.data;
+export async function fetchResources(resourceType: string, namespace?: string): Promise<ResourceList> {
+    try {
+        const response = await axios.get<ResourceList>(`${K8S_API_URL}/${resourceType}?namespace=${namespace}`);
+        console.log(`GET: ${K8S_API_URL}/${resourceType}?namespace=${namespace}`)
+        console.log(response.data);
+        return response.data;
+    } catch (error){
+        const errorText = parseApiError(error);
+        console.error(errorText);
+        throw new Error(errorText);
+    }
 }

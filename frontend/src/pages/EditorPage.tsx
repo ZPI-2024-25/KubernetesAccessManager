@@ -4,7 +4,7 @@ import { message } from "antd";
 import Editor from "../components/Editor/Editor.tsx";
 import {updateResource} from "../api/k8s/updateResource.ts";
 import {getResource} from "../api/k8s/getResource.ts";
-import {ResourceDetails} from "../types/ResourceDetails.ts";
+import {ResourceDetails} from "../types";
 
 const EditorPage = () => {
     const location = useLocation();

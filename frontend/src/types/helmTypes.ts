@@ -8,14 +8,6 @@ export interface HelmRelease {
     app_version: string;
 }
 
-export type HelmReleaseList = HelmRelease[];
-
-export interface Status {
-    code: number;
-    message: string;
-    status: string;
-}
-
 export interface HelmReleaseHistory {
     revision: number;
     updated: string;
@@ -23,10 +15,6 @@ export interface HelmReleaseHistory {
     chart: string;
     app_version: string;
     description: string;
-}
-
-export interface HelmReleaseHistoryList {
-    history_list: HelmReleaseHistory[];
 }
 
 export interface ReleaseNameRollbackBody {

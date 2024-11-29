@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { Button, Layout, Menu } from 'antd';
+import React, {useState} from 'react';
+import {Button, Layout, Menu} from 'antd';
 import styles from './Menu.module.css';
-import { items } from '../../consts/MenuItem';
-import { MenuItem } from '../../types';
-import { Link, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from '../AuthProvider/AuthProvider';
+import {items} from '../../consts/MenuItem';
+import {MenuItem} from '../../types';
+import {Link, Outlet, useLocation} from "react-router-dom";
+import {useAuth} from '../AuthProvider/AuthProvider';
 
 
-const { Header, Content, Sider } = Layout;
+const {Header, Content, Sider} = Layout;
 
 const LeftMenu: React.FC = () => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [asideWidth, setAsideWidth] = useState<number>(270);
-    const { user, isLoggedIn, handleLogin, handleLogout } = useAuth();
+    const {user, isLoggedIn, handleLogin, handleLogout} = useAuth();
     const location = useLocation();
 
     const generateMenuItems = (menuItems: MenuItem[]): MenuItem[] => {
