@@ -5,3 +5,5 @@ export * from './helm/getRelease.ts'
 export * from './helm/uninstallRelease.ts'
 export * from './helm/getReleaseHistory.ts'
 export * from './helm/rollbackRelease.ts'
+
+export * from './auth/authStatus.ts'
