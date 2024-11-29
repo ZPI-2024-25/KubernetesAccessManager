@@ -2,8 +2,8 @@ import  { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { message } from "antd";
 import Editor from "../components/Editor/Editor.tsx";
-import { updateResource } from "../api/updateResource.ts";
-import {getResource} from "../api/getResource.ts";
+import {updateResource} from "../api/k8s/updateResource.ts";
+import {getResource} from "../api/k8s/getResource.ts";
 import {ResourceDetails} from "../types/ResourceDetails.ts";
 
 const EditorPage = () => {
