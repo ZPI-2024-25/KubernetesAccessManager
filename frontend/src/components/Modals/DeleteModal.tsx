@@ -21,8 +21,23 @@ const DeleteConfirmModal = ({open, setOpen, resourceType, resource, removeResour
                 showMessage({type: 'error', content: 'Delete failed.', key: 'delete'});
             }
         } catch (err) {
-            console.error('Error during deleting:', err);
-            showMessage({type: 'error', content: 'Delete error.', key: 'delete'});
+            if (err instanceof Error) {
+                console.error('Delete error:', err);
+                showMessage({
+                    type: 'error',
+                    content: err.message,
+                    key: 'delete',
+                    duration: 4,
+                });
+            } else {
+                console.error('An unexpected error occurred: ', err);
+                showMessage({
+                    type: 'error',
+                    content: 'Unexpected error',
+                    key: 'delete',
+                    duration: 4,
+                });
+            }
         } finally {
             setOpen(false);
         }
