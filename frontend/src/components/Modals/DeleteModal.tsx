@@ -48,9 +48,17 @@ const DeleteConfirmModal = ({open, setOpen, resourceType, resource, removeResour
                     ]
                 }
             >
-                <p>Do you really want to delete the
-                    resource <strong>{resource?.name as string} {resource?.namespace ? `from <strong>{resource.namespace}</strong>` : ''}</strong>?
+                <p>
+                    Do you really want to delete the resource
+                    <strong>{` ${resource?.name as string}`}</strong>
+                    {resource?.namespace ? (
+                        <>
+                            {' '}
+                            from <strong>{resource.namespace as string}</strong>
+                        </>
+                    ) : null}?
                 </p>
+
             </Modal>
         </>
 
