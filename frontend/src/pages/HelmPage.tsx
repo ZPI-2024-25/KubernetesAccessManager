@@ -13,7 +13,7 @@ const HelmPage = () => {
     const [openUninstallModal, setOpenUninstallModal] = useState(false);
     const [currentRelease, setCurrentRelease] = useState<HelmDataSourceItem>();
 
-    const {helmColumns, dataSource, setDataSource} = useListReleases();
+    const {helmColumns, dataSource, setDataSource} = useListReleases('');
     const columns = helmColumns.concat({
         title: 'Actions',
         dataIndex: "",

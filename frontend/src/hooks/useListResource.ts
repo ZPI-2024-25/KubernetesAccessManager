@@ -4,16 +4,17 @@ import {fetchResources} from "../api";
 import {formatAge} from "../functions/formatAge.ts";
 import {message} from "antd";
 
-export const useListResource = (resourcelabel: string ) => {
+export const useListResource = (resourcelabel: string, namespace: string ) => {
     const [columns, setColumns] = useState<ResourceColumnType[]>([]);
     const [dataSource, setDataSource] = useState<ResourceDataSourceItem[]>([]);
+    const [wasSuccessful, setWasSuccessful] = useState(false);
 
     useEffect(() => {
         if (!resourcelabel) return;
 
         const fetchData = async () => {
             try {
-                const response = await fetchResources(resourcelabel);
+                const response = await fetchResources(resourcelabel, namespace);
 
                 const dynamicColumns = response.columns.map((column) => ({
                     title: column,
@@ -35,6 +36,8 @@ export const useListResource = (resourcelabel: string ) => {
                         ...resource,
                     }))
                 );
+
+                setWasSuccessful(true);
             } catch (error) {
                 if (error instanceof Error) {
                     console.error('Error fetching resources:', error);
@@ -42,11 +45,12 @@ export const useListResource = (resourcelabel: string ) => {
                 } else {
                     message.error('An unexpected error occurred.');
                 }
+                setWasSuccessful(false);
             }
         };
 
         fetchData();
-    }, [resourcelabel]);
+    }, [resourcelabel, namespace]);
 
-    return { columns, dataSource, setDataSource };
+    return { columns, dataSource, setDataSource, wasSuccessful };
 };

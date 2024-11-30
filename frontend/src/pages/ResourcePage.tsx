@@ -14,7 +14,7 @@ const ResourcePage = () => {
     const [selectedRecord, setSelectedRecord] = useState<ResourceDataSourceItem>();
 
     const navigate = useNavigate();
-    const {columns, dataSource, setDataSource} = useListResource(typeof resourceType === "string" ? resourceType : "");
+    const {columns, dataSource, setDataSource, wasSuccessful} = useListResource(typeof resourceType === "string" ? resourceType : "", "");
     const columnsWithActions = columns.concat({
         dataIndex: "",
         title: 'Actions',
@@ -80,7 +80,7 @@ const ResourcePage = () => {
                 >
                     Add
                 </Button>
-                {resourceType ? <Tab columns={columnsWithActions} dataSource={dataSource}/> : "Resource not found"}
+                {wasSuccessful ? <Tab columns={columnsWithActions} dataSource={dataSource}/> : <Tab columns={[]} dataSource={[]} />}
             </div>
             <DeleteModal open={openDeleteModal} setOpen={setOpenDeleteModal}
                          resourceType={typeof resourceType === "string" ? resourceType : ""}
