@@ -1,19 +1,21 @@
 import axios from "axios";
 import * as Constants from "../../consts/consts.ts";
-import {stringifyYaml} from "../../functions/jsonYamlFunctions.ts";
+import {ResourceDetails} from "../../types";
+import {parseApiError} from "../../functions/apiErrorParser.ts";
 
-export const getResource = async (resourceType: string, resourceName: string, namespace: string) => {
+export async function getResource(resourceType: string, resourceName: string, namespace: string) : Promise<ResourceDetails> {
     try {
-        const response = await axios.get(`${Constants.K8S_API_URL}/${resourceType}/${resourceName}?namespace=${namespace}`, {
+        const response = await axios.get<{resourceDetails: ResourceDetails}>(`${Constants.K8S_API_URL}/${resourceType}/${resourceName}?namespace=${namespace}`, {
             headers: {
                 accept: 'application/json',
             },
         });
 
         console.log("Fetched Resource:", response.data);
-        return stringifyYaml(response.data.resourceDetails);
+        return response.data.resourceDetails;
     } catch (error) {
-        console.error("Error fetching resource details:", error);
-        throw error;
+        const errorText = parseApiError(error);
+        console.error(errorText);
+        throw new Error(errorText);
     }
 };

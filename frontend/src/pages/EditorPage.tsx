@@ -5,6 +5,7 @@ import Editor from "../components/Editor/Editor.tsx";
 import {updateResource} from "../api/k8s/updateResource.ts";
 import {getResource} from "../api/k8s/getResource.ts";
 import {ResourceDetails} from "../types";
+import {stringifyYaml} from "../functions/jsonYamlFunctions.ts";
 
 const EditorPage = () => {
     const location = useLocation();
@@ -20,10 +21,14 @@ const EditorPage = () => {
         const fetchData = async () => {
             try {
                 const data = await getResource(resourceType, resourceName, namespace);
-                setResourceData(data);
+                setResourceData(stringifyYaml(data));
             } catch (error) {
-                console.error("Failed to fetch resource details:", error);
-                message.error("Failed to load resource data");
+                if (error instanceof Error) {
+                    console.error('Error getting resource:', error);
+                    message.error(error.message, 4);
+                } else {
+                    message.error('An unexpected error occurred.');
+                }
             }
         };
 
