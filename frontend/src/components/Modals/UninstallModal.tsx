@@ -30,8 +30,25 @@ const UninstallModal = ({open, setOpen, release, removeRelease}: HelmModalProps)
                 showMessage({type: 'error', content: 'Uninstall failed.', key: 'uninstall', afterClose: () => navigate(0)});
             }
         } catch (err) {
-            console.error('Error during uninstalling:', err);
-            showMessage({type: 'error', content: 'Uninstall error.', key: 'uninstall' , afterClose: () => navigate(0)});
+            if (err instanceof Error) {
+                console.error('Error during uninstalling:', err);
+                showMessage({
+                    type: 'error',
+                    content: err.message,
+                    key: 'uninstall',
+                    duration: 4,
+                    afterClose: () => navigate(0)
+                });
+            } else {
+                console.error('An unexpected error occurred: ', err);
+                showMessage({
+                    type: 'error',
+                    content: 'Unexpected error',
+                    key: 'uninstall',
+                    duration: 4,
+                    afterClose: () => navigate(0)
+                });
+            }
         } finally {
             setConfirmLoading(false);
             setOpen(false);

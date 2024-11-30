@@ -6,6 +6,10 @@ export const parseApiError = (error: unknown) => {
         if (error.response) {
             const apiError = error.response.data as ApiError;
 
+            if (apiError.code === 404) {
+                return apiError.message.split(':')[0];
+            }
+
             return apiError.message;
         } else if (error.request) {
             return 'No response from server.';

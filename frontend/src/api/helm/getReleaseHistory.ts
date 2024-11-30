@@ -1,6 +1,7 @@
 import axios from 'axios';
 import {HELM_API_URL} from "../../consts/consts.ts";
 import {HelmReleaseHistory} from "../../types";
+import {parseApiError} from "../../functions/apiErrorParser.ts";
 
 export async function fetchReleaseHistory(releaseName: string, namespace: string): Promise<HelmReleaseHistory[]> {
     try {
@@ -11,7 +12,8 @@ export async function fetchReleaseHistory(releaseName: string, namespace: string
         console.log(response.data);
         return response.data;
     } catch (error) {
-        console.error('Error fetching release history:', error);
-        throw error;
+        const errorText = parseApiError(error);
+        console.error(errorText);
+        throw new Error(errorText);
     }
 }

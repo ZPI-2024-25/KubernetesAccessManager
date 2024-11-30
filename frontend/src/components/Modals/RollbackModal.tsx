@@ -1,4 +1,4 @@
-import {Button, InputNumber, message, Modal, Space} from 'antd';
+import {Button, InputNumber, Modal, Space} from 'antd';
 import {useEffect, useState} from "react";
 import {HelmModalProps} from "../../types";
 import {rollbackRelease} from "../../api";
@@ -58,7 +58,7 @@ const RollbackModal = ({open, setOpen, release}: HelmModalProps) => {
                     afterClose: () => navigate(0)
                 });
             } else {
-                message.error('An unexpected error occurred.');
+                console.error('An unexpected error occurred:', err);
                 showMessage({
                     type: 'error',
                     content: 'Unexpected error',
