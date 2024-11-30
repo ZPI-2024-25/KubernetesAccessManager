@@ -36,7 +36,7 @@ const DeleteConfirmModal = ({open, setOpen, resourceType, resource, removeResour
                 ${resource.name} from
                 ${resource.namespace}` : 'Delete'}
                 open={open}
-                onOk={handleOk}
+                onCancel={() => setOpen(false)}
                 footer={
                     [
                         <Button key="back" onClick={() => setOpen(false)}>
