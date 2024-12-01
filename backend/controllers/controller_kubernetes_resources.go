@@ -25,7 +25,7 @@ func ListResourcesController(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// temporary solution to disable auth if we don't have keycloak running
-		if env.GetString("KEYCLOAK_URL", "") == "" {
+		if env.GetString("VITE_KEYCLOAK_URL", "") == "" {
 			return cluster.ListResources(resourceType, namespace, cluster.GetResourceInterface)
 		}
 		token, err2 := auth.GetJWTTokenFromHeader(r)
@@ -121,7 +121,7 @@ func handleResourceOperation(w http.ResponseWriter, r *http.Request, opType mode
 
 func authenticateAndAuthorize(r *http.Request, operation models.Operation) *models.ModelError {
 	// temporary solution to disable auth if we don't have keycloak running
-	if env.GetString("KEYCLOAK_URL", "") == "" {
+	if env.GetString("VITE_KEYCLOAK_URL", "") == "" {
 		return nil
 	}
 	token, err := auth.GetJWTTokenFromHeader(r)

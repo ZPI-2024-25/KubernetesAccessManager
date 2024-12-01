@@ -33,7 +33,7 @@ const AuthCallbackPage: React.FC = () => {
                         grant_type: 'authorization_code',
                         code: code,
                         redirect_uri: `${window.location.origin}/auth/callback`,
-                        client_id: `${Constants.KEYCLOAK_CLIENT_ID}`,
+                        client_id: `${Constants.KEYCLOAK_CLIENT}`,
                     }),
                     {
                         headers: {
