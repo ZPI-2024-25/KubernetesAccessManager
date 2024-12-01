@@ -31,7 +31,7 @@ export const items: MenuItem[] = [
         getItem('Stateful Sets', '05', 'StatefulSet'),
         getItem('Replica Sets', '06', 'ReplicaSet'),
         getItem('Jobs', '07', 'Job'),
-        getItem('Cron Jobs', '08', 'CronJobs'),
+        getItem('Cron Jobs', '08', 'CronJob'),
     ]),
     getItem('Config', 'sub2', 'Configs', <IoDocumentText/>, [
         getItem('Config Maps', '09', 'ConfigMap'),
