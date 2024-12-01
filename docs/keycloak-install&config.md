@@ -45,6 +45,7 @@ docker run -d -p 4000:8080 \
 ## 3. Tworzenie Realm
 1. Klikamy **Keycloak Master** w lewym górnym rogu.
 2. Wybieramy opcję **Create realm**.
+
 ![Tworzenie Realm](images/keycloak-instruction-2.png)
 
 ---
@@ -58,12 +59,16 @@ docker run -d -p 4000:8080 \
 ## 5. Tworzenie klienta
 1. Przechodzimy do **Manage → Clients**.
 2. Klikamy **Create client**.
+
    ![Konfiguracja Realm](images/keycloak-instruction-3.png)
 3. Podajemy nazwę klienta, np. `ZPI-client` i klikamy **Next**.
+
    ![Tworzenie klienta](images/keycloak-instruction-4.png)
 4. Pozostawiamy wartości domyślne i klikamy **Next**.
+
    ![Tworzenie klienta](images/keycloak-instruction-5.png)
 5. W sekcji **Valid redirect URIs**, **Valid post logout redirect URIs** oraz **Web origins** wpisujemy `*` (dla celów testowych) i klikamy **Save**.
+
    ![Tworzenie klienta](images/keycloak-instruction-6.png)
 
 
@@ -72,10 +77,13 @@ docker run -d -p 4000:8080 \
 ## 6. Tworzenie użytkownika
 1. Przechodzimy do **Manage → Users**.
 2. Klikamy **Create new user**.
+
    ![Tworzenie klienta](images/keycloak-instruction-7.png)
 3. Podajemy nazwę użytkownika, np. `zpi-user`. Opcjonalnie można dodać adres e-mail, imię i nazwisko.
+
    ![Tworzenie użytkownika](images/keycloak-instruction-8.png)
 4. Przechodzimy do zakładki **Credentials**, klikamy **Set password**.
+
    ![Tworzenie klienta](images/keycloak-instruction-9.png)
 5. Ustawiamy hasło i, jeżeli nie chcemy wymuszać zmiany hasła przy pierwszym logowaniu, odznaczamy przełącznik **Temporary**.
 
@@ -85,13 +93,16 @@ docker run -d -p 4000:8080 \
 ### 7.1 Role Realm
 1. Przechodzimy do **Manage → Realm roles**.
 2. Klikamy **Create role**.
+
    ![Tworzenie klienta](images/keycloak-instruction-10.png)
 3. Podajemy nazwę roli, np. `zpi-role` i klikamy **Save**.
 
 ### 7.2 Role Klienta
 1. Przechodzimy do **Manage → Clients → [nazwa klienta] → Roles**.
+
    ![Tworzenie klienta](images/keycloak-instruction-11.png)
 2. Klikamy **Create role**.
+
    ![Tworzenie klienta](images/keycloak-instruction-12.png)
 3. Podajemy nazwę roli, np. `zpi-role` i klikamy **Save**.
 
@@ -101,12 +112,16 @@ docker run -d -p 4000:8080 \
 
 ## 8. Przypisywanie ról użytkownikowi
 1. Przechodzimy do **Manage → Users → [nazwa użytkownika]**.
+
    ![Tworzenie klienta](images/keycloak-instruction-13.png)
 2. Wybieramy zakładkę **Role mapping** i klikamy **Assign role**.
+
    ![Tworzenie klienta](images/keycloak-instruction-14.png)
     - Jeżeli rola jest realmowa, wybieramy **Filter by realm roles** i przypisujemy odpowiednią rolę.
+
       ![Tworzenie klienta](images/keycloak-instruction-15.png)
     - Jeżeli rola jest kliencka, wybieramy **Filter by clients**, wybieramy klienta i przypisujemy rolę.
+
    ![Tworzenie klienta](images/keycloak-instruction-16.png)
 
 > Można użyć pola wyszukiwania obok filtrów, aby szybko znaleźć rolę.
@@ -197,12 +212,16 @@ docker run -d -p 4000:8080 \
 ## 5. Creating a Client
 1. Navigate to **Manage → Clients**.
 2. Click **Create client**.
+
    ![Configuring Realm](images/keycloak-instruction-3.png)
 3. Enter a client name, e.g., `ZPI-client`, and click **Next**.
+
    ![Creating a Client](images/keycloak-instruction-4.png)
 4. Leave the default values and click **Next**.
+
    ![Creating a Client](images/keycloak-instruction-5.png)
 5. In the **Valid redirect URIs**, **Valid post logout redirect URIs**, and **Web origins** sections, enter `*` (for testing purposes) and click **Save**.
+
    ![Creating a Client](images/keycloak-instruction-6.png)
 
 ---
@@ -210,10 +229,13 @@ docker run -d -p 4000:8080 \
 ## 6. Creating a User
 1. Navigate to **Manage → Users**.
 2. Click **Create new user**.
+
    ![Creating a User](images/keycloak-instruction-7.png)
 3. Enter the username, e.g., `zpi-user`. Optionally, add an email, first name, and last name.
+
    ![Creating a User](images/keycloak-instruction-8.png)
 4. Go to the **Credentials** tab, click **Set password**.
+
    ![Creating a User](images/keycloak-instruction-9.png)
 5. Set a password. To avoid forcing a password change on the first login, uncheck the **Temporary** switch.
 
@@ -223,13 +245,16 @@ docker run -d -p 4000:8080 \
 ### 7.1 Realm Roles
 1. Navigate to **Manage → Realm roles**.
 2. Click **Create role**.
+
    ![Creating a Role](images/keycloak-instruction-10.png)
 3. Enter the role name, e.g., `zpi-role`, and click **Save**.
 
 ### 7.2 Client Roles
 1. Navigate to **Manage → Clients → [client name] → Roles**.
+
    ![Creating a Role](images/keycloak-instruction-11.png)
 2. Click **Create role**.
+
    ![Creating a Role](images/keycloak-instruction-12.png)
 3. Enter the role name, e.g., `zpi-role`, and click **Save**.
 
@@ -239,12 +264,16 @@ docker run -d -p 4000:8080 \
 
 ## 8. Assigning Roles to Users
 1. Navigate to **Manage → Users → [username]**.
+
    ![Assigning Roles](images/keycloak-instruction-13.png)
 2. Go to the **Role mapping** tab and click **Assign role**.
+
    ![Assigning Roles](images/keycloak-instruction-14.png)
     - For Realm roles, select **Filter by realm roles** and assign the appropriate role.
+
       ![Assigning Roles](images/keycloak-instruction-15.png)
     - For Client roles, select **Filter by clients**, choose the client, and assign the role.
+
       ![Assigning Roles](images/keycloak-instruction-16.png)
 
 > Use the search bar next to the filters to quickly find the role.
@@ -336,12 +365,16 @@ docker run -d -p 4000:8080 \
 ## 5. Создание клиента
 1. Перейдите в **Manage → Clients**.
 2. Нажмите **Create client**.
+
    ![Создание клиента](images/keycloak-instruction-3.png)
 3. Укажите имя клиента, например, `ZPI-client`, и нажмите **Next**.
+
    ![Создание клиента](images/keycloak-instruction-4.png)
 4. Оставьте значения по умолчанию и нажмите **Next**.
+
    ![Создание клиента](images/keycloak-instruction-5.png)
 5. В полях **Valid redirect URIs**, **Valid post logout redirect URIs** и **Web origins** укажите `*` (для тестовых целей) и нажмите **Save**.
+
    ![Создание клиента](images/keycloak-instruction-6.png)
 
 ---
@@ -349,10 +382,13 @@ docker run -d -p 4000:8080 \
 ## 6. Создание пользователя
 1. Перейдите в **Manage → Users**.
 2. Нажмите **Create new user**.
+
    ![Создание пользователя](images/keycloak-instruction-7.png)
 3. Укажите имя пользователя, например, `zpi-user`. При необходимости добавьте email, имя и фамилию.
+
    ![Создание пользователя](images/keycloak-instruction-8.png)
 4. Перейдите на вкладку **Credentials**, нажмите **Set password**.
+
    ![Создание пользователя](images/keycloak-instruction-9.png)
 5. Установите пароль и, если не хотите требовать смену пароля при первом входе, снимите галочку **Temporary**.
 
@@ -362,13 +398,16 @@ docker run -d -p 4000:8080 \
 ### 7.1 Роли Realm
 1. Перейдите в **Manage → Realm roles**.
 2. Нажмите **Create role**.
+
    ![Создание роли](images/keycloak-instruction-10.png)
 3. Укажите имя роли, например, `zpi-role`, и нажмите **Save**.
 
 ### 7.2 Роли клиента
 1. Перейдите в **Manage → Clients → [имя клиента] → Roles**.
+
    ![Создание роли клиента](images/keycloak-instruction-11.png)
 2. Нажмите **Create role**.
+
    ![Создание роли клиента](images/keycloak-instruction-12.png)
 3. Укажите имя роли, например, `zpi-role`, и нажмите **Save**.
 
@@ -378,12 +417,16 @@ docker run -d -p 4000:8080 \
 
 ## 8. Назначение ролей пользователю
 1. Перейдите в **Manage → Users → [имя пользователя]**.
+
    ![Назначение ролей](images/keycloak-instruction-13.png)
 2. Выберите вкладку **Role mapping** и нажмите **Assign role**.
+
    ![Назначение ролей](images/keycloak-instruction-14.png)
     - Если роль является realm-ролью, выберите **Filter by realm roles** и назначьте соответствующую роль.
+
       ![Назначение ролей](images/keycloak-instruction-15.png)
     - Если роль является клиентской, выберите **Filter by clients**, выберите клиента и назначьте роль.
+
       ![Назначение ролей](images/keycloak-instruction-16.png)
 
 > Используйте поле поиска рядом с фильтрами для быстрого нахождения роли.
