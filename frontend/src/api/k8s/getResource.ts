@@ -18,4 +18,4 @@ export async function getResource(resourceType: string, resourceName: string, na
         console.error(errorText);
         throw new Error(errorText);
     }
-};
+}

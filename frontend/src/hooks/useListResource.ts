@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {ReactNode, useEffect, useState} from "react";
 import {ResourceColumnType, ResourceDataSourceItem} from "../types";
 import {fetchResources} from "../api";
 import {formatAge} from "../functions/formatAge.ts";
@@ -21,7 +21,7 @@ export const useListResource = (resourcelabel: string, namespace: string ) => {
                     dataIndex: column,
                     key: column,
                     width: 150,
-                    render: (text: React.ReactNode, record: ResourceDataSourceItem): React.ReactNode => {
+                    render: (text: ReactNode, record: ResourceDataSourceItem): ReactNode => {
                         if (column.toLowerCase() == ('age')) {
                             return formatAge(record[column] as string);
                         }
