@@ -142,7 +142,7 @@ VITE_KEYCLOAK_CLIENTNAME=ZPI-client
 VITE_KEYCLOAK_REALMNAME=ZPI-realm
 ```
 
-Korzystając z plików `.env` trzeba dodać je dodać w dwóch różnych miejscach zarówno dla backendu jak i frontendu:
+Korzystając z plików `.env` trzeba dodać je w dwóch różnych miejscach zarówno dla backendu jak i frontendu:
 ##### Backend (`KuberbetesUserManager/backend/.env`)
 ##### Frontend (`KuberbetesUserManager/frontend/.env`)
 
