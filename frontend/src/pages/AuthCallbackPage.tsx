@@ -51,7 +51,6 @@ const AuthCallbackPage: React.FC = () => {
                 localStorage.setItem(Constants.ACCESS_TOKEN_STR, data.access_token);
                 localStorage.setItem(Constants.REFRESH_TOKEN_STR, data.refresh_token);
                 localStorage.setItem(Constants.ID_TOKEN_STR, data.id_token);
-                message.success('Logged in successfully');
                 navigate('/');
             } catch (error) {
                 console.error('Error during login:', error);

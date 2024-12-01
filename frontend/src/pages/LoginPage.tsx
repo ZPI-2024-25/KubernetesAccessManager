@@ -21,11 +21,8 @@ export const LoginPage = () => {
             <h1>K8s Access Manager</h1>
 
             <div className="login-card">
-                <h1 className="login-card-header">Login</h1>
-
                 <div className="login-card-content">
-                    <p>This application uses OIDC for authentication.</p>
-                    <p>Click the button below to login.</p>
+                    <p>Login with your authentication provider.</p>
 
                     <Button type="link" className="login-button" onClick={handleLogin}>
                         Login

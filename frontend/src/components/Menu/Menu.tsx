@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { Button, Layout, Menu } from 'antd';
+import React, {useState} from 'react';
+import {Button, Layout, Menu} from 'antd';
 import styles from './Menu.module.css';
-import { items } from '../../consts/MenuItem';
-import { MenuItem } from '../../types';
-import { Link, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from '../AuthProvider/AuthProvider';
+import {items} from '../../consts/MenuItem';
+import {MenuItem} from '../../types';
+import {Link, Outlet, useLocation} from "react-router-dom";
+import {useAuth} from '../AuthProvider/AuthProvider';
 
 
-const { Header, Content, Sider } = Layout;
+const {Header, Content, Sider} = Layout;
 
 const LeftMenu: React.FC = () => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [asideWidth, setAsideWidth] = useState<number>(270);
-    const { user, isLoggedIn, handleLogin, handleLogout } = useAuth();
+    const {user, isLoggedIn, handleLogout} = useAuth();
     const location = useLocation();
 
     const generateMenuItems = (menuItems: MenuItem[]): MenuItem[] => {
@@ -87,7 +87,7 @@ const LeftMenu: React.FC = () => {
                     setAsideWidth(asideWidth === 80 ? 270 : 80);
                 }}
                 width={`${asideWidth}px`}
-                style={{ display: !isLoggedIn ? 'none' : 'block' }}
+                style={{display: !isLoggedIn ? 'none' : 'block'}}
             >
                 <div className={styles.logo}>
                     <span
@@ -106,27 +106,28 @@ const LeftMenu: React.FC = () => {
                     selectedKeys={selectedKeys}
                     mode="inline"
                     items={menuItems}
-                    style={{ paddingBottom: 50 }}
+                    style={{paddingBottom: 50}}
                 />
             </Sider>
             <Layout
                 className={styles.contentLayout}
-                style={{ marginLeft: !isLoggedIn ? '0' : `${asideWidth}px` }}
+                style={{marginLeft: !isLoggedIn ? '0' : `${asideWidth}px`}}
             >
                 <Header className={styles.header}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
-                        <p style={{ paddingLeft: !isLoggedIn ? '0' : `${asideWidth}px` }}>
-                            {currentPageTitle || 'Page name'}
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        height: '100%'
+                    }}>
+                        <p style={{paddingLeft: !isLoggedIn ? '0' : `${asideWidth}px`}}>
+                            {currentPageTitle || ''}
                         </p>
-                        {isLoggedIn ? (
-                            <Button type="primary" onClick={handleLogout}>
-                                Log out
-                            </Button>
-                        ) : (
-                            <Button type="primary" onClick={handleLogin}>
-                                Log in
-                            </Button>
-                        )}
+
+                        <Button type="primary" onClick={handleLogout}>
+                            Log out
+                        </Button>
+
                     </div>
                 </Header>
                 <Content
@@ -137,7 +138,7 @@ const LeftMenu: React.FC = () => {
                         height: 'auto',
                     }}
                 >
-                    <Outlet />
+                    <Outlet/>
                 </Content>
                 {/*<Footer className={styles.footer}>*/}
                 {/*    ZPI Kubernetes Access Manager ©{new Date().getFullYear()} Created by SDVM*/}

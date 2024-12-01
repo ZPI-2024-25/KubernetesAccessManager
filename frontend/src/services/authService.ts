@@ -1,11 +1,12 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import * as Constants from "../consts/consts.ts";
+import {MutableRefObject} from "react";
 
 export const scheduleTokenRefresh = (
     onRefreshFailed: () => void,
     onRefreshSuccess: () => void,
-    refreshTimeoutRef: React.MutableRefObject<NodeJS.Timeout | null>
+    refreshTimeoutRef: MutableRefObject<NodeJS.Timeout | null>
 ) => {
     const accessToken = localStorage.getItem(Constants.ACCESS_TOKEN_STR);
     if (!accessToken) return;
