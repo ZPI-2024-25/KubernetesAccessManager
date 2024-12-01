@@ -1,47 +1,93 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+:root {
+    --primary-color: #1890ff;
+    --background-color: #001529;
+    --card-background: #f0f2f5;
+    --text-color: #ffffff;
+    --text-color-dark: #333333;
+    --button-hover: #40a9ff;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--background-color);
+}
+
 .login-page {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100vh;
-    font-family: Arial, sans-serif;
-    background-color: #f8f9fa;
-    color: #333;
 }
 
 .login-card {
-    width: 300px;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    background-color: #fff;
+    width: 350px;
+    padding: 40px 30px;
+    border-radius: 10px;
+    background-color: var(--card-background);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .login-card-header {
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-size: 48px;
-    color: #333;
+    margin: 0 0 30px;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-color-dark);
     text-align: center;
 }
 
 .login-card-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-.login-card-content p {
-    margin-top: 0;
-    margin-bottom: 5px;
-    font-size: 18px;
-    color: #333;
     text-align: center;
 }
 
+.login-card-content p {
+    margin: 0 0 15px;
+    font-size: 16px;
+    color: var(--text-color-dark);
+}
+
 .login-button {
-    margin-top: 10px;
+    width: 40%;
+    padding: 12px 0;
     font-size: 20px;
+}
+
+@media (max-width: 480px) {
+    .login-card {
+        width: 90%;
+        padding: 30px 20px;
+    }
+
+    .login-card-header {
+        font-size: 28px;
+    }
+
+    .login-button {
+        font-size: 16px;
+    }
+}
+
+.custom-shape-divider-bottom-1733088529 {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+    transform: rotate(180deg);
+}
+
+.custom-shape-divider-bottom-1733088529 svg {
+    position: relative;
+    display: block;
+    width: calc(100% + 1.3px);
+    height: 99px;
+}
+
+.custom-shape-divider-bottom-1733088529 .shape-fill {
+    fill: #4A90E2;
 }
