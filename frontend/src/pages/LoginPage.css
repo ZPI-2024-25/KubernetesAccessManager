@@ -1,4 +1,3 @@
-/* Import Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
 :root {
@@ -17,11 +16,24 @@ body {
     background-color: var(--background-color);
 }
 
+h1 {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-top: 0;
+}
+
+img {
+    height: 200px;
+}
+
 .login-page {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    height: calc(100vh - var(124px));
+    padding-bottom: 124px;
 }
 
 .login-card {
@@ -56,23 +68,8 @@ body {
     font-size: 20px;
 }
 
-@media (max-width: 480px) {
-    .login-card {
-        width: 90%;
-        padding: 30px 20px;
-    }
-
-    .login-card-header {
-        font-size: 28px;
-    }
-
-    .login-button {
-        font-size: 16px;
-    }
-}
-
-.custom-shape-divider-bottom-1733088529 {
-    position: absolute;
+.wave {
+    position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
@@ -81,13 +78,13 @@ body {
     transform: rotate(180deg);
 }
 
-.custom-shape-divider-bottom-1733088529 svg {
+.wave svg {
     position: relative;
     display: block;
-    width: calc(100% + 1.3px);
-    height: 99px;
+    width: calc(100% + 1px);
+    height: 124px;
 }
 
-.custom-shape-divider-bottom-1733088529 .shape-fill {
+.wave .shape-fill {
     fill: #4A90E2;
 }

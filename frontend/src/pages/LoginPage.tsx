@@ -3,6 +3,7 @@ import {useAuth} from "../components/AuthProvider/AuthProvider";
 import {useEffect} from "react";
 import {useNavigate} from "react-router-dom";
 import {Button} from "antd";
+import logo from "../../public/logo.png";
 
 export const LoginPage = () => {
     const {isLoggedIn, handleLogin} = useAuth();
@@ -16,6 +17,9 @@ export const LoginPage = () => {
 
     return (
         <div className="login-page">
+            <img src={logo} alt="logo" />
+            <h1>K8s Access Manager</h1>
+
             <div className="login-card">
                 <h1 className="login-card-header">Login</h1>
 
@@ -29,7 +33,7 @@ export const LoginPage = () => {
                 </div>
             </div>
 
-            <div className="custom-shape-divider-bottom-1733088529">
+            <div className="wave">
                 <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120"
                      preserveAspectRatio="none">
                     <path
