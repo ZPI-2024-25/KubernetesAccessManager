@@ -18,8 +18,8 @@ function App() {
             <AuthProvider>
                 <Routes>
                     <Route path="/auth/callback" element={<AuthCallbackPage />} />
+                    <Route path="/login" element={<LoginPage />} />
                     <Route path="/" element={<Menu />}>
-                        <Route path="/login" element={<LoginPage />} />
                         <Route element={<PrivateRoute />}>
                             <Route index element={<div/>} /> {/* Temporary fix until proper login page and main page is done */}
                             <Route path="Helm" element={<HelmPage />} />
