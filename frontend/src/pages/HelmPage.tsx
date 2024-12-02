@@ -7,11 +7,15 @@ import {useListReleases} from "../hooks/useListReleases.ts";
 import {MdOutlineRestore} from "react-icons/md";
 import {DeleteOutlined} from "@ant-design/icons";
 import {Button} from "antd";
+import {hasPermission} from "../functions/authorization.ts";
+import {useAuth} from "../components/AuthProvider/AuthProvider.tsx";
+import { helmResourceLabel } from "../consts/MenuItem.tsx"
 
 const HelmPage = () => {
     const [openRollbackModal, setOpenRollbackModal] = useState(false);
     const [openUninstallModal, setOpenUninstallModal] = useState(false);
     const [currentRelease, setCurrentRelease] = useState<HelmDataSourceItem>();
+    const { permissions } = useAuth();
 
     const {helmColumns, dataSource, setDataSource} = useListReleases();
     const columns = helmColumns.concat({
@@ -19,22 +23,28 @@ const HelmPage = () => {
         dataIndex: "",
         key: 'actions',
         width: 150,
-        render: (_: ReactNode, record: HelmDataSourceItem): ReactNode => (
-            <div>
-                <Button
-                    type="link"
-                    icon={<MdOutlineRestore/>}
-                    onClick={() => handleRollback(record)}
-                />
-                <Button
-                    danger
-                    type="link"
-                    icon={<DeleteOutlined/>}
-                    onClick={() => handleDelete(record)}
-                />
-            </div>
-        ),
-    })
+        render: (_: ReactNode, record: HelmDataSourceItem): ReactNode => {
+            const rollbackDisabled = permissions !== null && !hasPermission(permissions, record.namespace as string, helmResourceLabel, "u");
+            const deleteDisabled = permissions !== null && !hasPermission(permissions, record.namespace as string, helmResourceLabel, "d");
+            return (
+                <div>
+                    <Button
+                        type="link"
+                        icon={<MdOutlineRestore/>}
+                        onClick={() => handleRollback(record)}
+                        disabled={rollbackDisabled}
+                    />
+                    <Button
+                        danger
+                        type="link"
+                        icon={<DeleteOutlined/>}
+                        onClick={() => handleDelete(record)}
+                        disabled={deleteDisabled}
+                    />
+                </div>
+            );
+        },
+    });
 
     const handleRollback = (record: HelmDataSourceItem) => {
         setCurrentRelease(record);

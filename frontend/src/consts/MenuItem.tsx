@@ -57,3 +57,5 @@ export const items: MenuItem[] = [
         getItem('Definitions', '21', 'CustomResourceDefinition')
     ]),
 ];
+
+export const helmResourceLabel = 'Helm';
