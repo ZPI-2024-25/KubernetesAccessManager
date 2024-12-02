@@ -2,13 +2,22 @@ import {useEffect, useState} from "react";
 import {ResourceColumnType, ResourceDataSourceItem} from "../types";
 import {fetchResources} from "../api";
 import {formatAge} from "../functions/formatAge.ts";
+import {useAuth} from "../components/AuthProvider/AuthProvider.tsx";
+import { hasPermissionInAnyNamespace } from "../functions/authorization.ts";
 
 export const useListResource = (resourcelabel: string ) => {
     const [columns, setColumns] = useState<ResourceColumnType[]>([]);
     const [dataSource, setDataSource] = useState<ResourceDataSourceItem[]>([]);
+    const { userStatus } = useAuth();
 
     useEffect(() => {
         if (!resourcelabel) return;
+
+        if (userStatus && !hasPermissionInAnyNamespace(userStatus, resourcelabel, "l")) {
+            setColumns([]);
+            setDataSource([]);
+            return;
+        }
 
         const fetchData = async () => {
             const response = await fetchResources(resourcelabel);

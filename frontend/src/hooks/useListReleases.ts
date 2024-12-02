@@ -3,11 +3,17 @@ import {HelmDataSourceItem, HelmReleaseList} from "../types";
 import {useEffect, useState} from "react";
 import {fetchReleases} from "../api";
 import {message} from "antd";
+import {useAuth} from "../components/AuthProvider/AuthProvider.tsx";
+import { hasPermissionInAnyNamespace } from "../functions/authorization.ts";
 
 export const useListReleases = () => {
     const [dataSource, setDataSource] = useState<HelmDataSourceItem[]>([]);
-
+    const { userStatus } = useAuth();
     useEffect(() => {
+        if (userStatus && !hasPermissionInAnyNamespace(userStatus, "helm", "l")) {
+            setDataSource([]);
+            return;
+        }
         const fetchData = async () => {
             try {
                 const response: HelmReleaseList = await fetchReleases('');

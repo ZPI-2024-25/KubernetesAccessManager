@@ -7,7 +7,7 @@ import {DeleteOutlined, EditOutlined, PlusOutlined} from "@ant-design/icons";
 import {useNavigate} from "react-router-dom";
 import DeleteModal from "../components/Modals/DeleteModal.tsx";
 import Tab from "../components/Table/Tab.tsx";
-import {hasPermission} from "../functions/authorization.ts";
+import {hasPermission, hasPermissionInAnyNamespace} from "../functions/authorization.ts";
 import {useAuth} from "../components/AuthProvider/AuthProvider.tsx";
 
 const ResourcePage = () => {
@@ -30,19 +30,13 @@ const ResourcePage = () => {
                     <Button
                         type="link"
                         icon={<EditOutlined/>}
-                        onClick={() => {
-                            if (!editDisabled) {
-                                handleEdit(record);
-                            }}}
+                        onClick={() => handleEdit(record)}
                         disabled={editDisabled}
                     />
                     <Button
                         type="link"
                         icon={<DeleteOutlined/>}
-                        onClick={() => {
-                            if (!deleteDisabled) {
-                                handleDelete(record);
-                            }}}
+                        onClick={() => handleDelete(record)}
                         disabled={deleteDisabled}
                         danger
                     />
@@ -76,6 +70,7 @@ const ResourcePage = () => {
         });
     }
 
+    const addDisallowed = userStatus !== null && typeof resourceType === "string" && !hasPermissionInAnyNamespace(userStatus, resourceType, "c"); 
     return (
         <>
             <div>
@@ -92,6 +87,7 @@ const ResourcePage = () => {
                         borderRadius: "50px",
                         padding: "0 16px",
                     }}
+                    disabled={addDisallowed}
                 >
                     Add
                 </Button>
