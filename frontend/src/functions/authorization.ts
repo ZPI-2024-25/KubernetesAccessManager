@@ -1,14 +1,17 @@
-import { UserStatus } from '../types/authTypes';
+import { UserStatus, Operation } from '../types/authTypes';
 
-export function hasPermission(userStatus: UserStatus, namespace: string, resource: string, operation: "c" | "r" | "u" | "d" | "l"): boolean {
+export function allowedOperations(userStatus: UserStatus, namespace: string, resource: string): string[] {
     const permissions = userStatus.permissions;
     const lookupNs = permissions[namespace] ? namespace : "*";
     const lookupRes = permissions[lookupNs] && permissions[lookupNs][resource] ? resource : "*";
-
-    return permissions[lookupNs] && permissions[lookupNs][lookupRes] && permissions[lookupNs][lookupRes].includes(operation);
+    return permissions[lookupNs][lookupRes] || [];
 }
 
-export function hasPermissionInAnyNamespace(userStatus: UserStatus, resource: string, operation: "c" | "r" | "u" | "d" | "l"): boolean {
+export function hasPermission(userStatus: UserStatus, namespace: string, resource: string, operation: Operation): boolean {
+    return allowedOperations(userStatus, namespace, resource).includes(operation);
+}
+
+export function hasPermissionInAnyNamespace(userStatus: UserStatus, resource: string, operation: Operation): boolean {
     const permissions = userStatus.permissions;
     for (const namespace in permissions) {
         if (permissions[namespace][resource]) {
@@ -36,7 +39,7 @@ export function hasAnyPermissionInAnyNamespace(userStatus: UserStatus, resource:
     return false;
 }
 
-export function hasPermissionInAnyResource(userStatus: UserStatus, namespace: string, operation: "c" | "r" | "u" | "d" | "l"): boolean {
+export function hasPermissionInAnyResource(userStatus: UserStatus, namespace: string, operation: Operation): boolean {
     const permissions = userStatus.permissions;
     for (const resource in permissions[namespace]) {
         if (permissions[namespace][resource].includes(operation)) {
@@ -51,7 +54,7 @@ export function hasPermissionInAnyResource(userStatus: UserStatus, namespace: st
     return false;
 }
 
-export function allowedNamespaces(userStatus: UserStatus, operation: "c" | "r" | "u" | "d" | "l", resource: string): string[] {
+export function allowedNamespaces(userStatus: UserStatus, operation: Operation, resource: string): string[] {
     const permissions = userStatus.permissions;
     const namespaces: string[] = [];
     for (const namespace in permissions) {
@@ -66,7 +69,7 @@ export function allowedNamespaces(userStatus: UserStatus, operation: "c" | "r" |
     return namespaces;
 }
 
-export function allowedResources(userStatus: UserStatus, operation: "c" | "r" | "u" | "d" | "l", namespace: string): string[] {
+export function allowedResources(userStatus: UserStatus, operation: Operation, namespace: string): string[] {
     const permissions = userStatus.permissions;
     const resources: string[] = [];
     for (const resource in permissions[namespace]) {
@@ -80,11 +83,4 @@ export function allowedResources(userStatus: UserStatus, operation: "c" | "r" | 
         }
     }
     return resources;
-}
-
-export function allowedOperations(userStatus: UserStatus, namespace: string, resource: string): string[] {
-    const permissions = userStatus.permissions;
-    const lookupNs = permissions[namespace] ? namespace : "*";
-    const lookupRes = permissions[lookupNs] && permissions[lookupNs][resource] ? resource : "*";
-    return permissions[lookupNs][lookupRes] || [];
 }

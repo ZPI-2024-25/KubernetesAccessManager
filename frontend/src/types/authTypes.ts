@@ -10,3 +10,5 @@ export interface UserStatus {
         email: string;
     };
 }
+
+export type Operation = "c" | "r" | "u" | "d" | "l";
