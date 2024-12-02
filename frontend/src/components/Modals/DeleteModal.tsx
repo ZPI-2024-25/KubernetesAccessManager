@@ -21,8 +21,23 @@ const DeleteConfirmModal = ({open, setOpen, resourceType, resource, removeResour
                 showMessage({type: 'error', content: 'Delete failed.', key: 'delete'});
             }
         } catch (err) {
-            console.error('Error during deleting:', err);
-            showMessage({type: 'error', content: 'Delete error.', key: 'delete'});
+            if (err instanceof Error) {
+                console.error('Delete error:', err);
+                showMessage({
+                    type: 'error',
+                    content: err.message,
+                    key: 'delete',
+                    duration: 4,
+                });
+            } else {
+                console.error('An unexpected error occurred: ', err);
+                showMessage({
+                    type: 'error',
+                    content: 'Unexpected error',
+                    key: 'delete',
+                    duration: 4,
+                });
+            }
         } finally {
             setOpen(false);
         }
@@ -36,7 +51,7 @@ const DeleteConfirmModal = ({open, setOpen, resourceType, resource, removeResour
                 ${resource.name} from
                 ${resource.namespace}` : 'Delete'}
                 open={open}
-                onOk={handleOk}
+                onCancel={() => setOpen(false)}
                 footer={
                     [
                         <Button key="back" onClick={() => setOpen(false)}>
@@ -48,9 +63,17 @@ const DeleteConfirmModal = ({open, setOpen, resourceType, resource, removeResour
                     ]
                 }
             >
-                <p>Do you really want to delete the
-                    resource <strong>{resource?.name as string} {resource?.namespace ? `from <strong>{resource.namespace}</strong>` : ''}</strong>?
+                <p>
+                    Do you really want to delete the resource
+                    <strong>{` ${resource?.name as string}`}</strong>
+                    {resource?.namespace ? (
+                        <>
+                            {' '}
+                            from <strong>{resource.namespace as string}</strong>
+                        </>
+                    ) : null}?
                 </p>
+
             </Modal>
         </>
 

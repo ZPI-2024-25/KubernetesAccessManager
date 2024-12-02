@@ -1,18 +1,19 @@
-import React, {useState} from 'react';
-import {Button, Layout, Menu} from 'antd';
+import React, { useState } from 'react';
+import { Button, Layout, Menu } from 'antd';
 import styles from './Menu.module.css';
-import {items} from '../../consts/MenuItem';
-import {MenuItem} from '../../types';
-import {Link, Outlet, useLocation} from "react-router-dom";
-import {useAuth} from '../AuthProvider/AuthProvider';
+import { items } from '../../consts/MenuItem';
+import { MenuItem } from '../../types';
+import { Link, Outlet, useLocation } from "react-router-dom";
+import { useAuth } from '../AuthProvider/AuthProvider';
+import { hasAnyPermissionInAnyNamespace } from '../../functions/authorization';
 
 
-const {Header, Content, Sider} = Layout;
+const { Header, Content, Sider } = Layout;
 
 const LeftMenu: React.FC = () => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [asideWidth, setAsideWidth] = useState<number>(270);
-    const {user, isLoggedIn, handleLogout} = useAuth();
+    const {user, isLoggedIn, handleLogout, permissions } = useAuth();
     const location = useLocation();
 
     const generateMenuItems = (menuItems: MenuItem[]): MenuItem[] => {
@@ -23,13 +24,15 @@ const LeftMenu: React.FC = () => {
                     children: generateMenuItems(item.children),
                 };
             }
+            const disabled = permissions !== null && !hasAnyPermissionInAnyNamespace(permissions, item.resourcelabel)
             return {
                 ...item,
                 label: (
-                    <Link to={`/${item.resourcelabel || ''}`}>
+                    <Link to={`/${item.resourcelabel || ''}`} onClick={(e) => disabled && e.preventDefault()}>
                         {item.label}
                     </Link>
                 ),
+                disabled: disabled,
             };
         });
     };
@@ -125,10 +128,12 @@ const LeftMenu: React.FC = () => {
                 >
                     <Outlet/>
                 </Content>
+                {/*<Footer className={styles.footer}>*/}
+                {/*    ZPI Kubernetes Access Manager ©{new Date().getFullYear()} Created by SDVM*/}
+                {/*</Footer>*/}
             </Layout>
         </Layout>
-    )
-        ;
+    );
 };
 
 export default LeftMenu;

@@ -65,7 +65,7 @@ export const refreshToken = async () => {
             new URLSearchParams({
                 grant_type: Constants.REFRESH_TOKEN_STR,
                 refresh_token: refreshToken,
-                client_id: `${Constants.KEYCLOAK_CLIENT_ID}`,
+                client_id: `${Constants.KEYCLOAK_CLIENT}`,
             }),
             {
                 headers: {

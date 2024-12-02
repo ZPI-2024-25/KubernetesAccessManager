@@ -35,7 +35,7 @@ func ListHelmReleasesController(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// temporary solution to disable auth if we don't have keycloak running
-		if env.GetString("KEYCLOAK_URL", "") == "" {
+		if env.GetString("VITE_KEYCLOAK_URL", "") == "" {
 			return helm.ListHelmReleases(namespace, helm.PrepareActionConfig)
 		}
 		token, err2 := auth.GetJWTTokenFromHeader(r)

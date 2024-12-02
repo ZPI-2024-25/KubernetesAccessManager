@@ -7,6 +7,8 @@ import {DeleteOutlined, EditOutlined, PlusOutlined} from "@ant-design/icons";
 import {useNavigate} from "react-router-dom";
 import DeleteModal from "../components/Modals/DeleteModal.tsx";
 import Tab from "../components/Table/Tab.tsx";
+import {hasPermission, hasPermissionInAnyNamespace} from "../functions/authorization.ts";
+import {useAuth} from "../components/AuthProvider/AuthProvider.tsx";
 
 const ResourcePage = () => {
     const {resourceType} = useParams();
@@ -14,26 +16,33 @@ const ResourcePage = () => {
     const [selectedRecord, setSelectedRecord] = useState<ResourceDataSourceItem>();
 
     const navigate = useNavigate();
-    const {columns, dataSource, setDataSource} = useListResource(typeof resourceType === "string" ? resourceType : "");
+    const {columns, dataSource, setDataSource, wasSuccessful} = useListResource(typeof resourceType === "string" ? resourceType : "", "");
+    const {permissions} = useAuth();
     const columnsWithActions = columns.concat({
         dataIndex: "",
         title: 'Actions',
         key: 'actions',
-        render: (_, record: ResourceDataSourceItem) => (
-            <div>
-                <Button
-                    type="link"
-                    icon={<EditOutlined/>}
-                    onClick={() => handleEdit(record)}
-                />
-                <Button
-                    type="link"
-                    icon={<DeleteOutlined/>}
-                    onClick={() => handleDelete(record)}
-                    danger
-                />
-            </div>
-        ),
+        render: (_, record: ResourceDataSourceItem) => {
+            const editDisabled = permissions !== null && typeof resourceType === "string" && !hasPermission(permissions, record.namespace as string, resourceType, "u");
+            const deleteDisabled = permissions !== null && typeof resourceType === "string" && !hasPermission(permissions, record.namespace as string, resourceType, "d");
+            return (
+                <div>
+                    <Button
+                        type="link"
+                        icon={<EditOutlined/>}
+                        onClick={() => handleEdit(record)}
+                        disabled={editDisabled}
+                    />
+                    <Button
+                        type="link"
+                        icon={<DeleteOutlined/>}
+                        onClick={() => handleDelete(record)}
+                        disabled={deleteDisabled}
+                        danger
+                    />
+                </div>
+                )}
+        ,
         width: 100
     });
 
@@ -61,6 +70,7 @@ const ResourcePage = () => {
         });
     }
 
+    const addDisallowed = permissions !== null && typeof resourceType === "string" && !hasPermissionInAnyNamespace(permissions, resourceType, "c");
     return (
         <>
             <div>
@@ -77,10 +87,11 @@ const ResourcePage = () => {
                         borderRadius: "50px",
                         padding: "0 16px",
                     }}
+                    disabled={addDisallowed}
                 >
                     Add
                 </Button>
-                {resourceType ? <Tab columns={columnsWithActions} dataSource={dataSource}/> : "Resource not found"}
+                {wasSuccessful ? <Tab columns={columnsWithActions} dataSource={dataSource}/> : <Tab columns={[]} dataSource={[]} />}
             </div>
             <DeleteModal open={openDeleteModal} setOpen={setOpenDeleteModal}
                          resourceType={typeof resourceType === "string" ? resourceType : ""}
