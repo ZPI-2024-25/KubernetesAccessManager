@@ -16,7 +16,7 @@ const ResourcePage = () => {
     const [selectedRecord, setSelectedRecord] = useState<ResourceDataSourceItem>();
 
     const navigate = useNavigate();
-    const {columns, dataSource, setDataSource} = useListResource(typeof resourceType === "string" ? resourceType : "");
+    const {columns, dataSource, setDataSource, wasSuccessful} = useListResource(typeof resourceType === "string" ? resourceType : "", "");
     const {permissions} = useAuth();
     const columnsWithActions = columns.concat({
         dataIndex: "",
@@ -70,7 +70,7 @@ const ResourcePage = () => {
         });
     }
 
-    const addDisallowed = permissions !== null && typeof resourceType === "string" && !hasPermissionInAnyNamespace(permissions, resourceType, "c"); 
+    const addDisallowed = permissions !== null && typeof resourceType === "string" && !hasPermissionInAnyNamespace(permissions, resourceType, "c");
     return (
         <>
             <div>
@@ -91,7 +91,7 @@ const ResourcePage = () => {
                 >
                     Add
                 </Button>
-                {resourceType ? <Tab columns={columnsWithActions} dataSource={dataSource}/> : "Resource not found"}
+                {wasSuccessful ? <Tab columns={columnsWithActions} dataSource={dataSource}/> : <Tab columns={[]} dataSource={[]} />}
             </div>
             <DeleteModal open={openDeleteModal} setOpen={setOpenDeleteModal}
                          resourceType={typeof resourceType === "string" ? resourceType : ""}

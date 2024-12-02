@@ -17,7 +17,7 @@ const HelmPage = () => {
     const [currentRelease, setCurrentRelease] = useState<HelmDataSourceItem>();
     const { permissions } = useAuth();
 
-    const {helmColumns, dataSource, setDataSource} = useListReleases();
+    const {helmColumns, dataSource, setDataSource} = useListReleases('');
     const columns = helmColumns.concat({
         title: 'Actions',
         dataIndex: "",

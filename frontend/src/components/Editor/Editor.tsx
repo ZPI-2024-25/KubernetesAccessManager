@@ -1,11 +1,10 @@
 import {Button, Card, message} from "antd";
 import style from "./Editor.module.css";
 import {Editor as MonacoEditor} from "@monaco-editor/react";
-import * as monaco from "monaco-editor";
-import {useCallback, useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import LanguageSelector from "./LanguageSelector.tsx";
 import {stringifyJson, parseJson, parseYaml, stringifyYaml} from "../../functions/jsonYamlFunctions.ts";
-import {ResourceDetails} from "../../types/ResourceDetails.ts";
+import {ResourceDetails} from "../../types";
 import {useNavigate} from "react-router-dom";
 
 const Editor = ({name, text, endpoint}: {
@@ -13,22 +12,14 @@ const Editor = ({name, text, endpoint}: {
     text: string,
     endpoint: (data: ResourceDetails) => Promise<ResourceDetails>
 }) => {
-    const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
     const [value, setValue] = useState<string>(text);
     const [language, setLanguage] = useState<string>("yaml");
     const navigate = useNavigate();
 
     // TODO: zamienić wzorzec na stworzenie
     useEffect(() => {
-        console.log(text);
         setValue(text);
-        //setValue(stringifyYaml((JSON.stringify(text, null, 2))));
     }, [text]);
-
-    const onMount = useCallback((editor: monaco.editor.IStandaloneCodeEditor) => {
-        editorRef.current = editor;
-        editor.focus();
-    }, []);
 
     const onLanguageChange = useCallback(
         (newLanguage: string) => {
@@ -83,9 +74,15 @@ const Editor = ({name, text, endpoint}: {
                 const response = await endpoint(parsedData);
                 console.log('Save successful:', response);
                 message.success('Save successful');
+                // setValue(stringifyYaml(response));
+                navigate(-1);
             } catch (error) {
-                console.error('Save failed:', error);
-                message.error('Save failed');
+                if (error instanceof Error) {
+                    console.error('Error getting resource:', error);
+                    message.error(error.message, 4);
+                } else {
+                    message.error('An unexpected error occurred.');
+                }
             }
         } catch (error) {
             console.error('Invalid format', error);
@@ -111,7 +108,6 @@ const Editor = ({name, text, endpoint}: {
                 width="80wh"
                 theme="vs-dark"
                 language={language}
-                onMount={onMount}
                 value={value}
                 onChange={handleEditorChange}
             />

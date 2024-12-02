@@ -26,15 +26,47 @@ const RollbackModal = ({open, setOpen, release}: HelmModalProps) => {
             const result = await rollbackRelease(revision, release?.name || "", release?.namespace || "");
 
             if ('chart' in result) {
-                showMessage({type: 'success', content: 'Rollback successful.', key: 'rollback', afterClose: () => navigate(0)});
+                showMessage({
+                    type: 'success',
+                    content: 'Rollback successful.',
+                    key: 'rollback',
+                    afterClose: () => navigate(0)
+                });
             } else if ('status' in result && 'message' in result) {
-                showMessage({type: 'loading', content: 'Rollback will continue in the background.', key: 'rollback', afterClose: () => navigate(0)});
+                showMessage({
+                    type: 'loading',
+                    content: 'Rollback will continue in the background.',
+                    key: 'rollback',
+                    afterClose: () => navigate(0)
+                });
             } else {
-                showMessage({type: 'error', content: 'Rollback failed.', key: 'rollback', afterClose: () => navigate(0)});
+                showMessage({
+                    type: 'error',
+                    content: 'Rollback failed.',
+                    key: 'rollback',
+                    afterClose: () => navigate(0)
+                });
             }
         } catch (err) {
-            console.error('Error during rollback:', err);
-            showMessage({type: 'error', content: 'Rollback error.', key: 'rollback' , afterClose: () => navigate(0)});
+            if (err instanceof Error) {
+                console.error('Error rollbacking release:', err);
+                showMessage({
+                    type: 'error',
+                    content: err.message,
+                    key: 'rollback',
+                    duration: 4,
+                    afterClose: () => navigate(0)
+                });
+            } else {
+                console.error('An unexpected error occurred:', err);
+                showMessage({
+                    type: 'error',
+                    content: 'Unexpected error',
+                    key: 'rollback',
+                    duration: 4,
+                    afterClose: () => navigate(0)
+                });
+            }
         } finally {
             setConfirmLoading(false);
             setOpen(false);

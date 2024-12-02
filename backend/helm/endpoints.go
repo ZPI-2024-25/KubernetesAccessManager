@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"helm.sh/helm/v3/pkg/storage/driver"
+	"strings"
 	"time"
 )
 
@@ -119,8 +120,13 @@ func RollbackHelmRelease(releaseName string, namespace string, version int, time
 	case result := <-resultCh:
 		if result.err != nil {
 			if errors.Is(result.err, driver.ErrReleaseNotFound) {
-				return nil, false, &models.ModelError{Code: 404, Message: "Release not found: " + result.err.Error()}
+				return nil, false, &models.ModelError{Code: 404, Message: "Release not found"}
 			}
+
+			if strings.Contains(result.err.Error(), "version") {
+				return nil, false, &models.ModelError{Code: 400, Message: "Invalid revision: " + result.err.Error()}
+			}
+
 			return nil, false, &models.ModelError{Code: 500, Message: "Internal server error: " + result.err.Error()}
 		}
 		return result.release, true, nil

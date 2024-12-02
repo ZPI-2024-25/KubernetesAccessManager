@@ -2,7 +2,7 @@ import React from 'react';
 import Editor from "../components/Editor/Editor.tsx";
 import {createResource} from "../api/k8s/createResource.ts";
 import {exampleResourceDefinition} from "../consts/exampleResourceDefinitions.ts";
-import {ResourceDetails} from "../types/ResourceDetails.ts";
+import {ResourceDetails} from "../types";
 import {useLocation} from "react-router-dom";
 
 const CreateResourcePage: React.FC = () => {

@@ -1,6 +1,7 @@
 import axios from "axios";
 import {HELM_API_URL} from "../../consts/consts.ts";
 import {Status} from "../../types";
+import {parseApiError} from "../../functions/apiErrorParser.ts";
 
 export async function deleteRelease(releaseName: string, namespace: string): Promise<Status> {
     try {
@@ -11,7 +12,8 @@ export async function deleteRelease(releaseName: string, namespace: string): Pro
         console.log(response.data);
         return response.data;
     } catch (error) {
-        console.error('Error deleting release:', error);
-        throw error;
+        const errorText = parseApiError(error);
+        console.error(errorText);
+        throw new Error(errorText);
     }
 }
