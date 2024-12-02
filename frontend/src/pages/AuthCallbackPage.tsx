@@ -1,17 +1,18 @@
-import React, { useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { message } from 'antd';
+import React, {useEffect, useRef} from 'react';
+import {useNavigate, useSearchParams} from 'react-router-dom';
+import {message, Spin} from 'antd';
 import axios from 'axios';
 import * as Constants from "../consts/consts.ts";
-import { useAuth } from '../components/AuthProvider/AuthProvider.tsx';
-import { getAuthStatus } from '../api/index.ts';
-import { Permissions } from '../types/authTypes.ts';
+import {useAuth} from '../components/AuthProvider/AuthProvider.tsx';
+import {getAuthStatus} from '../api';
+import {Permissions} from '../types/authTypes.ts';
+import {LoadingOutlined} from "@ant-design/icons";
 
 const AuthCallbackPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const hasHandledCallback = useRef(false);
-    const { setUserPermissions } = useAuth();
+    const {setUserPermissions} = useAuth();
 
     useEffect(() => {
         const handleAuthCallback = async () => {
@@ -62,7 +63,7 @@ const AuthCallbackPage: React.FC = () => {
                 }).catch((error) => {
                     console.error('Error fetching user status:', error);
                 });
-                
+
                 navigate('/');
             } catch (error) {
                 console.error('Error during login:', error);
@@ -74,7 +75,12 @@ const AuthCallbackPage: React.FC = () => {
         handleAuthCallback();
     }, [searchParams, navigate]);
 
-    return <div>Logging in progress...</div>;
+    return (
+        <div style={{display: "flex", flexDirection: "column", alignContent:"center", justifyContent:"center", alignItems: "center"}}>
+            <Spin indicator={<LoadingOutlined style={{fontSize: 64}} spin/>} size="large"/>
+            <p>Logging in...</p>
+        </div>
+    );
 };
 
 export default AuthCallbackPage;

@@ -1,15 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+:root {
+    --primary-color: #1890ff;
+    --background-color: #001529;
+    --card-background: #e6e8ed;
+    --text-color: #ffffff;
+    --text-color-dark: #333333;
+    --button-hover: #40a9ff;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--background-color);
+}
+
+h1 {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-top: 0;
+}
+
+img {
+    height: 200px;
+}
+
 .login-page {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
-    font-family: Arial, sans-serif;
-    background-color: #f8f9fa;
-    color: #333;
+    height: calc(100vh - var(124px));
+    padding-bottom: 124px;
 }
 
-.login-page h1 {
-    font-size: 2rem;
-    font-weight: bold;
+.login-card {
+    width: 350px;
+    padding: 30px 30px;
+    border-radius: 10px;
+    background-color: var(--card-background);
+    box-shadow: rgba(24, 123, 221, 0.34) 0 20px 30px -10px;
+}
+
+.login-card-header {
+    margin: 0 0 30px;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-color-dark);
+    text-align: center;
+}
+
+.login-card-content {
+    text-align: center;
+}
+
+.login-card-content p {
+    margin: 0 0 15px;
+    font-size: 16px;
+    color: var(--text-color-dark);
+}
+
+.login-button {
+    font-size: 22px;
+    width: auto;
+}
+
+.wave {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+    transform: rotate(180deg);
+}
+
+.wave svg {
+    position: relative;
+    display: block;
+    width: calc(100% + 1px);
+    height: 124px;
+}
+
+.wave .shape-fill {
+    fill: #4A90E2;
 }

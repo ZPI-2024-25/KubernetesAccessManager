@@ -8,48 +8,36 @@
     display: flex;
 }
 
-
 .menuSider {
     height: 100%;
     position: fixed;
     background: #001529;
     z-index: 1;
     overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+.menuMenu {
+    height: 100%;
+    padding-bottom: 50px;
     overflow-y: auto;
 }
 
-.logo {
-    padding: 16px;
-    text-align: center;
+.user {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    line-height: 64px;
 }
 
-.logoText {
+.userText {
     font-size: 1.2rem;
     font-weight: bold;
     color: #fff;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: inline-block;
-}
-
-.ant-menu-item {
-    border-left: 2px solid transparent;
-    color: #fff;
-    white-space: normal;
-}
-.ant-menu-title-content{
-    white-space: normal;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-}
-
-.ant-menu-item-selected {
-    background: #1890ff;
-}
-
-.ant-menu-item:hover {
-    background: rgba(255, 255, 255, 0.1);
 }
 
 .contentLayout {
@@ -61,7 +49,7 @@
 .header {
     width: 100vw;
     height: 50px;
-    line-height: 64px;
+    line-height: 50px;
     padding: 0 16px;
     background: #001529;
     color: white;
@@ -70,11 +58,17 @@
     top: 0;
     left: 0;
     transition: all 0.2s;
-    z-index: 1000;
+}
+
+.header div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
 }
 
 .header p{
-    line-height: 64px;
+    line-height: 50px;
     padding: 0 0 0 16px;
     margin: 0;
 }
@@ -88,45 +82,26 @@
     flex-grow: 1;
 }
 
-.breadcrumb {
-    margin-bottom: 16px;
-    color: white;
+/*.footer {*/
+/*    display: flex;*/
+/*    justify-content: center;*/
+/*    align-items: center;*/
+/*    text-align: center;*/
+/*    color: white;*/
+/*    background: #001529;*/
+/*    height: 5%;*/
+/*}*/
+
+.menuMenu::-webkit-scrollbar{
+    width: 5px;
 }
 
-.footer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    color: white;
-    background: #001529;
-    height: 5%;
+.menuMenu::-webkit-scrollbar-thumb{
+    background-color: #1890ff;
+    border-radius: 20px;
+    transition: background-color 0.3s ease;
 }
 
-.ant-menu-inline .ant-menu-item {
-    padding: 10px 16px;
-}
-.innerContent {
-    height: 95%;
-    border-radius: var(--borderRadiusLG);
-    background: #fff;
-    overflow-y: auto;
-}
-
-.breadcrumb {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.collapseButton {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 50px;
-    z-index: 2;
-    background: #001529;
-    color: white;
-    text-align: center;
-    cursor: pointer;
+.menuMenu::-webkit-scrollbar-thumb:hover{
+    background-color: #0b457a;
 }

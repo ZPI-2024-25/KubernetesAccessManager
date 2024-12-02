@@ -13,7 +13,7 @@ const { Header, Content, Sider } = Layout;
 const LeftMenu: React.FC = () => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [asideWidth, setAsideWidth] = useState<number>(270);
-    const { user, isLoggedIn, handleLogin, handleLogout, permissions } = useAuth();
+    const {user, isLoggedIn, handleLogout, permissions } = useAuth();
     const location = useLocation();
 
     const generateMenuItems = (menuItems: MenuItem[]): MenuItem[] => {
@@ -90,46 +90,32 @@ const LeftMenu: React.FC = () => {
                     setAsideWidth(asideWidth === 80 ? 270 : 80);
                 }}
                 width={`${asideWidth}px`}
-                style={{ display: !isLoggedIn ? 'none' : 'block' }}
             >
-                <div className={styles.logo}>
-                    <span
-                        className={styles.logoText}
-                        title={user?.preferred_username || 'User'}
-                        style={{
-                            maxWidth: `${asideWidth - 20}px`,
-                        }}
-                    >
-                        {user?.preferred_username || 'User'}
+                <div className={styles.user} style={{marginLeft: `${collapsed ? 10 : 40}px`, marginRight: `${collapsed ? 10 : 40}px`}}>
+                    <span className={styles.userText}>
+                        {collapsed ? (user?.preferred_username ? user.preferred_username.slice(0, 2) : 'U') : (user?.preferred_username || 'User')}
                     </span>
                 </div>
 
                 <Menu
+                    className={styles.menuMenu}
                     theme="dark"
                     selectedKeys={selectedKeys}
                     mode="inline"
                     items={menuItems}
-                    style={{ paddingBottom: 50 }}
                 />
             </Sider>
             <Layout
                 className={styles.contentLayout}
-                style={{ marginLeft: !isLoggedIn ? '0' : `${asideWidth}px` }}
+                style={{marginLeft: !isLoggedIn ? '0' : `${asideWidth}px`}}
             >
-                <Header className={styles.header}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
-                        <p style={{ paddingLeft: !isLoggedIn ? '0' : `${asideWidth}px` }}>
-                            {currentPageTitle || 'Page name'}
-                        </p>
-                        {isLoggedIn ? (
-                            <Button type="primary" onClick={handleLogout}>
-                                Log out
-                            </Button>
-                        ) : (
-                            <Button type="primary" onClick={handleLogin}>
-                                Log in
-                            </Button>
-                        )}
+                <Header className={styles.header} style={{paddingLeft: !isLoggedIn ? '0' : `${asideWidth}px`}}>
+                    <div>
+                        <p>{currentPageTitle || ' '}</p>
+
+                        <Button type="primary" onClick={handleLogout}>
+                            Log out
+                        </Button>
                     </div>
                 </Header>
                 <Content
@@ -140,7 +126,7 @@ const LeftMenu: React.FC = () => {
                         height: 'auto',
                     }}
                 >
-                    <Outlet />
+                    <Outlet/>
                 </Content>
                 {/*<Footer className={styles.footer}>*/}
                 {/*    ZPI Kubernetes Access Manager ©{new Date().getFullYear()} Created by SDVM*/}
