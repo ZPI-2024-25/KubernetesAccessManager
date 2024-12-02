@@ -11,4 +11,4 @@ export const KEYCLOAK_CLIENT_ID = import.meta.env.KEYCLOAK_CLIENT_ID || 'ZPI-cli
 export const ACCESS_TOKEN_STR = 'access_token';
 export const REFRESH_TOKEN_STR = 'refresh_token';
 export const ID_TOKEN_STR = 'id_token';
-export const USER_STATUS_STR = 'user_status';
+export const PERMISSIONS_STR_KEY = 'user_permissions';

@@ -17,14 +17,14 @@ const ResourcePage = () => {
 
     const navigate = useNavigate();
     const {columns, dataSource, setDataSource} = useListResource(typeof resourceType === "string" ? resourceType : "");
-    const {userStatus} = useAuth();
+    const {permissions} = useAuth();
     const columnsWithActions = columns.concat({
         dataIndex: "",
         title: 'Actions',
         key: 'actions',
         render: (_, record: ResourceDataSourceItem) => {
-            const editDisabled = userStatus !== null && typeof resourceType === "string" && !hasPermission(userStatus, record.namespace as string, resourceType, "u");
-            const deleteDisabled = userStatus !== null && typeof resourceType === "string" && !hasPermission(userStatus, record.namespace as string, resourceType, "d");
+            const editDisabled = permissions !== null && typeof resourceType === "string" && !hasPermission(permissions, record.namespace as string, resourceType, "u");
+            const deleteDisabled = permissions !== null && typeof resourceType === "string" && !hasPermission(permissions, record.namespace as string, resourceType, "d");
             return (
                 <div>
                     <Button
@@ -70,7 +70,7 @@ const ResourcePage = () => {
         });
     }
 
-    const addDisallowed = userStatus !== null && typeof resourceType === "string" && !hasPermissionInAnyNamespace(userStatus, resourceType, "c"); 
+    const addDisallowed = permissions !== null && typeof resourceType === "string" && !hasPermissionInAnyNamespace(permissions, resourceType, "c"); 
     return (
         <>
             <div>

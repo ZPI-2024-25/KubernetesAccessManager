@@ -8,9 +8,9 @@ import { hasPermissionInAnyNamespace } from "../functions/authorization.ts";
 
 export const useListReleases = () => {
     const [dataSource, setDataSource] = useState<HelmDataSourceItem[]>([]);
-    const { userStatus } = useAuth();
+    const { permissions } = useAuth();
     useEffect(() => {
-        if (userStatus && !hasPermissionInAnyNamespace(userStatus, "helm", "l")) {
+        if (permissions && !hasPermissionInAnyNamespace(permissions, "helm", "l")) {
             setDataSource([]);
             return;
         }

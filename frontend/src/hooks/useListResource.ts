@@ -8,12 +8,12 @@ import { hasPermissionInAnyNamespace } from "../functions/authorization.ts";
 export const useListResource = (resourcelabel: string ) => {
     const [columns, setColumns] = useState<ResourceColumnType[]>([]);
     const [dataSource, setDataSource] = useState<ResourceDataSourceItem[]>([]);
-    const { userStatus } = useAuth();
+    const { permissions } = useAuth();
 
     useEffect(() => {
         if (!resourcelabel) return;
 
-        if (userStatus && !hasPermissionInAnyNamespace(userStatus, resourcelabel, "l")) {
+        if (permissions && !hasPermissionInAnyNamespace(permissions, resourcelabel, "l")) {
             setColumns([]);
             setDataSource([]);
             return;

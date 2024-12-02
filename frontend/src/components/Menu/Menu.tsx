@@ -13,7 +13,7 @@ const { Header, Content, Sider } = Layout;
 const LeftMenu: React.FC = () => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [asideWidth, setAsideWidth] = useState<number>(270);
-    const { user, isLoggedIn, handleLogin, handleLogout, userStatus } = useAuth();
+    const { user, isLoggedIn, handleLogin, handleLogout, permissions } = useAuth();
     const location = useLocation();
 
     const generateMenuItems = (menuItems: MenuItem[]): MenuItem[] => {
@@ -24,7 +24,7 @@ const LeftMenu: React.FC = () => {
                     children: generateMenuItems(item.children),
                 };
             }
-            const disabled = userStatus !== null && !hasAnyPermissionInAnyNamespace(userStatus, item.resourcelabel)
+            const disabled = permissions !== null && !hasAnyPermissionInAnyNamespace(permissions, item.resourcelabel)
             return {
                 ...item,
                 label: (

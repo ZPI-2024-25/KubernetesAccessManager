@@ -1,9 +1,11 @@
-export interface UserStatus {
-    permissions: {
-        [namespace: string]: {
-            [resource: string]: string[];
-        };
+export interface Permissions {
+    [namespace: string]: {
+        [resource: string]: string[];
     };
+}
+
+export interface UserStatus {
+    permissions: Permissions;
     user: {
         exp: number;
         preferred_username: string;

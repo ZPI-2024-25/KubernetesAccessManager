@@ -1,18 +1,16 @@
-import { UserStatus, Operation } from '../types/authTypes';
+import { Permissions, Operation } from '../types/authTypes';
 
-export function allowedOperations(userStatus: UserStatus, namespace: string, resource: string): string[] {
-    const permissions = userStatus.permissions;
+export function allowedOperations(permissions: Permissions, namespace: string, resource: string): string[] {
     const lookupNs = permissions[namespace] ? namespace : "*";
     const lookupRes = permissions[lookupNs] && permissions[lookupNs][resource] ? resource : "*";
     return permissions[lookupNs][lookupRes] || [];
 }
 
-export function hasPermission(userStatus: UserStatus, namespace: string, resource: string, operation: Operation): boolean {
-    return allowedOperations(userStatus, namespace, resource).includes(operation);
+export function hasPermission(permissions: Permissions, namespace: string, resource: string, operation: Operation): boolean {
+    return allowedOperations(permissions, namespace, resource).includes(operation);
 }
 
-export function hasPermissionInAnyNamespace(userStatus: UserStatus, resource: string, operation: Operation): boolean {
-    const permissions = userStatus.permissions;
+export function hasPermissionInAnyNamespace(permissions: Permissions, resource: string, operation: Operation): boolean {
     for (const namespace in permissions) {
         if (permissions[namespace][resource]) {
             if (permissions[namespace][resource].includes(operation)) {
@@ -25,8 +23,7 @@ export function hasPermissionInAnyNamespace(userStatus: UserStatus, resource: st
     return false;
 }
 
-export function hasAnyPermissionInAnyNamespace(userStatus: UserStatus, resource: string): boolean {
-    const permissions = userStatus.permissions;
+export function hasAnyPermissionInAnyNamespace(permissions: Permissions, resource: string): boolean {
     for (const namespace in permissions) {
         if (permissions[namespace][resource]) {
             if (permissions[namespace][resource].length > 0) {
@@ -39,8 +36,7 @@ export function hasAnyPermissionInAnyNamespace(userStatus: UserStatus, resource:
     return false;
 }
 
-export function hasPermissionInAnyResource(userStatus: UserStatus, namespace: string, operation: Operation): boolean {
-    const permissions = userStatus.permissions;
+export function hasPermissionInAnyResource(permissions: Permissions, namespace: string, operation: Operation): boolean {
     for (const resource in permissions[namespace]) {
         if (permissions[namespace][resource].includes(operation)) {
             return true;
@@ -54,8 +50,7 @@ export function hasPermissionInAnyResource(userStatus: UserStatus, namespace: st
     return false;
 }
 
-export function allowedNamespaces(userStatus: UserStatus, operation: Operation, resource: string): string[] {
-    const permissions = userStatus.permissions;
+export function allowedNamespaces(permissions: Permissions, operation: Operation, resource: string): string[] {
     const namespaces: string[] = [];
     for (const namespace in permissions) {
         if (permissions[namespace][resource]) {
@@ -69,8 +64,7 @@ export function allowedNamespaces(userStatus: UserStatus, operation: Operation, 
     return namespaces;
 }
 
-export function allowedResources(userStatus: UserStatus, operation: Operation, namespace: string): string[] {
-    const permissions = userStatus.permissions;
+export function allowedResources(permissions: Permissions, operation: Operation, namespace: string): string[] {
     const resources: string[] = [];
     for (const resource in permissions[namespace]) {
         if (permissions[namespace][resource].includes(operation)) {
