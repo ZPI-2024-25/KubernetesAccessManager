@@ -108,7 +108,7 @@ const LeftMenu: React.FC = () => {
             >
                 <Header className={styles.header} style={{paddingLeft: !isLoggedIn ? '0' : `${asideWidth}px`}}>
                     <div>
-                        {currentPageTitle || ''}
+                        <p>{currentPageTitle || ' '}</p>
 
                         <Button type="primary" onClick={handleLogout}>
                             Log out
