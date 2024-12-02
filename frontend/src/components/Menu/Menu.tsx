@@ -88,24 +88,18 @@ const LeftMenu: React.FC = () => {
                 }}
                 width={`${asideWidth}px`}
             >
-                <div className={styles.logoText}>
-                    <span
-                        className={styles.logoText}
-                        title={user?.preferred_username || 'User'}
-                        style={{
-                            maxWidth: `${asideWidth - 20}px`,
-                        }}
-                    >
-                        {user?.preferred_username || 'User'}
+                <div className={styles.user} style={{marginLeft: `${collapsed ? 10 : 40}px`, marginRight: `${collapsed ? 10 : 40}px`}}>
+                    <span className={styles.userText}>
+                        {collapsed ? (user?.preferred_username ? user.preferred_username.slice(0, 2) : 'U') : (user?.preferred_username || 'User')}
                     </span>
                 </div>
 
                 <Menu
+                    className={styles.menuMenu}
                     theme="dark"
                     selectedKeys={selectedKeys}
                     mode="inline"
                     items={menuItems}
-                    style={{paddingBottom: 50}}
                 />
             </Sider>
             <Layout
@@ -133,7 +127,8 @@ const LeftMenu: React.FC = () => {
                 </Content>
             </Layout>
         </Layout>
-    );
+    )
+        ;
 };
 
 export default LeftMenu;
