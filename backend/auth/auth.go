@@ -19,11 +19,19 @@ var jwks *keyfunc.JWKS
 
 func init() {
 	err := godotenv.Load()
-	jwksURL := os.Getenv("KEYCLOAK_URL")
-	if jwksURL == "" {
-		log.Println("KEYCLOAK_URL environment variable not set")
+	if err != nil {
+		log.Println("Error loading .env file:", err)
+	}
+
+	baseURL := os.Getenv("VITE_KEYCLOAK_URL")
+	realmName := os.Getenv("VITE_KEYCLOAK_REALMNAME")
+
+	if baseURL == "" || realmName == "" {
+		log.Println("VITE_KEYCLOAK_URL or VITE_KEYCLOAK_REALMNAME environment variable not set")
 		return
 	}
+	jwksURL := fmt.Sprintf("%s/realms/%s/protocol/openid-connect/certs", baseURL, realmName)
+	log.Printf("Using JWKS URL: %s\n", jwksURL)
 	jwks, err = keyfunc.Get(jwksURL, keyfunc.Options{
 		RefreshInterval: time.Hour,
 	})
@@ -87,7 +95,7 @@ func IsUserAuthorized(operation models.Operation, roles []string) (bool, error) 
 
 func ExtractRoles(claims *jwt.MapClaims) ([]string, *models.ModelError) {
 	var roles []string
-	client := common.GetOrDefaultEnv("KEYCLOAK_CLIENTNAME", "account")
+	client := common.GetOrDefaultEnv("VITE_KEYCLOAK_CLIENTNAME", "account")
 	if realmAccess, ok := (*claims)["realm_access"].(map[string]interface{}); ok {
 		extractRolesFromMapInterface(realmAccess, "roles", &roles)
 	}
@@ -101,7 +109,7 @@ func ExtractRoles(claims *jwt.MapClaims) ([]string, *models.ModelError) {
 	return roles, nil
 }
 
-func extractRolesFromMapInterface(claims map[string]interface{}, rolekey string, roles *[]string){
+func extractRolesFromMapInterface(claims map[string]interface{}, rolekey string, roles *[]string) {
 	if realm, ok := claims[rolekey].([]interface{}); ok {
 		for _, role := range realm {
 			if roleStr, ok := role.(string); ok {
@@ -111,8 +119,7 @@ func extractRolesFromMapInterface(claims map[string]interface{}, rolekey string,
 	}
 }
 
-
-func ExtractUserStatus(claims *jwt.MapClaims) (int32, string, string)  {
+func ExtractUserStatus(claims *jwt.MapClaims) (int32, string, string) {
 	var exp int32
 	var preferredUsername string
 	var email string
@@ -144,7 +151,7 @@ func FilterRestrictedResources(resources *models.ResourceList, claims *jwt.MapCl
 		}
 	}
 	resources.ResourceList = filteredResources
-	
+
 	return resources, nil
 }
 
@@ -163,7 +170,7 @@ func FilterRestrictedReleases(releases []models.HelmRelease, claims *jwt.MapClai
 			filteredReleases = append(filteredReleases, release)
 		}
 	}
-	
+
 	return filteredReleases, nil
 }
 
@@ -174,35 +181,35 @@ func getAllowedNamespaces(claims *jwt.MapClaims, resourceType string, opType mod
 	}
 	if len(roles) == 0 {
 		return nil, &models.ModelError{
-			Code: http.StatusForbidden,
+			Code:    http.StatusForbidden,
 			Message: "No roles found in token",
 		}
 	}
 	roleMap, err := GetRoleMapInstance()
 	if err != nil {
 		return nil, &models.ModelError{
-			Code: http.StatusInternalServerError,
+			Code:    http.StatusInternalServerError,
 			Message: err.Error(),
 		}
 	}
 	if !roleMap.HasPermissionInAnyNamespace(roles, resourceType, opType) {
 		return nil, &models.ModelError{
-			Code: http.StatusForbidden,
+			Code:    http.StatusForbidden,
 			Message: fmt.Sprintf("User does not have permission to %v resources", opType),
 		}
 	}
 
 	allowed := make(map[string]struct{})
-	for ns := range namespaces{
+	for ns := range namespaces {
 		op := models.Operation{
-			Resource: resourceType,
+			Resource:  resourceType,
 			Namespace: ns,
-			Type: opType,
+			Type:      opType,
 		}
 		hasPermission, err := IsUserAuthorized(op, roles)
 		if err != nil {
 			return nil, &models.ModelError{
-				Code: http.StatusInternalServerError,
+				Code:    http.StatusInternalServerError,
 				Message: fmt.Sprintf("Error when checking permissions: %v", err),
 			}
 		}
