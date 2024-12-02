@@ -3,7 +3,7 @@
 :root {
     --primary-color: #1890ff;
     --background-color: #001529;
-    --card-background: #f0f2f5;
+    --card-background: #e6e8ed;
     --text-color: #ffffff;
     --text-color-dark: #333333;
     --button-hover: #40a9ff;
@@ -38,10 +38,10 @@ img {
 
 .login-card {
     width: 350px;
-    padding: 40px 30px;
+    padding: 30px 30px;
     border-radius: 10px;
     background-color: var(--card-background);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: rgba(24, 123, 221, 0.34) 0 20px 30px -10px;
 }
 
 .login-card-header {
@@ -63,12 +63,12 @@ img {
 }
 
 .login-button {
-    padding: 12px 0;
     font-size: 22px;
+    width: auto;
 }
 
 .wave {
-    position: fixed;
+    position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;

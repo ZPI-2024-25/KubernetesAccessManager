@@ -3,7 +3,7 @@ import {useAuth} from "../components/AuthProvider/AuthProvider";
 import {useEffect} from "react";
 import {useNavigate} from "react-router-dom";
 import {Button} from "antd";
-import logo from "../../public/logo.png";
+import logo from "../assets/logo.png";
 
 export const LoginPage = () => {
     const {isLoggedIn, handleLogin} = useAuth();
@@ -22,7 +22,7 @@ export const LoginPage = () => {
 
             <div className="login-card">
                 <div className="login-card-content">
-                    <p>Login with your authentication provider.</p>
+                    <h3>Login with your authentication provider.</h3>
 
                     <Button type="link" className="login-button" onClick={handleLogin}>
                         Login

@@ -87,9 +87,8 @@ const LeftMenu: React.FC = () => {
                     setAsideWidth(asideWidth === 80 ? 270 : 80);
                 }}
                 width={`${asideWidth}px`}
-                style={{display: !isLoggedIn ? 'none' : 'block'}}
             >
-                <div className={styles.logo}>
+                <div className={styles.logoText}>
                     <span
                         className={styles.logoText}
                         title={user?.preferred_username || 'User'}
@@ -113,21 +112,13 @@ const LeftMenu: React.FC = () => {
                 className={styles.contentLayout}
                 style={{marginLeft: !isLoggedIn ? '0' : `${asideWidth}px`}}
             >
-                <Header className={styles.header}>
-                    <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        height: '100%'
-                    }}>
-                        <p style={{paddingLeft: !isLoggedIn ? '0' : `${asideWidth}px`}}>
-                            {currentPageTitle || ''}
-                        </p>
+                <Header className={styles.header} style={{paddingLeft: !isLoggedIn ? '0' : `${asideWidth}px`}}>
+                    <div>
+                        {currentPageTitle || ''}
 
                         <Button type="primary" onClick={handleLogout}>
                             Log out
                         </Button>
-
                     </div>
                 </Header>
                 <Content
@@ -140,9 +131,6 @@ const LeftMenu: React.FC = () => {
                 >
                     <Outlet/>
                 </Content>
-                {/*<Footer className={styles.footer}>*/}
-                {/*    ZPI Kubernetes Access Manager ©{new Date().getFullYear()} Created by SDVM*/}
-                {/*</Footer>*/}
             </Layout>
         </Layout>
     );
