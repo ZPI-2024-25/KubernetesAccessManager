@@ -3,14 +3,23 @@ import {ResourceColumnType, ResourceDataSourceItem} from "../types";
 import {fetchResources} from "../api";
 import {formatAge} from "../functions/formatAge.ts";
 import {message} from "antd";
+import {useAuth} from "../components/AuthProvider/AuthProvider.tsx";
+import { hasPermissionInAnyNamespace } from "../functions/authorization.ts";
 
 export const useListResource = (resourcelabel: string, namespace: string ) => {
     const [columns, setColumns] = useState<ResourceColumnType[]>([]);
     const [dataSource, setDataSource] = useState<ResourceDataSourceItem[]>([]);
     const [wasSuccessful, setWasSuccessful] = useState(false);
+    const { permissions } = useAuth();
 
     useEffect(() => {
         if (!resourcelabel) return;
+
+        if (permissions && !hasPermissionInAnyNamespace(permissions, resourcelabel, "l")) {
+            setColumns([]);
+            setDataSource([]);
+            return;
+        }
 
         const fetchData = async () => {
             try {

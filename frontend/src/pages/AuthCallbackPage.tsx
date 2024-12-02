@@ -3,11 +3,15 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { message } from 'antd';
 import axios from 'axios';
 import * as Constants from "../consts/consts.ts";
+import { useAuth } from '../components/AuthProvider/AuthProvider.tsx';
+import { getAuthStatus } from '../api/index.ts';
+import { Permissions } from '../types/authTypes.ts';
 
 const AuthCallbackPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const hasHandledCallback = useRef(false);
+    const { setUserPermissions } = useAuth();
 
     useEffect(() => {
         const handleAuthCallback = async () => {
@@ -52,6 +56,13 @@ const AuthCallbackPage: React.FC = () => {
                 localStorage.setItem(Constants.REFRESH_TOKEN_STR, data.refresh_token);
                 localStorage.setItem(Constants.ID_TOKEN_STR, data.id_token);
                 message.success('Logged in successfully');
+                getAuthStatus().then((permissions: Permissions) => {
+                    setUserPermissions(permissions);
+                    localStorage.setItem(Constants.PERMISSIONS_STR_KEY, JSON.stringify(permissions));
+                }).catch((error) => {
+                    console.error('Error fetching user status:', error);
+                });
+                
                 navigate('/');
             } catch (error) {
                 console.error('Error during login:', error);

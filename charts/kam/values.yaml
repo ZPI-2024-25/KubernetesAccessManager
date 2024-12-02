@@ -52,7 +52,7 @@ backend:
     rules:
       - apiGroups: [ "*" ]
         resources: [ "*" ]
-        verbs: [ "get", "list", "create", "update", "delete", "patch" ]
+        verbs: [ "get", "list", "create", "update", "delete", "patch", "watch" ]
 
 
 frontend:
