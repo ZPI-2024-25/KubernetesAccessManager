@@ -10,7 +10,7 @@ export const useListReleases = () => {
     const [dataSource, setDataSource] = useState<HelmDataSourceItem[]>([]);
     const { permissions } = useAuth();
     useEffect(() => {
-        if (permissions && !hasPermissionInAnyNamespace(permissions, "helm", "l")) {
+        if (permissions && !hasPermissionInAnyNamespace(permissions, "Helm", "l")) {
             setDataSource([]);
             return;
         }
