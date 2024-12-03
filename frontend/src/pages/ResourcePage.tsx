@@ -91,7 +91,8 @@ const ResourcePage = () => {
                 >
                     Add
                 </Button>
-                {wasSuccessful ? <Tab columns={columnsWithActions} dataSource={dataSource}/> : <Tab columns={[]} dataSource={[]} />}
+                {wasSuccessful ? <Tab columns={columnsWithActions} dataSource={dataSource} type="resource" />
+                    : <Tab columns={[]} dataSource={[]} type="resource" />}
             </div>
             <DeleteModal open={openDeleteModal} setOpen={setOpenDeleteModal}
                          resourceType={typeof resourceType === "string" ? resourceType : ""}
