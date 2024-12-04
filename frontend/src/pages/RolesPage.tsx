@@ -1,10 +1,12 @@
-import {useEffect, useRef} from "react";
+import {useEffect, useState} from "react";
 import {getRoles} from "../api/k8s/getRoles.ts";
 import {RoleMap} from "../types";
 import {convertRoleConfigMapToRoleMap} from "../functions/roleMapConversions.ts";
+import RoleMapCollapse from "../components/RoleMap/RoleMapCollapse.tsx";
+import {message} from "antd";
 
 const RolesPage = () => {
-    const roleMap = useRef<RoleMap>();
+    const [roleMap, setRoleMap] = useState<RoleMap>();
 
     useEffect(() => {
         const func = async () => {
@@ -14,9 +16,14 @@ const RolesPage = () => {
                 console.log(response);
                 const rolemap = convertRoleConfigMapToRoleMap(response);
                 console.log(rolemap);
-                roleMap.current = rolemap;
+                setRoleMap(rolemap);
             } catch (error) {
-                console.error(error);
+                if (error instanceof Error) {
+                    console.error('Error fetching releases:', error);
+                    message.error(error.message, 4);
+                } else {
+                    message.error('An unexpected error occurred.');
+                }
             }
         }
         func();
@@ -24,7 +31,7 @@ const RolesPage = () => {
 
     return (
         <div>
-            Roles 222
+            {roleMap && <RoleMapCollapse data={roleMap} />}
         </div>
     );
 };
