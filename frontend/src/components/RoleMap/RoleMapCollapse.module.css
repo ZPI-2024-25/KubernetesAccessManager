@@ -2,4 +2,11 @@
     margin-top: 48px;
     max-height: calc(100vh - 80px);
     overflow-y: auto;
+    background: #ffffff;
+    padding: 0 16px 16px 16px;
+}
+
+.roleTag {
+    font-size: small;
+    padding: 2px 6px 2px 6px;
 }
