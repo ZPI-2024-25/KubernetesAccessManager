@@ -1,0 +1,15 @@
+.container {
+    margin-top: 48px;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+    background: #ffffff;
+    padding: 0 16px 16px 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.editButtonContainer {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+}

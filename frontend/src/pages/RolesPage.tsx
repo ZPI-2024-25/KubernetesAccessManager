@@ -3,10 +3,14 @@ import {getRoles} from "../api/k8s/getRoles.ts";
 import {RoleMap} from "../types";
 import {convertRoleConfigMapToRoleMap} from "../functions/roleMapConversions.ts";
 import RoleMapCollapse from "../components/RoleMap/RoleMapCollapse.tsx";
-import {message} from "antd";
+import {Button, message} from "antd";
+import {FaEdit} from "react-icons/fa";
+import styles from "./RolesPage.module.css";
+import RoleMapForm from "../components/RoleMap/RoleMapForm.tsx";
 
 const RolesPage = () => {
     const [roleMap, setRoleMap] = useState<RoleMap>();
+    const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
         const func = async () => {
@@ -30,8 +34,15 @@ const RolesPage = () => {
     }, []);
 
     return (
-        <div>
-            {roleMap && <RoleMapCollapse data={roleMap} />}
+        <div className={styles.container}>
+            <div className={styles.editButtonContainer}>
+                {!isEditing && (
+                    <Button type="primary" icon={<FaEdit/>} onClick={() => setIsEditing(true)}>
+                        Edit Roles
+                    </Button>
+                )}
+            </div>
+            {roleMap && (isEditing ? <RoleMapForm data={roleMap}/> : <RoleMapCollapse data={roleMap}/>)}
         </div>
     );
 };

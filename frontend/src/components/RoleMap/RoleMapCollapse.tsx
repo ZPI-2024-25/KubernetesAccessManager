@@ -1,3 +1,4 @@
+import {useState, useRef, useEffect} from "react";
 import {Collapse, Tag, Table} from "antd";
 import type {ColumnsType} from "antd/es/table";
 import {RoleMap, Role, RoleOperation} from "../../types";
@@ -7,27 +8,29 @@ import {capitalizeFirst} from "../../functions/toUpperCaseFirstLetter.ts";
 const RoleMapCollapse = ({data}: { data: RoleMap }) => {
     const {roleMap, subroleMap} = data.data;
 
+    const [activeSubrolePanel, setActiveSubrolePanel] = useState<string | undefined>();
+    const subroleRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
     const generateColumns = (roleOperations: RoleOperation[]): ColumnsType<RoleOperation> => {
         const uniqueOperations = Array.from(
-            new Set(
-                roleOperations
-                    .flatMap((op) => op.operations ?? ["*"])
-            )
+            new Set(roleOperations.flatMap((op) => op.operations ?? ["*"]))
         );
 
         return [
             {
-                title: "Resource",
-                dataIndex: "resource",
-                key: "resource",
-                render: (resource: string) => ((!resource || resource === "*") ? "All" : resource),
-                sorter: (a, b) => (a.resource ?? "").localeCompare(b.resource ?? ""),
-            },
-            {
                 title: "Namespace",
                 dataIndex: "namespace",
                 key: "namespace",
-                render: (namespace: string) => ((!namespace || namespace === "*") ? "All" : namespace),
+                width: "25%",
+                render: (namespace: string) => (!namespace || namespace === "*" ? "All" : namespace),
+                sorter: (a, b) => (a.namespace ?? "").localeCompare(b.namespace ?? ""),
+            },
+            {
+                title: "Resource",
+                dataIndex: "resource",
+                key: "resource",
+                width: "25%",
+                render: (resource: string) => (!resource || resource === "*" ? "All" : resource),
                 sorter: (a, b) => (a.resource ?? "").localeCompare(b.resource ?? ""),
             },
             {
@@ -37,9 +40,7 @@ const RoleMapCollapse = ({data}: { data: RoleMap }) => {
                 render: (operations: string[]) => (
                     <>
                         {(!operations || operations.length === 0) ? (
-                            <Tag color="green">
-                                All
-                            </Tag>
+                            <Tag color="green">All</Tag>
                         ) : (
                             operations.map((op) => (
                                 <Tag color="green" key={op}>
@@ -49,7 +50,6 @@ const RoleMapCollapse = ({data}: { data: RoleMap }) => {
                         )}
                     </>
                 ),
-
                 filters: uniqueOperations.map((op) => ({
                     text: op === "*" ? "All" : capitalizeFirst(op),
                     value: op,
@@ -62,7 +62,24 @@ const RoleMapCollapse = ({data}: { data: RoleMap }) => {
                 },
             },
         ];
-    }
+    };
+
+    const handleTagClick = (subrole: string) => {
+        setActiveSubrolePanel(subrole);
+    };
+
+    useEffect(() => {
+        if (activeSubrolePanel) {
+            const timer = setTimeout(() => {
+                const element = subroleRefs.current[activeSubrolePanel];
+                if (element) {
+                    element.scrollIntoView({behavior: "smooth", block: "start"});
+                }
+            }, 200);
+
+            return () => clearTimeout(timer);
+        }
+    }, [activeSubrolePanel]);
 
     const renderRoleDetails = (role: Role) => (
         <>
@@ -94,7 +111,13 @@ const RoleMapCollapse = ({data}: { data: RoleMap }) => {
                 <>
                     <h4>Subroles:</h4>
                     {role.subroles.map((subrole) => (
-                        <Tag color="blue" key={subrole} className={styles.roleTag}>
+                        <Tag
+                            color="blue"
+                            key={subrole}
+                            className={styles.roleTag}
+                            onClick={() => handleTagClick(subrole)}
+                            style={{cursor: "pointer"}}
+                        >
                             {subrole}
                         </Tag>
                     ))}
@@ -104,7 +127,7 @@ const RoleMapCollapse = ({data}: { data: RoleMap }) => {
     );
 
     return (
-        <div className={styles.container}>
+        <>
             <h2>Roles</h2>
             <Collapse accordion>
                 {roleMap.map((role) => (
@@ -115,16 +138,29 @@ const RoleMapCollapse = ({data}: { data: RoleMap }) => {
             </Collapse>
 
             <h2>Subroles</h2>
-            <Collapse accordion>
+            <Collapse
+                accordion
+                activeKey={activeSubrolePanel}
+                onChange={(key) => {
+                    if (Array.isArray(key) && key.length > 0) {
+                        setActiveSubrolePanel(key[0]);
+                    } else {
+                        setActiveSubrolePanel(undefined);
+                    }
+                }}
+            >
                 {subroleMap.map((subrole) => (
-                    <Collapse.Panel header={subrole.name} key={subrole.name}>
+                    <Collapse.Panel
+                        header={subrole.name}
+                        key={subrole.name}
+                        ref={(el) => (subroleRefs.current[subrole.name] = el)}
+                    >
                         {renderRoleDetails(subrole)}
                     </Collapse.Panel>
                 ))}
             </Collapse>
-        </div>
+        </>
     );
 };
 
 export default RoleMapCollapse;
-
