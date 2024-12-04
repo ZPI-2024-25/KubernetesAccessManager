@@ -1,0 +1,32 @@
+.detailsContainer {
+    padding: 16px;
+}
+
+.collapse {
+    margin-bottom: 8px;
+}
+
+.singleDetail {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    align-items: center;
+    word-wrap: break-word;
+}
+
+.key {
+    font-weight: 500;
+    color: #595959;
+    flex: 1;
+    min-width: 30%;
+    padding-right: 16px;
+    word-break: break-word;
+}
+
+.value {
+    flex: 2;
+    text-align: left;
+    word-break: break-word;
+    white-space: pre-wrap;
+}

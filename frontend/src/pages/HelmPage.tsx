@@ -62,7 +62,7 @@ const HelmPage = () => {
 
     return (
         <div>
-            <Tab columns={columns} dataSource={dataSource} type="helm"/>
+            <Tab columns={columns} dataSource={dataSource} />
             <RollbackModal open={openRollbackModal} setOpen={setOpenRollbackModal} release={currentRelease}/>
             <UninstallModal open={openUninstallModal} setOpen={setOpenUninstallModal} release={currentRelease} removeRelease={removeRelease}/>
         </div>

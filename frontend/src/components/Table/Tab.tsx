@@ -1,16 +1,18 @@
 import {Table} from 'antd';
 import styles from './Tab.module.css';
-import DrawerDetails from "../DrawerDetails/DrawerDetails.tsx";
+import ResourceDetailsDrawer from "../DrawerDetails/ResourceDetailsDrawer.tsx";
 import {useState} from "react";
+import {ResourceColumnType, ResourceDataSourceItem} from "../../types";
 
-const Tab = ({columns, dataSource}: {
-    columns: object[],
-    dataSource: object[]
+const Tab = ({columns, dataSource, resourceType}: {
+    columns: ResourceColumnType[],
+    dataSource: ResourceDataSourceItem[],
+    resourceType: string
 }) => {
-    const [selectedRecord, setSelectedRecord] = useState<object | null>(null);
+    const [selectedRecord, setSelectedRecord] = useState<ResourceDataSourceItem | null>(null);
     const [isDrawerVisible, setDrawerVisible] = useState(false);
 
-    const handleRowClick = (record: object) => {
+    const handleRowClick = (record: ResourceDataSourceItem) => {
         setSelectedRecord(record);
         setDrawerVisible(true);
     };
@@ -32,14 +34,17 @@ const Tab = ({columns, dataSource}: {
                     pageSizeOptions: ['10', '20', '50'],
                 }}
                 className={styles.tab}
-                onRow={(record) => ({
+                onRow={(record:ResourceDataSourceItem) => ({
                     onClick: () => handleRowClick(record),
                 })}
             />
-            <DrawerDetails
+            <ResourceDetailsDrawer
                 visible={isDrawerVisible}
                 record={selectedRecord}
-                onClose={handleCloseDrawer} loading={false}            />
+                onClose={handleCloseDrawer}
+                loading={false}
+                resourceType={resourceType}
+                />
         </>
 
     );
