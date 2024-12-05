@@ -59,7 +59,7 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
 
     useEffect(() => {
         if (visible && record) {
-            if ("namespace" in record && "name" in record) {
+            if ("name" in record) {
                 const namespace = record.namespace as string;
                 const resourceName = record.name as string;
                 fetchResourceData(resourceType, resourceName, namespace);
@@ -119,12 +119,10 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
                 <div className={styles.detailsContainer}>
                     {resourceType === "Helm" ? (
                         <Collapse>
-                            {/* Секция с данными релиза */}
                             <Panel header="Release" key={""}>
                                 {renderObject(resourceDetails[0])}
                             </Panel>
 
-                            {/* Секция с историей */}
                             <Panel header="History" key={""}>
                                 {resourceDetails[1]?.map((historyItem: any, index: number) => (
                                     <Collapse key={index}>
@@ -136,7 +134,6 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
                             </Panel>
                         </Collapse>
                     ) : (
-                        // Отображение обычных ресурсов без разделения на секции
                         renderObject(resourceDetails)
                     )}
                 </div>
