@@ -6,11 +6,12 @@ import RoleMapCollapse from "../components/RoleMap/RoleMapCollapse.tsx";
 import {Button, message} from "antd";
 import {FaEdit} from "react-icons/fa";
 import styles from "./RolesPage.module.css";
-import RoleMapForm from "../components/RoleMap/RoleMapForm.tsx";
+import {useNavigate} from "react-router-dom";
 
 const RolesPage = () => {
     const [roleMap, setRoleMap] = useState<RoleMap>();
-    const [isEditing, setIsEditing] = useState(false);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         const func = async () => {
@@ -36,13 +37,15 @@ const RolesPage = () => {
     return (
         <div className={styles.container}>
             <div className={styles.editButtonContainer}>
-                {!isEditing && (
-                    <Button type="primary" icon={<FaEdit/>} onClick={() => setIsEditing(true)}>
-                        Edit Roles
-                    </Button>
-                )}
+                <Button type="primary" icon={<FaEdit/>} onClick={() => {
+                    navigate('edit', {
+                        state: {roleMap}
+                    })
+                }}>
+                    Edit Roles
+                </Button>
             </div>
-            {roleMap && (isEditing ? <RoleMapForm data={roleMap}/> : <RoleMapCollapse data={roleMap}/>)}
+            {roleMap && <RoleMapCollapse data={roleMap}/>}
         </div>
     );
 };
