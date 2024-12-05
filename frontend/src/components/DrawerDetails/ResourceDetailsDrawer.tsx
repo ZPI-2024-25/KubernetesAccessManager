@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Drawer, Spin, Collapse, Typography, Tooltip } from "antd";
-import {HelmDataSourceItem, ResourceDataSourceItem} from "../../types";
+import { HelmDataSourceItem, ResourceDataSourceItem } from "../../types";
 import { getResource } from "../../api/k8s/getResource";
 import styles from "./ResourceDetailsDrawer.module.css";
-import {fetchRelease} from "../../api";
+import { fetchRelease } from "../../api";
 
 const { Paragraph } = Typography;
 const { Panel } = Collapse;
 
 interface DrawerDetailsProps {
     visible: boolean;
-    record: ResourceDataSourceItem | HelmDataSourceItem | null;
+    record: ResourceDataSourceItem | HelmDataSourceItem | object | null;
     onClose: () => void;
     loading: boolean;
     resourceType: string;
@@ -32,13 +32,11 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
     ) => {
         setFetching(true);
         try {
-            if(resourceType != "Helm") {
+            if (resourceType !== "Helm") {
                 const details = await getResource(resourceType, resourceName, namespace);
                 setResourceDetails(details);
                 console.log(details);
-
-            }
-            else {
+            } else {
                 const details = await fetchRelease(resourceName, namespace);
                 setResourceDetails(details);
                 console.log(details);
@@ -56,9 +54,11 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
 
     useEffect(() => {
         if (visible && record) {
-            const namespace = record.namespace as string;
-            const resourceName = record.name as string;
-            fetchResourceData(resourceType, resourceName, namespace);
+            if ("namespace" in record && "name" in record) {
+                const namespace = record.namespace as string;
+                const resourceName = record.name as string;
+                fetchResourceData(resourceType, resourceName, namespace);
+            }
         }
     }, [visible, record]);
 
@@ -89,9 +89,16 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
         });
     };
 
+    const renderTitle = () => {
+        if (record && "name" in record) {
+            return `${resourceType}: ${record.name}`;
+        }
+        return `${resourceType}: Unknown`;
+    };
+
     return (
         <Drawer
-            title={`${resourceType}: ${record?.name || "Unknown"}`}
+            title={renderTitle()}
             placement="right"
             width={600}
             onClose={onClose}
