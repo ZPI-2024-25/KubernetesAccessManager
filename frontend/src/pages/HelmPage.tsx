@@ -12,6 +12,7 @@ import {useAuth} from "../components/AuthProvider/AuthProvider.tsx";
 import { helmResourceLabel } from "../consts/MenuItem.tsx"
 
 const HelmPage = () => {
+
     const [openRollbackModal, setOpenRollbackModal] = useState(false);
     const [openUninstallModal, setOpenUninstallModal] = useState(false);
     const [currentRelease, setCurrentRelease] = useState<HelmDataSourceItem>();
@@ -62,7 +63,7 @@ const HelmPage = () => {
 
     return (
         <div>
-            <Tab columns={columns} dataSource={dataSource} />
+            <Tab columns={columns} dataSource={dataSource}  resourceType={"Helm"}/>
             <RollbackModal open={openRollbackModal} setOpen={setOpenRollbackModal} release={currentRelease}/>
             <UninstallModal open={openUninstallModal} setOpen={setOpenUninstallModal} release={currentRelease} removeRelease={removeRelease}/>
         </div>

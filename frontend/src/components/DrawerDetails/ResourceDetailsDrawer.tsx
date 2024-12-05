@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Drawer, Spin, Collapse, Typography, Tooltip } from "antd";
-import { ResourceDataSourceItem } from "../../types";
+import {HelmDataSourceItem, ResourceDataSourceItem} from "../../types";
 import { getResource } from "../../api/k8s/getResource";
 import styles from "./ResourceDetailsDrawer.module.css";
+import {fetchRelease} from "../../api";
 
 const { Paragraph } = Typography;
 const { Panel } = Collapse;
 
 interface DrawerDetailsProps {
     visible: boolean;
-    record: ResourceDataSourceItem | null;
+    record: ResourceDataSourceItem | HelmDataSourceItem | null;
     onClose: () => void;
     loading: boolean;
     resourceType: string;
@@ -31,8 +32,17 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
     ) => {
         setFetching(true);
         try {
-            const details = await getResource(resourceType, resourceName, namespace);
-            setResourceDetails(details);
+            if(resourceType != "Helm") {
+                const details = await getResource(resourceType, resourceName, namespace);
+                setResourceDetails(details);
+                console.log(details);
+
+            }
+            else {
+                const details = await fetchRelease(resourceName, namespace);
+                setResourceDetails(details);
+                console.log(details);
+            }
         } catch (error: unknown) {
             if (error instanceof Error) {
                 console.error("Error fetching resource details:", error.message);
