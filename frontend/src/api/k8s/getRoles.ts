@@ -2,11 +2,13 @@ import axios from "axios";
 import * as Constants from "../../consts/consts.ts";
 import {RoleConfigMap} from "../../types";
 import {parseApiError} from "../../functions/apiErrorParser.ts";
+import {ROLEMAP_NAME, ROLEMAP_NAMESPACE} from "../../consts/roleMap.ts";
 
-export async function getRoles() : Promise<RoleConfigMap> {
+export async function getRoles(): Promise<RoleConfigMap> {
     try {
-        // TODO: Proper configMap name and namespace
-        const response = await axios.get<{resourceDetails: RoleConfigMap}>(`${Constants.K8S_API_URL}/ConfigMap/role-map?namespace=default`);
+        const response = await axios.get<{
+            resourceDetails: RoleConfigMap
+        }>(`${Constants.K8S_API_URL}/ConfigMap/${ROLEMAP_NAME}?namespace=${ROLEMAP_NAMESPACE}`);
 
         console.log("Fetched Roles:", response.data);
         return response.data.resourceDetails;
