@@ -4,6 +4,12 @@ fullnameOverride: ""
 podAnnotations: {}
 podLabels: {}
 
+KEYCLOAK_URL: ""
+KEYCLOAK_CLIENTNAME: ""
+KEYCLOAK_REALMNAME: ""
+ROLEMAP_NAMESPACE: ""
+ROLEMAP_NAME: ""
+
 backend:
   replicaCount: 1
   image:
@@ -11,12 +17,6 @@ backend:
     pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
-
-  env:
-    KEYCLOAK_URL: ""
-    KEYCLOAK_CLIENTNAME: ""
-    ROLEMAP_NAMESPACE: ""
-    ROLEMAP_NAME: ""
 
   serviceAccount:
     create: true
@@ -85,11 +85,7 @@ ingress:
     - host: "kam.local"
       paths:
         - backend:
-            - path: /api/v1/k8s
-              pathType: Prefix
-            - path: /api/v1/auth
-              pathType: Prefix
-            - path: /api/v1/helm
+            - path: /api
               pathType: Prefix
         - frontend:
             - path: /

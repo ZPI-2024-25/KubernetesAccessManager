@@ -33,14 +33,16 @@ spec:
               containerPort: {{ .Values.backend.service.port }}
               protocol: TCP
           env:
-            - name: KEYCLOAK_URL
-              value: "{{ .Values.backend.env.KEYCLOAK_URL }}"
-            - name: KEYCLOAK_CLIENTNAME
-              value: "{{ .Values.backend.env.KEYCLOAK_CLIENTNAME }}"
-            - name: ROLEMAP_NAMESPACE
-              value: "{{ .Values.backend.env.ROLEMAP_NAMESPACE }}"
-            - name: ROLEMAP_NAME
-              value: "{{ .Values.backend.env.ROLEMAP_NAME }}"
+            - name: VITE_KEYCLOAK_URL
+              value: "{{ .Values.KEYCLOAK_URL }}"
+            - name: VITE_KEYCLOAK_CLIENTNAME
+              value: "{{ .Values.KEYCLOAK_CLIENTNAME }}"
+            - name: VITE_KEYCLOAK_REALMNAME
+              value: "{{ .Values.KEYCLOAK_REALMNAME }}"
+            - name: VITE_ROLEMAP_NAMESPACE
+              value: "{{ .Values.ROLEMAP_NAMESPACE }}"
+            - name: VITE_ROLEMAP_NAME
+              value: "{{ .Values.ROLEMAP_NAME }}"
           livenessProbe:
             {{- toYaml .Values.backend.livenessProbe | nindent 12 }}
           readinessProbe:
