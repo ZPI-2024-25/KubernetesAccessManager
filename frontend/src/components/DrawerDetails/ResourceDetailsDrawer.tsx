@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Drawer, Spin, Collapse, Typography, Tooltip } from "antd";
+import { Drawer, Spin, Collapse, Typography, Alert } from "antd";
 import { HelmDataSourceItem, ResourceDataSourceItem } from "../../types";
 import { getResource } from "../../api/k8s/getResource";
 import styles from "./ResourceDetailsDrawer.module.css";
-import {fetchRelease, fetchReleaseHistory} from "../../api";
+import { fetchRelease, fetchReleaseHistory } from "../../api";
 
 const { Paragraph } = Typography;
 const { Panel } = Collapse;
@@ -24,6 +24,7 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
                                                              }) => {
     const [resourceDetails, setResourceDetails] = useState<any | null>(null);
     const [fetching, setFetching] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null); // State for error messages
 
     const fetchResourceData = async (
         resourceType: string,
@@ -31,6 +32,7 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
         namespace: string
     ) => {
         setFetching(true);
+        setErrorMessage(null); // Reset error message before fetching
         try {
             if (resourceType !== "Helm") {
                 const details = await getResource(resourceType, resourceName, namespace);
@@ -44,13 +46,16 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
 
                 setResourceDetails(combinedDetails);
                 console.log(combinedDetails);
-
             }
         } catch (error: unknown) {
             if (error instanceof Error) {
-                console.error("Error fetching resource details:", error.message);
+                const message = `Error fetching resource details: ${error.message}`;
+                console.error(message);
+                setErrorMessage(message); // Set the error message
             } else {
-                console.error("Unknown error:", error);
+                const message = "Unknown error occurred while fetching resource details.";
+                console.error(message);
+                setErrorMessage(message); // Set the error message
             }
             setResourceDetails(null);
         }
@@ -66,6 +71,10 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
             }
         }
     }, [visible, record]);
+
+    useEffect(() => {
+        onClose();
+    }, [resourceType]);
 
     const renderObject = (obj: any, parentKey = ""): React.ReactNode => {
         if (!obj || typeof obj !== "object") return null;
@@ -85,9 +94,7 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
                 return (
                     <div key={panelKey} className={styles.singleDetail}>
                         <div className={styles.key}>{key}:</div>
-                        <Tooltip title={value?.toString() || "—"}>
-                            <div className={styles.value}>{value?.toString() || "—"}</div>
-                        </Tooltip>
+                        <div className={styles.value}>{value?.toString() || "—"}</div>
                     </div>
                 );
             }
@@ -115,15 +122,23 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
                     size="large"
                     style={{ display: "block", textAlign: "center", marginTop: "100px" }}
                 />
+            ) : errorMessage ? (
+                <Alert
+                    message="Error"
+                    description={errorMessage}
+                    type="error"
+                    showIcon
+                    style={{ marginBottom: "16px" }}
+                />
             ) : resourceDetails ? (
                 <div className={styles.detailsContainer}>
                     {resourceType === "Helm" ? (
-                        <Collapse>
-                            <Panel header="Release" key={""}>
+                        <Collapse defaultActiveKey={['release']}>
+                            <Panel header="Release" key={"release"}>
                                 {renderObject(resourceDetails[0])}
                             </Panel>
 
-                            <Panel header="History" key={""}>
+                            <Panel header="History" key={"history"}>
                                 {resourceDetails[1]?.map((historyItem: any, index: number) => (
                                     <Collapse key={index}>
                                         <Panel header={`Revision ${index + 1}`} key={index + 1}>
@@ -141,9 +156,7 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
                 <Paragraph>No data available</Paragraph>
             )}
         </Drawer>
-
     );
 };
-
 
 export default ResourceDetailsDrawer;
