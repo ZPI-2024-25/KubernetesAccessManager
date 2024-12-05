@@ -1,27 +1,16 @@
 ## For english press [here](#authorization-in-the-application)
-## Opis autoryzacji w aplikacji
+## Opis autoryzacji w Kubernetes Access Manager
 ### Token JWT
-Aplikacja zakłada połączenie z dostarczycielem tożsamości Keycloak lub innym spełniającym wymagania protokołu OpenIdConnect i dostarczającego role. Autoryzacja oparta jest na ekstrakcji ról użytkownika z tokena JWT wysyłanego z każdym zapytaniem do serwera backend. Aplikacja odczytuje role zdefiniowane w dwóch miejscach tokena:
+
+KAM zakłada połączenie z dostarczycielem tożsamości Keycloak lub innym spełniającym wymagania protokołu OpenIdConnect i dostarczającego role. Autoryzacja oparta jest na ekstrakcji ról użytkownika z tokena JWT wysyłanego z każdym zapytaniem do serwera backend. KAM odczytuje role zdefiniowane w dwóch miejscach tokena:
+
 - resource_access → `VITE_KEYCLOAK_CLIENTNAME` → roles: Lista ról przypisanych w kontekście konkretnego klienta.
 - realm_access → roles: Lista ról przypisanych globalnie w ramach danego realm.
 
-Wartość `VITE_KEYCLOAK_CLIENTNAME` odpowiada nazwie klienta skonfigurowanej jako zmienna środowiskowa w Helm Chart. Zmienna ta wskazuje na sekcję tokena odpowiadającą aplikacji.
+Zmienna środowiskowa `VITE_KEYCLOAK_CLIENTNAME` odpowiada nazwie klienta dodanego w Keycloak dla KAM. Zmienna ta wskazuje na sekcję tokena odpowiadającą KAM. Przykład:
 ```json
 {
-  "exp": 1733164880,
-  "iat": 1733164580,
-  "auth_time": 1733164580,
-  "jti": "ed620242-9507-4ab7-bdef-d7e0c5c132e4",
-  "iss": "http://localhost:4000/realms/ZPI-realm",
-  "aud": "account",
-  "sub": "2dffab05-b413-40bd-82e1-bbdd9639d5b4",
-  "typ": "Bearer",
-  "azp": "ZPI-client",
-  "sid": "e355c61f-5394-4110-98ac-8759c6012596",
-  "acr": "1",
-  "allowed-origins": [
-    "*"
-  ],
+  ...
   "realm_access": {
     "roles": [
       "default-roles-zpi-realm",
@@ -42,88 +31,41 @@ Wartość `VITE_KEYCLOAK_CLIENTNAME` odpowiada nazwie klienta skonfigurowanej ja
       ]
     }
   },
-  "scope": "openid email profile",
-  "email_verified": false,
-  "name": "a a",
-  "preferred_username": "zpi-user",
-  "given_name": "a",
-  "family_name": "a",
-  "email": "a@a.a"
+  ...
 }
 ```
-W tym wypadku dla `VITE_KEYCLOAK_CLIENTNAME` równego `"ZPI-client"` aplikacja autoryzowałaby żądanie na podstawie ról `"zpi-role"`, `"default-roles-zpi-realm"`, `"realm-zpi-role"`. Jeśli przynajmniej jedna z wczytanych ról daje użytkownikowi dostęp do określonego zapytania, to użytkownik jest pomyślnie autoryzowany. W przeciwnym wypadku zwracany jest błąd 403 - jeżeli żadna z ról nie nadaje mu odpowiednich uprawnień.
+W tym wypadku dla `VITE_KEYCLOAK_CLIENTNAME` równego `"ZPI-client"` KAM autoryzowałby żądanie na podstawie ról `"zpi-role"`, `"default-roles-zpi-realm"`, `"realm-zpi-role"`. Jeśli przynajmniej jedna z wczytanych ról daje użytkownikowi dostęp do określonego zapytania, to użytkownik jest pomyślnie autoryzowany. W przeciwnym wypadku zwracany jest błąd zgodnie z definicją [API](./api-swagger.yaml).
 
-### Możliwe uprawnienia w aplikacji
-W aplikacji wyróżniamy akcje create, read, update, delete, list. Każde z uprawnień akcji musi być nadane osobno, w szczególności uprawnienie do listowania zasobów nie daje automatycznie możliwości przeglądania ich szczegółów. Uprawnienia można definiować dla konkretnej przestrzeni nazw i typu zasobu, np. Pod, ConfigMap.
+### Możliwe uprawnienia w KAM
+W KAM wyróżniamy akcje create, read, update, delete, list. Każde z uprawnień akcji musi być nadane osobno, w szczególności uprawnienie do listowania zasobów nie daje automatycznie możliwości przeglądania ich szczegółów. Uprawnienia można definiować dla konkretnej przestrzeni nazw i typu zasobu, np. Pod, ConfigMap.
 
 ### Mapa ról na uprawnienia
-W celu korzystania z aplikacji należy przed instalacją zdefiniować zasób typu ConfigMap z kluczami role-map i subrole-map (opcjonalnie). Mapę ról można zmieniać w trakcie działania aplikacji. Nazwę i namespace ConfigMapy należy zdefiniować w zmiennych środowiskowych `ROLEMAP_NAMESPACE` i `ROLEMAP_NAME`. Domyślne wartości to namespace "default" i nazwa "role-map". Przykładowa definicja:
-```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: role-map 
-  namespace: default
-data:
-  role-map: |
-    superadmin:
-      permit:
-        - operations: ["*"]
-    admin:
-      deny: 
-        - namespace: "top-restricted"
-        - namespace: "role-map-namespace"
-          resource: "ConfigMap"
-          operations: ["delete", "create", "update"]
-      permit:
-        - operations: ["*"]
-    manager:
-      deny:
-        - ["delete", "create", "update"]
-      subroles:
-        - "admin1"
-        - "admin2"
-        - "permissionsViewer"
-    team1Admin: 
-      subroles:
-        - "kubeConfigViewer"
-        - "team1Admin"
-        - "permissionsViewer"
-    team2Admin:
-      subroles:
-        - "kubeConfigViewer"
-        - "team2Admin"
-        - "permissionsViewer"
-  subrole-map: |
-    team1Admin:
-      permit:
-        - namespace: "team1"
-    team2Admin:
-      permit:
-        - namespace: "team2"
-    kubeConfigViewer:
-      permit:
-        - namespace: "kube-system"
-          operations: ["read", "list"]
-      deny:
-        - resource: "secretResource"
-    permissionsViewer:
-      permit:
-        - namespace: "role-map-namespace"
-          resource: "ConfigMap"
-          operations: ["read", "list"]
-```
-Pola definicji roli i podroli są takie same. Są to:
+W celu korzystania z KAM należy przed instalacją zdefiniować zasób typu ConfigMap z kluczami role-map i subrole-map (opcjonalnie). Konfigurację można zmieniać w trakcie działania KAM. Nazwę i namespace ConfigMapy należy zdefiniować w zmiennych środowiskowych `ROLEMAP_NAMESPACE` i `ROLEMAP_NAME`. Domyślne wartości to namespace "default" i nazwa "role-map".
 
+Pola definicji roli i podroli są takie same. Są to:
 - **nazwa roli/podroli** - podana przed uprawnieniami, jako klucz. W przypadku roli powinna być dokładnie taka sama jak rola odczytana z listy ról w tokenie JWT.
 - **permit** - lista operacji na które zezwala dana rola
 - **deny** - lista operacji które rola zabrania
 - **subroles** - lista nazw podról, z których dziedziczone są uprawnienia.
 
-Oprócz samej nazwy roli/podroli należy zdefiniować przynajmniej jeden atrybut roli(permit/deny/subroles).
+Oprócz samej nazwy roli/podroli należy zdefiniować przynajmniej jeden atrybut (permit/deny/subroles). Przykład definicji jednej roli/podroli:
+```yaml
+    admin:          # nazwa roli
+      permit:       # lista operacji dozwolonych
+        - namespace: "namespace"
+          resource: "*"
+          operations: ["*"]
+        - namespace: "namespace2"
+          resource: "Pod"
+          operations: ["read", "list"]
+      deny:         # lista operacji zabronionych
+        - namespace: "namespace"
+          resource: "ConfigMap"
+          operations: ["delete", "create", "update"]
+```
 
-### Definiowanie operacji w permit, deny
-Definiując operacje, można uwzględnić trzy atrybuty: namespace, resource (typ zasobu, np. "Pod") oraz akcje (CRUDL). Każdy z tych atrybutów można pominąć, co będzie jednoznaczne z nadaniem/ograniczeniem uprawnień dla wszystkich możliwych namespace'ów, resource'ów lub akcji. Taki sam efekt można uzyskać, wpisując "*" dla namespace i resource lub ["*"] dla operations. Przykład:
+### Definiowanie operacji w `permit`, `deny`
+Definiując operacje, można uwzględnić trzy atrybuty: namespace, resource (typ zasobu, np. "Pod") oraz akcje ("create", "read", "update", "delete", "list"). Każdy z tych atrybutów można pominąć, co będzie jednoznaczne z nadaniem/ograniczeniem uprawnień dla wszystkich możliwych namespace'ów, resource'ów lub akcji. Taki sam efekt można uzyskać, wpisując `"*"` dla namespace i resource lub `["*"]` dla operations. Przykład:
 ```yaml
     admin:
       deny: 
@@ -137,10 +79,57 @@ Definiując operacje, można uwzględnić trzy atrybuty: namespace, resource (ty
 Według powyższej definicji roli, `admin` ma prawo do wszystkich akcji na wszystkich zasobach w dowolnym namespace, za wyjątkiem namespace `"top-restricted"` oraz usuwania, edytowania lub tworzenia ConfigMap w namespace `"role-map-namespace"`. Wartość `operations: ["*"]` jest wymagana, gdyż potrzebny jest przynajmniej jeden atrybut z namespace, resource, operations.
 
 ### Używanie podról
-Używając podról, można zdefiniować konfiguracje uprawnień często powtarzających się pomiędzy poszczególnymi rolami. Ważne jest rozróżnienie pomiędzy rolą a podrolą - nazwa roli pochodzi z zewnętrznego dostawcy tożsamości i musi być dokładnie taka sama jak w tokenie JWT, aby gwarantować użytkownikowi jakiekolwiek uprawnienia. Podrola służy wyłącznie do przekazywania uprawnień do roli. Można zdefiniować rolę i podrolę o tej samej nazwie. Aby rola otrzymała uprawnienia z podroli, należy dodać nazwę podroli do listy "subroles" w roli. Nie można używać ról jako podról. Podrole też mogą posiadać podrole.
 
-Ograniczenia (deny) z podroli nie wpływają na uprawnienia (permit) zdefiniowane w nadroli oraz na uprawnienia wynikające z pozostałych podról nadroli. Natomiast ograniczenia (deny) z nadroli wpływają na uprawnienia (permit) ze wszystkich podroli.
+Używając podról, można zdefiniować konfiguracje uprawnień, które są często powtarzane pomiędzy poszczególnymi rolami. Ważne jest rozróżnienie pomiędzy rolą a podrolą: nazwa roli pochodzi od zewnętrznego dostawcy tożsamości i musi być dokładnie taka sama jak w tokenie JWT, aby użytkownik mógł uzyskać jakiekolwiek uprawnienia. Podrola natomiast służy wyłącznie do przekazywania uprawnień do roli. Można zdefiniować zarówno rolę, jak i podrolę o tej samej nazwie. Aby rola otrzymała uprawnienia z podroli, należy dodać nazwę tej podroli do listy `subroles` w konfiguracji roli. Nie można używać ról jako podról. Podrole mogą posiadać własne podrole.
 
+Ograniczenia `deny` zdefiniowane w podroli nie wpływają na uprawnienia `permit` zdefiniowane w nadrzędnej roli ani na uprawnienia wynikające z innych podról przypisanych do tej roli. Natomiast ograniczenia `deny` w nadrzędnej roli mają wpływ na wszystkie uprawnienia `permit` zdefiniowane w jej podrolach. 
+
+Przykłady:
+
+#### 1. Prosty przypadek użycia podroli
+```yaml
+  role-map: |
+    userWithList:
+      permit:
+        - operations: ["list"]
+      subroles:
+        - "permissionsViewer"
+    user:
+      subroles:
+        - "permissionsViewer"
+  subrole-map: |
+    permissionsViewer:
+      permit:
+        - namespace: "role-map-namespace"
+          resource: "ConfigMap"
+          operations: ["read", "list"]
+```
+W powyższym przykładzie `user` i `userWithList` otrzymują uprawnienia zdefiniowane w podroli `permissionsViewer` - czytanie i listowanie `ConfigMap` w namespace `"role-map-namespace"`. Rola `userWithList` dodatkowo ma uprawnienie do listowania wszystkich zasobów.
+
+#### 2. Ograniczanie uprawnień z podról
+```yaml
+  role-map: |
+    role:
+      permit:
+        - operations: ["list"]
+      deny:
+        - namespace: "other-restricted"
+          operations: ["*"]
+      subroles:
+        - "readCreator"
+  subrole-map: |
+    readCreator:
+      deny:
+        - namespace: "restricted"
+          operations: ["*"]
+      permit:
+        - operations: ["read", "create"]
+```
+W powyższym przykładzie podrola `readCreator` nadaje uprawnienia do akcji `read` i `create` w dowolnym namespace poza `restricted`. Rola `role` posiada swoje własne uprawnienia do listowania i ograniczenie dostępu do namespace'a `other-restricted` oraz otrzymuje uprawnienia z podroli `readCreator`. Oznacza to że użytkownik z rolą `role` będzie mógł:
+- listować zasoby w dowolnym namespace poza `other-restricted` zgodnie z zasadą, że ograniczenia z podroli nie mają wpływu na uprawnienia z nadroli
+- czytać i tworzyć zasoby w dowolnym namespace poza `restricted` i `other-restricted` zgodnie z zasadą, że ograniczenia z nadroli mają wpływ na uprawnienia z podroli
+
+#### 3. Rozróżnienie pomiędzy rolą a podrolą, podrole podról
 Przykład:
 ```yaml
   role-map: |
@@ -179,70 +168,7 @@ Rola `manager` niezależnie od uprawnień podról (`team1admin`, `team2admin`) n
 
 Ostatecznie rola `team1admin` gwarantuje uprawnienia do wszystkich zasobów i akcji w namespace `"team1"` oraz podgląd i listowanie ConfigMap w namespace `"role-map-namespace"`, analogicznie `team2admin` dla namespace `"team2"`. Rola `manager` może listować i czytać szczegóły zasobów w namespace’ach `"team1"`, `"team2"` oraz ConfigMap’y w namespace `"role-map-namespace"`
 
-## Authorization in the Application
-
-### JWT Token
-
-The application connects to an identity provider such as Keycloak or another provider compliant with the OpenID Connect protocol that provides user roles. Authorization is based on extracting user roles from the JWT token sent with every request to the backend server. The application reads roles defined in two sections of the token:
-
-- **`resource_access` → `VITE_KEYCLOAK_CLIENTNAME` → `roles`**: A list of roles assigned in the context of a specific client.
-- **`realm_access` → `roles`**: A list of roles assigned globally within the realm.
-
-The value of `VITE_KEYCLOAK_CLIENTNAME` corresponds to the client name configured as an environment variable in the Helm Chart. This variable indicates the token section relevant to the application.
-```json
-{
-  "exp": 1733164880,
-  "iat": 1733164580,
-  "auth_time": 1733164580,
-  "jti": "ed620242-9507-4ab7-bdef-d7e0c5c132e4",
-  "iss": "http://localhost:4000/realms/ZPI-realm",
-  "aud": "account",
-  "sub": "2dffab05-b413-40bd-82e1-bbdd9639d5b4",
-  "typ": "Bearer",
-  "azp": "ZPI-client",
-  "sid": "e355c61f-5394-4110-98ac-8759c6012596",
-  "acr": "1",
-  "allowed-origins": [
-    "*"
-  ],
-  "realm_access": {
-    "roles": [
-      "default-roles-zpi-realm",
-      "realm-zpi-role",
-    ]
-  },
-  "resource_access": {
-    "ZPI-client": {
-      "roles": [
-        "zpi-role"
-      ]
-    },
-    "account": {
-      "roles": [
-        "manage-account",
-        "manage-account-links",
-        "view-profile"
-      ]
-    }
-  },
-  "scope": "openid email profile",
-  "email_verified": false,
-  "name": "a a",
-  "preferred_username": "zpi-user",
-  "given_name": "a",
-  "family_name": "a",
-  "email": "a@a.a"
-}
-```
-In this case, for `VITE_KEYCLOAK_CLIENTNAME` equal to `"ZPI-client"`, the application would authorize the request based on the roles `"zpi-role"`, `"default-roles-zpi-realm"`, and `"realm-zpi-role"`. If at least one of the extracted roles grants the user access to the requested operation, the user is successfully authorized. Otherwise, a `403 Forbidden` error is returned if none of the roles provide the necessary permissions.
-
-### Possible Permissions in the Application
-
-The application distinguishes the following actions: **create**, **read**, **update**, **delete**, and **list**. Each action's permission must be granted separately. Notably, permission to list resources does not automatically grant access to view their details. Permissions can be defined for specific namespaces and resource types, such as `Pod` or `ConfigMap`.
-
-### Role-to-Permissions Mapping
-
-To use the application, you must define a `ConfigMap` resource with the keys `role-map` and optionally `subrole-map` before installation. The role map can be modified while the application is running. The name and namespace of the `ConfigMap` must be set in the environment variables `ROLEMAP_NAMESPACE` and `ROLEMAP_NAME`. The default values are the namespace `"default"` and the name `"role-map"`. Example definition:
+### Pełne wykorzystanie wszystkich możliwości definiowanie mapy ról
 ```yaml
 apiVersion: v1
 kind: ConfigMap
@@ -298,18 +224,83 @@ data:
           resource: "ConfigMap"
           operations: ["read", "list"]
 ```
-The fields for defining roles and subroles are the same. These are:
 
-- **Role/Subrole Name** - Provided as a key before permissions. For roles, it must match exactly the role name extracted from the list of roles in the JWT token.
-- **permit** - A list of operations that the role is allowed to perform.
-- **deny** - A list of operations that the role is prohibited from performing.
+## Authorization in Kubernetes Access Manager
+### JWT token
+
+KAM assumes a connection with an identity provider such as Keycloak or another provider that complies with the OpenIdConnect protocol and provides roles. Authorization is based on extracting user roles from the JWT token sent with each request to the backend server. KAM reads roles defined in two sections of the token:
+
+- `resource_access` → `VITE_KEYCLOAK_CLIENTNAME` → roles: A list of roles assigned in the context of a specific client.
+- `realm_access` → roles: A list of roles assigned globally within a given realm.
+
+The environment variable `VITE_KEYCLOAK_CLIENTNAME` corresponds to the name of the client added in Keycloak for KAM. This variable points to the token section associated with KAM. Example:
+
+```json
+{
+  ...
+  "realm_access": {
+    "roles": [
+      "default-roles-zpi-realm",
+      "realm-zpi-role",
+    ]
+  },
+  "resource_access": {
+    "ZPI-client": {
+      "roles": [
+        "zpi-role"
+      ]
+    },
+    "account": {
+      "roles": [
+        "manage-account",
+        "manage-account-links",
+        "view-profile"
+      ]
+    }
+  },
+  ...
+}
+```
+In this case, for `VITE_KEYCLOAK_CLIENTNAME` equal to `"ZPI-client"`, KAM would authorize the request based on the roles `"zpi-role"`, `"default-roles-zpi-realm"`, and `"realm-zpi-role"`. If at least one of the loaded roles grants the user access to a specific request, the user is successfully authorized. Otherwise, an error is returned according to the [API definition](./api-swagger.yaml).
+
+### Possible permissions in KAM
+
+KAM distinguishes between the following actions: create, read, update, delete, and list. Each action's permission must be granted separately. In particular, having permission to list resources does not automatically grant the ability to view their details. Permissions can be defined for a specific namespace and resource type, e.g., Pod, ConfigMap.
+
+### Mapping roles to permissions
+
+To use KAM, a resource of type ConfigMap must be defined before installation, with the keys `role-map` and optionally `subrole-map`. The configuration can be modified while KAM is running. The name and namespace of the ConfigMap must be specified in the environment variables `ROLEMAP_NAMESPACE` and `ROLEMAP_NAME`. Default values are the namespace `"default"` and the name `"role-map"`.
+
+The fields for defining roles and subroles are the same and include the following:
+
+- **Role/Subrole Name** - Specified before the permissions, as a key. For roles, it must match exactly the name of the role read from the list of roles in the JWT token.
+- **permit** - A list of operations that the role allows.
+- **deny** - A list of operations that the role prohibits.
 - **subroles** - A list of subrole names from which permissions are inherited.
 
-In addition to the role/subrole name, at least one attribute (`permit`, `deny`, or `subroles`) must be defined for the role.
+In addition to the role/subrole name, at least one attribute (`permit`, `deny`, or `subroles`) must be defined. An example definition of a single role/subrole:
 
-### Defining Operations in `permit` and `deny`
+```yaml
+    admin:          # role name
+      permit:       # permitted operations list
+        - namespace: "namespace"
+          resource: "*"
+          operations: ["*"]
+        - namespace: "namespace2"
+          resource: "Pod"
+          operations: ["read", "list"]
+      deny:         # denied operations list
+        - namespace: "namespace"
+          resource: "ConfigMap"
+          operations: ["delete", "create", "update"]
+```
 
-When defining operations, you can specify three attributes: **namespace**, **resource** (resource type, e.g., `Pod`), and **action** (CRUDL). Any of these attributes can be omitted, which will grant or restrict permissions for all possible namespaces, resources, or actions. The same effect can be achieved by using `*` for namespace and resource or `[“*”]` for operations. Example:
+### Defining operations in `permit` and `deny`
+
+When defining operations, three attributes can be specified: `namespace`, `resource` (the type of resource, e.g., "Pod"), and `operations` ("create", "read", "update", "delete", "list"). Each of these attributes can be omitted, which will be interpreted as granting or restricting permissions for all possible namespaces, resources, or actions. The same effect can be achieved by explicitly using `"*"` for `namespace` and `resource`, or `["*"]` for `operations`. 
+
+Example:
+
 ```yaml
     admin:
       deny: 
@@ -320,15 +311,61 @@ When defining operations, you can specify three attributes: **namespace**, **res
       permit:
         - operations: ["*"]
 ```
-According to the above role definition, the `admin` role has permission to perform all actions on all resources in any namespace, except for the namespace `top-restricted` and for deleting, editing, or creating `ConfigMap` resources in the namespace `role-map-namespace`. The value `operations: ["*"]` is required, as at least one of the attributes `namespace`, `resource`, or `operations` must be specified.
+According to the above role definition, `admin` has the right to perform all actions on all resources in any namespace, except for the namespace `"top-restricted"` and the actions of deleting, editing, or creating ConfigMaps in the namespace `"role-map-namespace"`. The value `operations: ["*"]` is required, as at least one attribute from `namespace`, `resource`, or `operations` must be specified.
 
-### Using Subroles
+### Using subroles
 
-Subroles can be used to define permission configurations that are frequently repeated across different roles. It is important to distinguish between a role and a subrole. The role name is provided by an external identity provider and must match exactly the name in the JWT token to grant the user any permissions. Subroles are used solely for passing permissions to a role. It is possible to define a role and a subrole with the same name. For a role to inherit permissions from a subrole, the subrole's name must be added to the `subroles` list in the role. Roles cannot be used as subroles. Subroles, however, can have their own subroles.
+By using subroles, you can define configurations of permissions that are frequently reused across various roles. It is important to distinguish between a role and a subrole: the role name is derived from an external identity provider and must match exactly the role name in the JWT token for the user to gain any permissions. A subrole, on the other hand, is used solely to pass permissions to a role. Both a role and a subrole can be defined with the same name. To grant a role permissions from a subrole, the name of the subrole must be added to the `subroles` list in the role configuration. Roles cannot be used as subroles, but subroles can have their own subroles.
 
-Restrictions (`deny`) defined in a subrole do not affect permissions (`permit`) defined in the parent role or permissions inherited from other subroles of the parent role. However, restrictions (`deny`) from the parent role do affect permissions (`permit`) inherited from all its subroles.
+The `deny` restrictions defined in a subrole do not affect the `permit` permissions defined in the parent role or those resulting from other subroles assigned to that role. However, `deny` restrictions in the parent role affect all `permit` permissions defined in its subroles.
 
-Example:
+Examples:
+
+#### 1. Simple use case of subroles
+```yaml
+  role-map: |
+    userWithList:
+      permit:
+        - operations: ["list"]
+      subroles:
+        - "permissionsViewer"
+    user:
+      subroles:
+        - "permissionsViewer"
+  subrole-map: |
+    permissionsViewer:
+      permit:
+        - namespace: "role-map-namespace"
+          resource: "ConfigMap"
+          operations: ["read", "list"]
+```
+In the example above, both `user` and `userWithList` inherit permissions defined in the subrole `permissionsViewer` reading and listing `ConfigMap` resources in the `role-map-namespace` namespace. Additionally, the `userWithList` role has the permission to list all resources.
+
+#### 2. Restricting permissions from subroles
+```yaml
+  role-map: |
+    role:
+      permit:
+        - operations: ["list"]
+      deny:
+        - namespace: "other-restricted"
+          operations: ["*"]
+      subroles:
+        - "readCreator"
+  subrole-map: |
+    readCreator:
+      deny:
+        - namespace: "restricted"
+          operations: ["*"]
+      permit:
+        - operations: ["read", "create"]
+```
+In the example above, the subrole `readCreator` grants permissions for the `read` and `create` actions in any namespace except `restricted`. The `role` role has its own permissions to list resources and restricts access to the `other-restricted` namespace. Additionally, it inherits permissions from the `readCreator` subrole. This means that a user with the `role` role will be able to:
+
+- List resources in any namespace except `other-restricted`, according to the rule that restrictions from subroles do not affect the permissions granted by the parent role.
+- Read and create resources in any namespace except `restricted` and `other-restricted`, following the rule that restrictions in the parent role affect the permissions inherited from subroles.
+
+#### 3. Distinction between roles and subroles, subroles of subroles
 ```yaml
   role-map: |
     manager:
@@ -360,8 +397,65 @@ Example:
           resource: "ConfigMap"
           operations: ["read", "list"]
 ```
-In the example above, `team1Admin` is defined as both a role and a subrole. This does not cause a problem, as roles and subroles are always considered separate entities. The subrole `team1admin` inherits permissions from `permissionViewer`, allowing any operations in the `team1` namespace and reading and listing `ConfigMap` resources in the `role-map-namespace`. The same applies to `team2admin`, operating in the `team2` namespace. These subroles are subroles for the roles `team1admin`, `team2admin`, and `manager`.
+W przedstawionym przykładzie `team1admin` jest jednocześnie zdefiniowany jako rola i podrola. Nie powoduje to problemu, gdyż role i podrole są zawsze rozpatrywane jako osobne byty. Podrola `team1admin` dziedziczy uprawnienia z `permissionViewer`, umożliwiając dowolne operacje w namespace `team1` oraz odczyt i listowanie ConfigMap w namespace `"role-map-namespace"`. Analogicznie działa `team2admin`, operując w namespace `"team2"`. Podrole te są podrolami dla ról `team1admin`, `team2admin` oraz dla `manager`.
 
-The `manager` role, regardless of the permissions of its subroles (`team1admin`, `team2admin`), cannot perform delete, create, or update actions. This is due to the parent role's restrictions (deny), which take precedence over subrole permissions. Subroles can inherit permissions from other subroles, as seen in the `team1Admin` and `permissionViewer` example.
+Rola `manager` niezależnie od uprawnień podról (`team1admin`, `team2admin`) nie może wykonywać operacji delete, create ani update, co wynika z nadrzędnych ograniczeń (deny). Ograniczenia te mają wyższy priorytet niż uprawnienia z podról. Podrole mogą dziedziczyć uprawnienia od innych podról, co widać na przykładzie `team1Admin` i `permissionViewer`.
 
-Ultimately, the `team1Admin` role grants permissions to all resources and actions in the `team1` namespace and viewing and listing `ConfigMap` resources in the `role-map-namespace`. Similarly, `team2admin` grants permissions in the `team2` namespace. The `manager` role can list and read resource details in the `team1` and `team2` namespaces and `ConfigMap` resources in the `role-map-namespace`.
+Ostatecznie rola `team1admin` gwarantuje uprawnienia do wszystkich zasobów i akcji w namespace `"team1"` oraz podgląd i listowanie ConfigMap w namespace `"role-map-namespace"`, analogicznie `team2admin` dla namespace `"team2"`. Rola `manager` może listować i czytać szczegóły zasobów w namespace’ach `"team1"`, `"team2"` oraz ConfigMap’y w namespace `"role-map-namespace"`
+
+### Pełne wykorzystanie wszystkich możliwości definiowanie mapy ról
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: role-map 
+  namespace: default
+data:
+  role-map: |
+    superadmin:
+      permit:
+        - operations: ["*"]
+    admin:
+      deny: 
+        - namespace: "top-restricted"
+        - namespace: "role-map-namespace"
+          resource: "ConfigMap"
+          operations: ["delete", "create", "update"]
+      permit:
+        - operations: ["*"]
+    manager:
+      deny:
+        - ["delete", "create", "update"]
+      subroles:
+        - "admin1"
+        - "admin2"
+        - "permissionsViewer"
+    team1Admin: 
+      subroles:
+        - "kubeConfigViewer"
+        - "team1Admin"
+        - "permissionsViewer"
+    team2Admin:
+      subroles:
+        - "kubeConfigViewer"
+        - "team2Admin"
+        - "permissionsViewer"
+  subrole-map: |
+    team1Admin:
+      permit:
+        - namespace: "team1"
+    team2Admin:
+      permit:
+        - namespace: "team2"
+    kubeConfigViewer:
+      permit:
+        - namespace: "kube-system"
+          operations: ["read", "list"]
+      deny:
+        - resource: "secretResource"
+    permissionsViewer:
+      permit:
+        - namespace: "role-map-namespace"
+          resource: "ConfigMap"
+          operations: ["read", "list"]
+```
