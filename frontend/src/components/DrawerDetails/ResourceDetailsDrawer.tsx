@@ -121,4 +121,5 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
     );
 };
 
+
 export default ResourceDetailsDrawer;
