@@ -3,7 +3,7 @@ import { Drawer, Spin, Collapse, Typography, Tooltip } from "antd";
 import { HelmDataSourceItem, ResourceDataSourceItem } from "../../types";
 import { getResource } from "../../api/k8s/getResource";
 import styles from "./ResourceDetailsDrawer.module.css";
-import { fetchRelease } from "../../api";
+import {fetchRelease, fetchReleaseHistory} from "../../api";
 
 const { Paragraph } = Typography;
 const { Panel } = Collapse;
@@ -38,8 +38,13 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
                 console.log(details);
             } else {
                 const details = await fetchRelease(resourceName, namespace);
-                setResourceDetails(details);
-                console.log(details);
+                const history = await fetchReleaseHistory(resourceName, namespace);
+
+                const combinedDetails = [details, history];
+
+                setResourceDetails(combinedDetails);
+                console.log(combinedDetails);
+
             }
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -112,12 +117,34 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
                 />
             ) : resourceDetails ? (
                 <div className={styles.detailsContainer}>
-                    {renderObject(resourceDetails)}
+                    {resourceType === "Helm" ? (
+                        <Collapse>
+                            {/* Секция с данными релиза */}
+                            <Panel header="Release" key={""}>
+                                {renderObject(resourceDetails[0])}
+                            </Panel>
+
+                            {/* Секция с историей */}
+                            <Panel header="History" key={""}>
+                                {resourceDetails[1]?.map((historyItem: any, index: number) => (
+                                    <Collapse key={index}>
+                                        <Panel header={`Revision ${index + 1}`} key={index + 1}>
+                                            {renderObject(historyItem)}
+                                        </Panel>
+                                    </Collapse>
+                                ))}
+                            </Panel>
+                        </Collapse>
+                    ) : (
+                        // Отображение обычных ресурсов без разделения на секции
+                        renderObject(resourceDetails)
+                    )}
                 </div>
             ) : (
                 <Paragraph>No data available</Paragraph>
             )}
         </Drawer>
+
     );
 };
 
