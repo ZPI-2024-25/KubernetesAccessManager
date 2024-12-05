@@ -64,9 +64,9 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
 
     useEffect(() => {
         if (visible && record) {
-            if ("name" in record) {
-                const namespace = record.namespace as string;
-                const resourceName = record.name as string;
+            if ("name" in record || "resource" in record) {
+                const namespace = "resource" in record ? "default" : (record.namespace as string);
+                const resourceName = "resource" in record ? (record.resource as string) : (record.name as string);
                 fetchResourceData(resourceType, resourceName, namespace);
             }
         }
