@@ -30,7 +30,4 @@
     word-break: break-word;
     white-space: pre-wrap;
 }
-.selected {
-    border-left: 4px solid #2e9cca;
-    padding-left: 10px;
-}
+
