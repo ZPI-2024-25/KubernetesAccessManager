@@ -9,10 +9,16 @@ import {convertRoleMapToRoleConfigMap} from "../../functions/roleMapConversions.
 import {updateRoles} from "../../api/k8s/updateRoles.ts";
 import {useNavigate} from "react-router-dom";
 import RoleOperationsTable from "./RoleOperationsTable.tsx";
+import {getAuthStatus} from "../../api";
+import {Permissions} from "../../types/authTypes.ts";
+import * as Constants from "../../consts/consts.ts";
+import {useAuth} from "../AuthProvider/AuthProvider.tsx";
 
 const RoleMapForm = ({data}: { data: RoleMap }) => {
     const [form] = Form.useForm();
     const navigate = useNavigate();
+
+    const {setUserPermissions} = useAuth();
 
     const [isModified, setIsModified] = useState(false);
 
@@ -290,6 +296,13 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
 
         updateRoles(covertedData).then(() => {
             setIsModified(false);
+
+            getAuthStatus().then((permissions: Permissions) => {
+                setUserPermissions(permissions);
+                localStorage.setItem(Constants.PERMISSIONS_STR_KEY, JSON.stringify(permissions));
+            }).catch((error) => {
+                console.error('Error fetching user status:', error);
+            });
 
             navigate('/Roles');
         }).catch((error) => {
