@@ -14,7 +14,7 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
     const [roleMap, setRoleMap] = useState(data.data.roleMap);
     const [subroleMap, setSubroleMap] = useState(data.data.subroleMap);
 
-    const generateColumns = (role: Role, mapType: string): ColumnsType<RoleOperation> => {
+    const generateColumns = (role: Role, mapType: "role" | "sub"): ColumnsType<RoleOperation> => {
         return [
             {
                 title: "",
@@ -23,7 +23,7 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
                 width: "5%",
                 render: (_, record: RoleOperation) => (
                     <Button type="text" danger icon={<IoMdClose/>} onClick={
-                        () => mapType === "sub" ? removeOperationSub(role, record) : removeOperation(role, record)
+                        () => handleRemoveOperation(role, record, mapType)
                     }>
                     </Button>
                 ),
@@ -33,14 +33,14 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
                 dataIndex: "namespace",
                 key: "namespace",
                 width: "25%",
-                render: (namespace: string) => (!namespace || namespace === "*" ? "All" : namespace),
+                render: (namespace: string) => (namespace === "*" ? "All" : namespace),
             },
             {
                 title: "Resource",
                 dataIndex: "resource",
                 key: "resource",
                 width: "25%",
-                render: (resource: string) => (!resource || resource === "*" ? "All" : resource),
+                render: (resource: string) => (resource === "*" ? "All" : resource),
             },
             {
                 title: "Operations",
@@ -48,15 +48,14 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
                 key: "operations",
                 render: (operations: string[]) => (
                     <>
-                        {(!operations || operations.length === 0) ? (
-                            <Tag color="green">All</Tag>
-                        ) : (
+                        {operations?.length > 0 ? (
                             operations.map((op) => (
                                 <Tag color="green" key={op}>
                                     {op === "*" ? "All" : capitalizeFirst(op)}
                                 </Tag>
                             ))
-                        )}
+                        ) : null
+                        }
                     </>
                 ),
             },
@@ -64,91 +63,56 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
     }
 
 
-    const newOperation = {
+    const newOperation: RoleOperation = {
         namespace: "",
         resource: "",
         operations: []
     };
 
-    const handleAddPermission = (role: Role) => {
-        const roleIndex = roleMap.findIndex(r => r.name === role.name);
-        const updatedRoleMap = [...roleMap];
-
-        const updatedRole = {...role};
-        updatedRole.permit = [...(updatedRole.permit || []), newOperation];
-
-        updatedRoleMap[roleIndex] = updatedRole;
-
-        setRoleMap(updatedRoleMap);
+    function getMapAndSetter(mapType: "role" | "sub"): [Role[], (val: Role[]) => void] {
+        if (mapType === "role") {
+            return [roleMap, setRoleMap];
+        } else {
+            return [subroleMap, setSubroleMap];
+        }
     }
 
-    const handleAddDeny = (role: Role) => {
-        const roleIndex = roleMap.findIndex(r => r.name === role.name);
-        const updatedRoleMap = [...roleMap];
+    function handleAddOperation(role: Role, operationType: "permit" | "deny", mapType: "role" | "sub") {
+        const [targetMap, setTargetMap] = getMapAndSetter(mapType);
 
+        const roleIndex = targetMap.findIndex(r => r.name === role.name);
+        if (roleIndex === -1) return;
+
+        const updatedMap = [...targetMap];
         const updatedRole = {...role};
-        updatedRole.deny = [...(updatedRole.deny || []), newOperation];
 
-        updatedRoleMap[roleIndex] = updatedRole;
+        updatedRole[operationType] = [...(updatedRole[operationType] || []), newOperation];
 
-        setRoleMap(updatedRoleMap);
+        updatedMap[roleIndex] = updatedRole;
+        setTargetMap(updatedMap);
     }
 
-    const handleAddPermissionSub = (role: Role) => {
-        const roleIndex = subroleMap.findIndex(r => r.name === role.name);
-        const updatedSubRoleMap = [...subroleMap];
+    function handleRemoveOperation(role: Role, operation: RoleOperation, mapType: "role" | "sub") {
+        const [targetMap, setTargetMap] = getMapAndSetter(mapType);
 
+        const roleIndex = targetMap.findIndex(r => r.name === role.name);
+        if (roleIndex === -1) return;
+
+        const updatedMap = [...targetMap];
         const updatedRole = {...role};
-        updatedRole.permit = [...(updatedRole.permit || []), newOperation];
 
-        updatedSubRoleMap[roleIndex] = updatedRole;
-
-        setSubroleMap(updatedSubRoleMap);
-    }
-
-    const handleAddDenySub = (role: Role) => {
-        const roleIndex = subroleMap.findIndex(r => r.name === role.name);
-        const updatedSubRoleMap = [...subroleMap];
-
-        const updatedRole = {...role};
-        updatedRole.deny = [...(updatedRole.deny || []), newOperation];
-
-        updatedSubRoleMap[roleIndex] = updatedRole;
-
-        setSubroleMap(updatedSubRoleMap);
-    }
-
-    const removeOperation = (role: Role, operation: RoleOperation) => {
-        const roleIndex = roleMap.findIndex(r => r.name === role.name);
-        const updatedRoleMap = [...roleMap];
-
-        const updatedRole = {...role};
         updatedRole.permit = updatedRole.permit?.filter(op => op !== operation);
         updatedRole.deny = updatedRole.deny?.filter(op => op !== operation);
 
-        updatedRoleMap[roleIndex] = updatedRole;
-
-        setRoleMap(updatedRoleMap);
-    }
-
-    const removeOperationSub = (role: Role, operation: RoleOperation) => {
-        const roleIndex = subroleMap.findIndex(r => r.name === role.name);
-        const updatedSubRoleMap = [...subroleMap];
-
-        const updatedRole = {...role};
-        updatedRole.permit = updatedRole.permit?.filter(op => op !== operation);
-        updatedRole.deny = updatedRole.deny?.filter(op => op !== operation);
-
-        updatedSubRoleMap[roleIndex] = updatedRole;
-
-        setSubroleMap(updatedSubRoleMap);
+        updatedMap[roleIndex] = updatedRole;
+        setTargetMap(updatedMap);
     }
 
     const subroles = subroleMap.map((subrole) => {
         return {label: subrole.name, value: subrole.name};
     });
 
-    const renderRoleDetails = (role: Role, mapType: string) => (
+    const renderRoleDetails = (role: Role, mapType: "role" | "sub") => (
         <>
 
             <h4>Permitted Operations:</h4>
@@ -160,7 +124,7 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
                 size="small"
             />
             <Button className={styles.addPermissionButton} type="default"
-                    onClick={() => mapType == "sub" ? handleAddPermissionSub(role) : handleAddPermission(role)}>
+                    onClick={() => handleAddOperation(role, "permit", mapType)}>
                 Add Permission
             </Button>
 
@@ -174,7 +138,7 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
                 size="small"
             />
             <Button className={styles.addPermissionButton} type="default"
-                    onClick={() => mapType == "sub" ? handleAddDenySub(role) : handleAddDeny(role)}>
+                    onClick={() => handleAddOperation(role, "deny", mapType)}>
                 Add Deny
             </Button>
 
@@ -225,7 +189,7 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
                                 closable={closable}
                                 // onClose={isValid ? onClose : undefined}
                                 onClose={onClose}
-                                style={{ marginInlineEnd: 4 }}
+                                style={{marginInlineEnd: 4}}
                             >
                                 {label}
                             </Tag>
