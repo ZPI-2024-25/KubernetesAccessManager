@@ -1,16 +1,14 @@
 import {Role, RoleMap, RoleOperation} from "../../types";
 import styles from "./RoleMapForm.module.css";
-import {Button, Collapse, Form, Input, Modal, Select, Table, Tag} from "antd";
+import {Button, Collapse, Form, Input, Modal} from "antd";
 import {MdCancel} from "react-icons/md";
 import {FaSave} from "react-icons/fa";
 import {useEffect, useState} from "react";
-import {IoMdClose} from "react-icons/io";
-import {ColumnsType} from "antd/es/table";
 import SubroleSelect from "./SubroleSelect.tsx";
-import {operationsOptions, resourcesOptions} from "../../consts/roleOptions.ts";
 import {convertRoleMapToRoleConfigMap} from "../../functions/roleMapConversions.ts";
 import {updateRoles} from "../../api/k8s/updateRoles.ts";
 import {useNavigate} from "react-router-dom";
+import RoleOperationsTable from "./RoleOperationsTable.tsx";
 
 const RoleMapForm = ({data}: { data: RoleMap }) => {
     const [form] = Form.useForm();
@@ -20,93 +18,6 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
 
     const [roleMap, setRoleMap] = useState(data.data.roleMap);
     const [subroleMap, setSubroleMap] = useState(data.data.subroleMap);
-
-    const generateColumns = (role: Role, mapType: "role" | "sub"): ColumnsType<RoleOperation> => {
-        return [
-            {
-                title: "",
-                dataIndex: "remove",
-                key: "remove",
-                width: "5%",
-                render: (_, record: RoleOperation) => (
-                    <Button type="text" danger icon={<IoMdClose/>} onClick={
-                        () => handleRemoveOperation(role, record, mapType)
-                    }>
-                    </Button>
-                ),
-            },
-            {
-                title: "Namespace",
-                dataIndex: "namespace",
-                key: "namespace",
-                width: "25%",
-                render: (namespace: string, record: RoleOperation) => (
-                    <Input
-                        value={namespace}
-                        placeholder="Namespace"
-                        onChange={(e) => handleUpdateOperationField(role, record, mapType, 'namespace', e.target.value)}
-                    />
-                ),
-            },
-            {
-                title: "Resource",
-                dataIndex: "resource",
-                key: "resource",
-                width: "25%",
-                render: (resource: string, record: RoleOperation) => (
-                    <Select
-                        style={{width: "100%"}}
-                        value={resource}
-                        options={resourcesOptions}
-                        onChange={(val) => handleUpdateOperationField(role, record, mapType, 'resource', val)}
-                    />
-                ),
-            },
-            {
-                title: "Operations",
-                dataIndex: "operations",
-                key: "operations",
-                render: (operations: string[], record: RoleOperation) => (
-                    <Select
-                        mode="tags"
-                        style={{width: "100%"}}
-                        value={operations}
-                        options={operationsOptions}
-                        onChange={(vals: string[]) => {
-                            if (vals.includes("*")) {
-                                vals = ["*"];
-                            } else {
-                                vals = vals.filter(v => v !== "*");
-                            }
-
-                            const allowedValues = operationsOptions.map(o => o.value);
-                            vals = vals.filter(v => allowedValues.includes(v));
-
-                            handleUpdateOperationField(role, record, mapType, 'operations', vals);
-                        }}
-                        tagRender={({label, closable, onClose}) => {
-                            const onPreventMouseDown = (event: React.MouseEvent) => {
-                                event.preventDefault();
-                                event.stopPropagation();
-                            }
-
-                            return (
-                                <Tag
-                                    color="green"
-                                    onMouseDown={onPreventMouseDown}
-                                    closable={closable}
-                                    onClose={onClose}
-                                    style={{marginInlineEnd: 4}}
-                                >
-                                    {label}
-                                </Tag>
-                            );
-                        }}
-                    />
-                ),
-            },
-        ]
-    }
 
     const newOperation: RoleOperation = {
         namespace: "",
@@ -221,13 +132,9 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
     const renderOperationsTable = (role: Role, operationType: "permit" | "deny", mapType: "role" | "sub") => {
         return (
             <>
-                <Table
-                    columns={generateColumns(role, mapType)}
-                    dataSource={role[operationType]}
-                    rowKey={(record) => `${record.resource}-${record.namespace}`}
-                    pagination={false}
-                    size="small"
-                />
+                <RoleOperationsTable role={role} mapType={mapType}
+                                     handleUpdateOperationField={handleUpdateOperationField}
+                                     handleRemoveOperation={handleRemoveOperation} operationType={operationType}/>
                 <Button className={styles.addPermissionButton} type="default"
                         onClick={() => handleAddOperation(role, operationType, mapType)}>
                     Add {operationType === "permit" ? "Permission" : "Deny"}
@@ -370,13 +277,13 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
     };
 
     const onFinish = () => {
-       const updatedData = {
-           ...data,
+        const updatedData = {
+            ...data,
             data: {
                 roleMap: roleMap,
                 subroleMap: subroleMap
             }
-       }
+        }
 
         const covertedData = convertRoleMapToRoleConfigMap(updatedData);
         console.log(covertedData);
