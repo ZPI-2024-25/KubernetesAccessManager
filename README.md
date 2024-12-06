@@ -182,7 +182,7 @@ The project is available under the XXX license *(License selection in progress)*
 
 ## Авторы
 
-- **Вера Гориухина** – [@vgoriukhina](https://github.com/vgoriukhina)
+- **Вера Горюхина** – [@vgoriukhina](https://github.com/vgoriukhina)
 - **Marek Fiuk** – [@Nightbaka](https://github.com/Nightbaka)
 - **Dawid Walkiewicz** – [@Ninja00Shadow](https://github.com/Ninja00Shadow)
 - **Samuel Żołądz** – [@samuelus](https://github.com/samuelus), [@SamuelZoladz](https://github.com/SamuelZoladz)
