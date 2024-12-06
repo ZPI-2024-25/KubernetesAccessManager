@@ -9,6 +9,7 @@ import DeleteModal from "../components/Modals/DeleteModal.tsx";
 import Tab from "../components/Table/Tab.tsx";
 import {hasPermission, hasPermissionInAnyNamespace} from "../functions/authorization.ts";
 import {useAuth} from "../components/AuthProvider/AuthProvider.tsx";
+import {extractCRDname} from "../functions/extractCRDname.ts";
 
 const ResourcePage = () => {
     const {resourceType} = useParams();
@@ -53,7 +54,9 @@ const ResourcePage = () => {
 
     const handleEdit = (record: ResourceDataSourceItem) => {
         const namespace = record.namespace as string;
-        const resourceName = record.name as string;
+        const resourceName = "resource" in record ? extractCRDname(record) : record.name as string;
+        console.log(resourceName)
+
 
         navigate(`/editor`, {
             state: {resourceType, namespace, resourceName},
