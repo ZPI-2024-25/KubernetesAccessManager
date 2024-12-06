@@ -1,9 +1,9 @@
-import {Table} from 'antd';
+import { Table } from 'antd';
 import styles from './Tab.module.css';
 import ResourceDetailsDrawer from "../DrawerDetails/ResourceDetailsDrawer.tsx";
-import {useState} from "react";
+import { useState } from "react";
 
-const Tab = ({columns, dataSource, resourceType}: {
+const Tab = ({ columns, dataSource, resourceType }: {
     columns: object[],
     dataSource: object[],
     resourceType: string
@@ -20,22 +20,28 @@ const Tab = ({columns, dataSource, resourceType}: {
         setDrawerVisible(false);
         setSelectedRecord(null);
     };
+
     return (
         <>
             <Table
                 columns={columns.map((col, index) =>
-                    index === columns.length - 1 ? {...col, fixed: 'right'} : col
+                    index === columns.length - 1 ? { ...col, fixed: 'right' } : col
                 )}
                 dataSource={dataSource}
-                scroll={{x: 'max-content'}}
+                scroll={{ x: 'max-content' }}
                 pagination={{
                     showSizeChanger: true,
                     pageSizeOptions: ['10', '20', '50'],
                 }}
                 className={styles.tab}
-                onRow={(record:object) => ({
+                onRow={(record: object) => ({
                     onClick: () => handleRowClick(record),
                 })}
+                rowClassName={(record) =>
+                    record === selectedRecord
+                        ? styles.selectedRow
+                        : styles.rowHover
+                }
             />
             <ResourceDetailsDrawer
                 visible={isDrawerVisible}
@@ -43,9 +49,8 @@ const Tab = ({columns, dataSource, resourceType}: {
                 onClose={handleCloseDrawer}
                 loading={false}
                 resourceType={resourceType}
-                />
+            />
         </>
-
     );
 };
 
