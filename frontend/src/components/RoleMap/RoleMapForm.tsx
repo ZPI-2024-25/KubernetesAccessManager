@@ -1,12 +1,13 @@
 import {Role, RoleMap, RoleOperation} from "../../types";
 import styles from "./RoleMapForm.module.css";
-import {Button, Collapse, Form, Input, Select, Table, Tag} from "antd";
+import {Button, Collapse, Form, Input, Table, Tag} from "antd";
 import {MdCancel} from "react-icons/md";
 import {FaSave} from "react-icons/fa";
 import {capitalizeFirst} from "../../functions/toUpperCaseFirstLetter.ts";
 import {useState} from "react";
 import {IoMdClose} from "react-icons/io";
 import {ColumnsType} from "antd/es/table";
+import SubroleSelect from "./SubroleSelect.tsx";
 
 const RoleMapForm = ({data}: { data: RoleMap }) => {
     const [form] = Form.useForm();
@@ -62,7 +63,6 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
         ]
     }
 
-
     const newOperation: RoleOperation = {
         namespace: "",
         resource: "",
@@ -108,93 +108,69 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
         setTargetMap(updatedMap);
     }
 
+    const handleSubroleNameChange = (index: number, newName: string, oldName: string) => {
+        const updatedSubRoleMap = [...subroleMap];
+        const updatedSubrole = { ...updatedSubRoleMap[index] };
+        updatedSubrole.name = newName;
+        updatedSubRoleMap[index] = updatedSubrole;
+
+        const updatedRoleMap = roleMap.map((r) => {
+            if (!r.subroles) return r;
+            const updatedSubroles = r.subroles.map((sr) => sr === oldName ? newName : sr);
+            return { ...r, subroles: updatedSubroles };
+        });
+
+        const updatedSubRoleMap2 = updatedSubRoleMap.map((s) => {
+            if (!s.subroles) return s;
+            const updatedSubroles = s.subroles.map((sr) => sr === oldName ? newName : sr);
+            return { ...s, subroles: updatedSubroles };
+        });
+
+        setRoleMap(updatedRoleMap);
+        setSubroleMap(updatedSubRoleMap2);
+    };
+
     const subroles = subroleMap.map((subrole) => {
         return {label: subrole.name, value: subrole.name};
     });
+
+    const renderOperationsTable = (role: Role, operationType: "permit" | "deny", mapType: "role" | "sub") => {
+        return (
+            <>
+                <Table
+                    columns={generateColumns(role, mapType)}
+                    dataSource={role[operationType]}
+                    rowKey={(record) => `${record.resource}-${record.namespace}`}
+                    pagination={false}
+                    size="small"
+                />
+                <Button className={styles.addPermissionButton} type="default"
+                        onClick={() => handleAddOperation(role, operationType, mapType)}>
+                    Add {operationType === "permit" ? "Permission" : "Deny"}
+                </Button>
+            </>
+        )
+    }
 
     const renderRoleDetails = (role: Role, mapType: "role" | "sub") => (
         <>
 
             <h4>Permitted Operations:</h4>
-            <Table
-                columns={generateColumns(role, mapType)}
-                dataSource={role.permit}
-                rowKey={(record) => `${record.resource}-${record.namespace}`}
-                pagination={false}
-                size="small"
-            />
-            <Button className={styles.addPermissionButton} type="default"
-                    onClick={() => handleAddOperation(role, "permit", mapType)}>
-                Add Permission
-            </Button>
-
+            {renderOperationsTable(role, "permit", mapType)}
 
             <h4>Denied Operations:</h4>
-            <Table
-                columns={generateColumns(role, mapType)}
-                dataSource={role.deny}
-                rowKey={(record) => `${record.resource}-${record.namespace}`}
-                pagination={false}
-                size="small"
-            />
-            <Button className={styles.addPermissionButton} type="default"
-                    onClick={() => handleAddOperation(role, "deny", mapType)}>
-                Add Deny
-            </Button>
+            {renderOperationsTable(role, "deny", mapType)}
 
             <>
                 <h4>Subroles:</h4>
-                <Select
-                    mode="tags"
-                    allowClear
-                    style={{width: "100%"}}
-                    placeholder="Select subroles"
-                    value={(role.subroles ?? [])}
-                    onChange={(value) => {
-                        if (mapType === "role") {
-                            const roleIndex = roleMap.findIndex(r => r.name === role.name);
-                            const updatedRoleMap = [...roleMap];
-
-                            const updatedRole = {...role};
-                            updatedRole.subroles = value;
-
-                            updatedRoleMap[roleIndex] = updatedRole;
-
-                            setRoleMap(updatedRoleMap);
-                        } else {
-                            const roleIndex = subroleMap.findIndex(r => r.name === role.name);
-                            const updatedSubRoleMap = [...subroleMap];
-
-                            const updatedRole = {...role};
-                            updatedRole.subroles = value;
-
-                            updatedSubRoleMap[roleIndex] = updatedRole;
-
-                            setSubroleMap(updatedSubRoleMap);
-                        }
-                    }}
-                    options={subroles}
-                    tagRender={({label, value, closable, onClose}) => {
-                        const isValid = subroles.some((opt) => opt.value === value);
-
-                        const onPreventMouseDown = (event: React.MouseEvent) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                        }
-
-                        return (
-                            <Tag
-                                color={isValid ? "blue" : "red"}
-                                onMouseDown={onPreventMouseDown}
-                                closable={closable}
-                                // onClose={isValid ? onClose : undefined}
-                                onClose={onClose}
-                                style={{marginInlineEnd: 4}}
-                            >
-                                {label}
-                            </Tag>
-                        );
-                    }}
+                <SubroleSelect
+                    role={role}
+                    mapType={mapType}
+                    roleMap={roleMap}
+                    setRoleMap={setRoleMap}
+                    subroleMap={subroleMap}
+                    setSubroleMap={setSubroleMap}
+                    subroles={subroles}
                 />
             </>
 
@@ -263,18 +239,13 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
                     <Collapse.Panel
                         header={
                             <Input
-                                placeholder="Role Name"
+                                placeholder="Subrole Name"
                                 value={subrole.name}
                                 onChange={(e) => {
-                                    const roleIndex = index;
-                                    const updatedSubRoleMap = [...subroleMap];
+                                    const oldName = subrole.name;
+                                    const newName = e.target.value;
 
-                                    const updatedSubrole = {...subrole};
-                                    updatedSubrole.name = e.target.value;
-
-                                    updatedSubRoleMap[roleIndex] = updatedSubrole;
-
-                                    setSubroleMap(updatedSubRoleMap);
+                                    handleSubroleNameChange(index, newName, oldName);
                                 }}
                             />
                         }
