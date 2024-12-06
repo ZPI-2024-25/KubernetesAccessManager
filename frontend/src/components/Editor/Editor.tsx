@@ -16,7 +16,6 @@ const Editor = ({name, text, endpoint}: {
     const [language, setLanguage] = useState<string>("yaml");
     const navigate = useNavigate();
 
-    // TODO: zamienić wzorzec na stworzenie
     useEffect(() => {
         setValue(text);
     }, [text]);

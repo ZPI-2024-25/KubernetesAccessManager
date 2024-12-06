@@ -91,12 +91,15 @@ const ResourcePage = () => {
                 >
                     Add
                 </Button>
-                {wasSuccessful ? <Tab columns={columnsWithActions} dataSource={dataSource}/> : <Tab columns={[]} dataSource={[]} />}
+                {wasSuccessful ? <Tab columns={columnsWithActions} dataSource={dataSource} resourceType={typeof resourceType === "string" ? resourceType : ""} />
+                    : <Tab columns={[]} dataSource={[]}  resourceType={""} />}
+
             </div>
             <DeleteModal open={openDeleteModal} setOpen={setOpenDeleteModal}
                          resourceType={typeof resourceType === "string" ? resourceType : ""}
                          resource={selectedRecord}
                          removeResource={removeRecord}/>
+
         </>
     );
 };
