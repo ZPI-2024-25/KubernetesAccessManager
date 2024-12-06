@@ -1,16 +1,22 @@
 import {Role, RoleMap, RoleOperation} from "../../types";
 import styles from "./RoleMapForm.module.css";
-import {Button, Collapse, Form, Input, Select, Table, Tag} from "antd";
+import {Button, Collapse, Form, Input, Modal, Select, Table, Tag} from "antd";
 import {MdCancel} from "react-icons/md";
 import {FaSave} from "react-icons/fa";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {IoMdClose} from "react-icons/io";
 import {ColumnsType} from "antd/es/table";
 import SubroleSelect from "./SubroleSelect.tsx";
 import {operationsOptions, resourcesOptions} from "../../consts/roleOptions.ts";
+import {convertRoleMapToRoleConfigMap} from "../../functions/roleMapConversions.ts";
+import {updateRoles} from "../../api/k8s/updateRoles.ts";
+import {useNavigate} from "react-router-dom";
 
 const RoleMapForm = ({data}: { data: RoleMap }) => {
     const [form] = Form.useForm();
+    const navigate = useNavigate();
+
+    const [isModified, setIsModified] = useState(false);
 
     const [roleMap, setRoleMap] = useState(data.data.roleMap);
     const [subroleMap, setSubroleMap] = useState(data.data.subroleMap);
@@ -259,28 +265,8 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
         </>
     );
 
-    return (
-        <Form
-            form={form}
-            name="roleForm"
-            layout="vertical"
-            onFinish={(values) => {
-                console.log(values);
-            }}
-            initialValues={{roleMap, subroleMap}}
-        >
-            <div className={styles.editButtonContainer}>
-                <Button type="default" danger icon={<MdCancel/>}>
-                    Cancel
-                </Button>
-                <Button type="primary" icon={<FaSave/>} onClick={() => {
-                    console.log(roleMap)
-                    console.log(subroleMap)
-                }}>
-                    Save
-                </Button>
-            </div>
-
+    const rolesSection = (
+        <>
             <h2>Roles</h2>
             <Collapse accordion>
                 {roleMap.map((role, index) => (
@@ -314,7 +300,11 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
             }}>
                 Add Role
             </Button>
+        </>
+    )
 
+    const subrolesSection = (
+        <>
             <h2>Subroles</h2>
             <Collapse accordion>
                 {subroleMap.map((subrole, index) => (
@@ -343,6 +333,83 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
             }}>
                 Add subrole
             </Button>
+        </>
+    )
+
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (isModified) {
+                e.preventDefault();
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [isModified]);
+
+    const onCancel = () => {
+        console.log(isModified);
+
+        if (!isModified) {
+            navigate('/Roles');
+            return;
+        }
+
+        Modal.confirm({
+            title: 'Are you sure?',
+            content: 'You have unsaved changes. Are you sure you want to discard them?',
+            okText: 'Yes, discard',
+            cancelText: 'No',
+            onOk: () => {
+                setIsModified(false);
+                navigate('/Roles');
+            }
+        });
+    };
+
+    const onFinish = () => {
+       const updatedData = {
+           ...data,
+            data: {
+                roleMap: roleMap,
+                subroleMap: subroleMap
+            }
+       }
+
+        const covertedData = convertRoleMapToRoleConfigMap(updatedData);
+        console.log(covertedData);
+
+        updateRoles(covertedData).then(() => {
+            setIsModified(false);
+
+            navigate('/Roles');
+        }).catch((error) => {
+            console.error(error);
+        });
+    }
+
+    return (
+        <Form
+            form={form}
+            name="roleForm"
+            layout="vertical"
+            onFinish={() => onFinish()}
+            onValuesChange={() => setIsModified(true)}
+        >
+            <div className={styles.editButtonContainer}>
+                <Button type="default" danger icon={<MdCancel/>} onClick={onCancel}>
+                    Cancel
+                </Button>
+                <Button type="primary" icon={<FaSave/>} htmlType="submit">
+                    Save
+                </Button>
+            </div>
+
+            {rolesSection}
+
+            {subrolesSection}
         </Form>
 
     );
