@@ -7,11 +7,16 @@ import {Button, message} from "antd";
 import {FaEdit} from "react-icons/fa";
 import styles from "./RolesPage.module.css";
 import {useNavigate} from "react-router-dom";
+import {useAuth} from "../components/AuthProvider/AuthProvider.tsx";
+import {hasPermission} from "../functions/authorization.ts";
+import {ROLEMAP_NAMESPACE} from "../consts/roleMap.ts";
 
 const RolesPage = () => {
     const [roleMap, setRoleMap] = useState<RoleMap>();
 
     const navigate = useNavigate();
+
+    const {permissions} = useAuth();
 
     useEffect(() => {
         const func = async () => {
@@ -36,15 +41,22 @@ const RolesPage = () => {
 
     return (
         <div className={styles.container}>
-            <div className={styles.editButtonContainer}>
-                <Button type="primary" icon={<FaEdit/>} onClick={() => {
-                    navigate('edit', {
-                        state: {roleMap}
-                    })
-                }}>
-                    Edit Roles
-                </Button>
-            </div>
+            {
+                ((permissions !== null && hasPermission(permissions, ROLEMAP_NAMESPACE, 'ConfigMap', 'u')) ?
+                        (
+                            <div className={styles.editButtonContainer}>
+                                <Button type="primary" icon={<FaEdit/>} onClick={() => {
+                                    navigate('edit', {
+                                        state: {roleMap}
+                                    })
+                                }}>
+                                    Edit Roles
+                                </Button>
+                            </div>
+                        ) :
+                        null
+                )
+            }
             {roleMap && <RoleMapCollapse data={roleMap}/>}
         </div>
     );

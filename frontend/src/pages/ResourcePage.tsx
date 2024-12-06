@@ -24,7 +24,8 @@ const ResourcePage = () => {
         title: 'Actions',
         key: 'actions',
         render: (_, record: ResourceDataSourceItem) => {
-            const editDisabled = permissions !== null && typeof resourceType === "string" && !hasPermission(permissions, record.namespace as string, resourceType, "u");
+            const editDisabled = permissions !== null && typeof resourceType === "string" && !hasPermission(permissions, record.namespace as string, resourceType, "r")
+                && !hasPermission(permissions, record.namespace as string, resourceType, "u");
             const deleteDisabled = permissions !== null && typeof resourceType === "string" && !hasPermission(permissions, record.namespace as string, resourceType, "d");
             return (
                 <div>
@@ -42,7 +43,8 @@ const ResourcePage = () => {
                         danger
                     />
                 </div>
-                )}
+            )
+        }
         ,
         width: 100
     });
@@ -69,7 +71,7 @@ const ResourcePage = () => {
 
     function handleAdd() {
         navigate(`/create`, {
-            state: { resourceType },
+            state: {resourceType},
         });
     }
 
@@ -94,7 +96,8 @@ const ResourcePage = () => {
                 >
                     Add
                 </Button>
-                {wasSuccessful ? <Tab columns={columnsWithActions} dataSource={dataSource}/> : <Tab columns={[]} dataSource={[]} />}
+                {wasSuccessful ? <Tab columns={columnsWithActions} dataSource={dataSource}/> :
+                    <Tab columns={[]} dataSource={[]}/>}
             </div>
             <DeleteModal open={openDeleteModal} setOpen={setOpenDeleteModal}
                          resourceType={typeof resourceType === "string" ? resourceType : ""}
