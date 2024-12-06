@@ -3,3 +3,18 @@
     max-height: calc(100vh - 80px);
     overflow-y: auto;
 }
+
+.tab .ant-table-row {
+    transition: background-color 0.3s ease;
+}
+
+.tab .selectedRow {
+    background-color: #bae7ff !important;
+}
+
+.tab .selectedRow:hover {
+    background-color: #bae7ff !important;
+}
+
+
+

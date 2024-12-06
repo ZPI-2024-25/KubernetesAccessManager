@@ -26,6 +26,7 @@ func CheckLoginStatus(w http.ResponseWriter, r *http.Request) {
 			Message: fmt.Sprintf("Failed to get client: %s", err),
 			Code:    http.StatusInternalServerError,
 		})
+		return
 	}
 	status, errM := getLoginStatus(claims, rolemap)
 	if errM != nil {
