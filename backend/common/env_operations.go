@@ -13,3 +13,11 @@ func GetOrDefaultEnv(key, defaultValue string) string {
 	}
 	return val
 }
+
+func GetEnvOrPanic(envVar string) string {
+	value, exists := os.LookupEnv(envVar)
+	if !exists {
+		log.Fatalf("Environment variable %s is not set. Exiting...", envVar)
+	}
+	return value
+}

@@ -27,7 +27,7 @@ func init() {
 	realmName := os.Getenv("VITE_KEYCLOAK_REALMNAME")
 
 	if baseURL == "" || realmName == "" {
-		log.Println("VITE_KEYCLOAK_URL or VITE_KEYCLOAK_REALMNAME environment variable not set")
+		log.Println("VITE_KEYCLOAK_URL or VITE_KEYCLOAK_REALMNAME environment variable not set. Failed to create JWKS.")
 		return
 	}
 	jwksURL := fmt.Sprintf("%s/realms/%s/protocol/openid-connect/certs", baseURL, realmName)
@@ -36,7 +36,7 @@ func init() {
 		RefreshInterval: time.Hour,
 	})
 	if err != nil {
-		panic(fmt.Sprintf("Failed to create JWKS: %s", err))
+		log.Printf("Failed to create JWKS: %s", err)
 	}
 }
 
@@ -55,6 +55,10 @@ func GetJWTTokenFromHeader(r *http.Request) (string, error) {
 
 func IsTokenValid(tokenStr string) (bool, *jwt.MapClaims) {
 	claims := jwt.MapClaims{}
+	if jwks == nil {
+		log.Printf("JWKS not initialized")
+		return false, nil
+	}
 	token, err := jwt.ParseWithClaims(tokenStr, &claims, jwks.Keyfunc)
 	if err != nil {
 		log.Printf("Token parsing error: %v\n", err)

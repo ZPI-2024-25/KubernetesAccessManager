@@ -9,7 +9,6 @@ import (
 	"github.com/ZPI-2024-25/KubernetesAccessManager/cluster"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/common"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
-	"k8s.io/utils/env"
 )
 
 func GetResourceController(w http.ResponseWriter, r *http.Request) {
@@ -24,10 +23,6 @@ func ListResourcesController(w http.ResponseWriter, r *http.Request) {
 			return cluster.ListResources(resourceType, namespace, cluster.GetResourceInterface)
 		}
 
-		// temporary solution to disable auth if we don't have keycloak running
-		if env.GetString("VITE_KEYCLOAK_URL", "") == "" {
-			return cluster.ListResources(resourceType, namespace, cluster.GetResourceInterface)
-		}
 		token, err2 := auth.GetJWTTokenFromHeader(r)
 		isValid, claims := auth.IsTokenValid(token)
 
@@ -120,10 +115,6 @@ func handleResourceOperation(w http.ResponseWriter, r *http.Request, opType mode
 }
 
 func authenticateAndAuthorize(r *http.Request, operation models.Operation) *models.ModelError {
-	// temporary solution to disable auth if we don't have keycloak running
-	if env.GetString("VITE_KEYCLOAK_URL", "") == "" {
-		return nil
-	}
 	token, err := auth.GetJWTTokenFromHeader(r)
 	isValid, claims := auth.IsTokenValid(token)
 
