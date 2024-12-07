@@ -3,13 +3,16 @@ import {Collapse, Tag, Table} from "antd";
 import type {ColumnsType} from "antd/es/table";
 import {RoleMap, Role, RoleOperation} from "../../types";
 import styles from "./RoleMapCollapse.module.css";
-import {capitalizeFirst} from "../../functions/toUpperCaseFirstLetter.ts";
 
 const RoleMapCollapse = ({data}: { data: RoleMap }) => {
     const {roleMap, subroleMap} = data.data;
 
     const [activeSubrolePanel, setActiveSubrolePanel] = useState<string | undefined>();
     const subroleRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+    function capitalizeFirst(s: string){
+        return s[0].toUpperCase() + s.slice(1)
+    }
 
     const generateColumns = (roleOperations: RoleOperation[]): ColumnsType<RoleOperation> => {
         const uniqueOperations = Array.from(
