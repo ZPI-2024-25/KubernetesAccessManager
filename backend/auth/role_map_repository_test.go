@@ -1266,13 +1266,6 @@ func TestFromRoleMapConfig(t *testing.T) {
 			expected: map[string]*models.Role{
 				"admin": {
 					Name: "admin",
-					Permit: []models.Operation{
-						{
-							Namespace: "namespace1",
-							Resource:  "resource1",
-							Type:      models.All,
-						},
-					},
 				},
 			},
 		},
