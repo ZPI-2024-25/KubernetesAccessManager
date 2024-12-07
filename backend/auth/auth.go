@@ -30,7 +30,7 @@ func init() {
 		log.Println("VITE_KEYCLOAK_URL or VITE_KEYCLOAK_REALMNAME environment variable not set")
 		return
 	}
-	jwksURL := fmt.Sprintf("%srealms/%s/protocol/openid-connect/certs", baseURL, realmName)
+	jwksURL := fmt.Sprintf("%s/realms/%s/protocol/openid-connect/certs", baseURL, realmName)
 	log.Printf("Using JWKS URL: %s\n", jwksURL)
 	jwks, err = keyfunc.Get(jwksURL, keyfunc.Options{
 		RefreshInterval: time.Hour,
