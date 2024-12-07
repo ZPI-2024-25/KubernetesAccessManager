@@ -3,7 +3,7 @@ import styles from "./RoleMapForm.module.css";
 import {Button, Collapse, Form, Input, Modal} from "antd";
 import {MdCancel} from "react-icons/md";
 import {FaSave} from "react-icons/fa";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import SubroleSelect from "./SubroleSelect.tsx";
 import {convertRoleMapToRoleConfigMap} from "../../functions/roleMapConversions.ts";
 import {updateRoles} from "../../api/k8s/updateRoles.ts";
@@ -19,8 +19,6 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
     const navigate = useNavigate();
 
     const {setUserPermissions} = useAuth();
-
-    const [isModified, setIsModified] = useState(false);
 
     const [roleMap, setRoleMap] = useState(data.data.roleMap);
     const [subroleMap, setSubroleMap] = useState(data.data.subroleMap);
@@ -185,21 +183,33 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
                 {roleMap.map((role, index) => (
                     <Collapse.Panel
                         header={
-                            <Input
-                                placeholder="Role Name"
-                                value={role.name}
-                                onChange={(e) => {
-                                    const roleIndex = index;
-                                    const updatedRoleMap = [...roleMap];
+                            <div className={styles.roleHeader}>
+                                <Input
+                                    placeholder="Role Name"
+                                    value={role.name}
+                                    onChange={(e) => {
+                                        const roleIndex = index;
+                                        const updatedRoleMap = [...roleMap];
 
-                                    const updatedRole = {...role};
-                                    updatedRole.name = e.target.value;
+                                        const updatedRole = {...role};
+                                        updatedRole.name = e.target.value;
 
-                                    updatedRoleMap[roleIndex] = updatedRole;
+                                        updatedRoleMap[roleIndex] = updatedRole;
 
-                                    setRoleMap(updatedRoleMap);
-                                }}
-                            />
+                                        setRoleMap(updatedRoleMap);
+                                    }}
+                                />
+
+                                <Button
+                                    type="text"
+                                    danger
+                                    icon={<MdCancel style={{fontSize: "120%"}}/>}
+                                    onClick={() => {
+                                        const updatedRoleMap = [...roleMap];
+                                        updatedRoleMap.splice(index, 1);
+                                        setRoleMap(updatedRoleMap);
+                                    }}/>
+                            </div>
                         }
                         key={index}
                     >
@@ -223,16 +233,28 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
                 {subroleMap.map((subrole, index) => (
                     <Collapse.Panel
                         header={
-                            <Input
-                                placeholder="Subrole Name"
-                                value={subrole.name}
-                                onChange={(e) => {
-                                    const oldName = subrole.name;
-                                    const newName = e.target.value;
+                            <div className={styles.roleHeader}>
+                                <Input
+                                    placeholder="Subrole Name"
+                                    value={subrole.name}
+                                    onChange={(e) => {
+                                        const oldName = subrole.name;
+                                        const newName = e.target.value;
 
-                                    handleSubroleNameChange(index, newName, oldName);
-                                }}
-                            />
+                                        handleSubroleNameChange(index, newName, oldName);
+                                    }}
+                                />
+
+                                <Button
+                                    type="text"
+                                    danger
+                                    icon={<MdCancel style={{fontSize: "120%"}}/>}
+                                    onClick={() => {
+                                        const updatedSubroleMap = [...subroleMap];
+                                        updatedSubroleMap.splice(index, 1);
+                                        setSubroleMap(updatedSubroleMap);
+                                    }}/>
+                            </div>
                         }
                         key={index}
                     >
@@ -249,34 +271,13 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
         </>
     )
 
-    useEffect(() => {
-        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-            if (isModified) {
-                e.preventDefault();
-            }
-        };
-
-        window.addEventListener('beforeunload', handleBeforeUnload);
-        return () => {
-            window.removeEventListener('beforeunload', handleBeforeUnload);
-        };
-    }, [isModified]);
-
     const onCancel = () => {
-        console.log(isModified);
-
-        if (!isModified) {
-            navigate('/Roles');
-            return;
-        }
-
         Modal.confirm({
             title: 'Are you sure?',
-            content: 'You have unsaved changes. Are you sure you want to discard them?',
-            okText: 'Yes, discard',
+            content: 'Changes you made will be lost.',
+            okText: 'Yes',
             cancelText: 'No',
             onOk: () => {
-                setIsModified(false);
                 navigate('/Roles');
             }
         });
@@ -295,8 +296,6 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
         console.log(covertedData);
 
         updateRoles(covertedData).then(() => {
-            setIsModified(false);
-
             getAuthStatus().then((permissions: Permissions) => {
                 setUserPermissions(permissions);
                 localStorage.setItem(Constants.PERMISSIONS_STR_KEY, JSON.stringify(permissions));
@@ -316,7 +315,6 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
             name="roleForm"
             layout="vertical"
             onFinish={() => onFinish()}
-            onValuesChange={() => setIsModified(true)}
         >
             <div className={styles.editButtonContainer}>
                 <Button type="default" danger icon={<MdCancel/>} onClick={onCancel}>

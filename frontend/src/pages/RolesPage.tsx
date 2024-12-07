@@ -30,9 +30,13 @@ const RolesPage = () => {
             } catch (error) {
                 if (error instanceof Error) {
                     console.error('Error fetching releases:', error);
-                    message.error(error.message, 4);
+                    message.error(error.message, 4, () => {
+                        navigate('/');
+                    });
                 } else {
-                    message.error('An unexpected error occurred.');
+                    message.error('An unexpected error occurred.', () => {
+                        navigate('/');
+                    });
                 }
             }
         }
@@ -42,7 +46,7 @@ const RolesPage = () => {
     return (
         <div className={styles.container}>
             {
-                ((permissions !== null && hasPermission(permissions, ROLEMAP_NAMESPACE, 'ConfigMap', 'u')) ?
+                ((permissions !== null && hasPermission(permissions, ROLEMAP_NAMESPACE, 'ConfigMap', 'u') && hasPermission(permissions, ROLEMAP_NAMESPACE, 'ConfigMap', 'r')) ?
                         (
                             <div className={styles.editButtonContainer}>
                                 <Button type="primary" icon={<FaEdit/>} onClick={() => {
