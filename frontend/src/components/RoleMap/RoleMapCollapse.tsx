@@ -42,7 +42,7 @@ const RoleMapCollapse = ({data}: { data: RoleMap }) => {
                 key: "operations",
                 render: (operations: string[]) => (
                     <>
-                        {(!operations || operations.length === 0) ? (
+                        {(operations === undefined) ? (
                             <Tag color="green">All</Tag>
                         ) : (
                             operations.map((op) => (

@@ -24,8 +24,6 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
     const [subroleMap, setSubroleMap] = useState(data.data.subroleMap);
 
     const newOperation: RoleOperation = {
-        namespace: "",
-        resource: "",
         operations: []
     };
 
