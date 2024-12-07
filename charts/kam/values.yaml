@@ -12,11 +12,11 @@ backend:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
-    env:
-      KEYCLOAK_URL: ""
-      KEYCLOAK_CLIENTNAME: ""
-      ROLEMAP_NAMESPACE: ""
-      ROLEMAP_NAME: ""
+  env:
+    KEYCLOAK_URL: ""
+    KEYCLOAK_CLIENTNAME: ""
+    ROLEMAP_NAMESPACE: ""
+    ROLEMAP_NAME: ""
 
   serviceAccount:
     create: true
