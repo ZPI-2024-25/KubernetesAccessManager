@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -12,27 +11,13 @@ import (
 	"github.com/ZPI-2024-25/KubernetesAccessManager/common"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/joho/godotenv"
 )
 
 var jwks *keyfunc.JWKS
 
-func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Error loading .env file:", err)
-	}
-
-	baseURL := os.Getenv("VITE_KEYCLOAK_URL")
-	realmName := os.Getenv("VITE_KEYCLOAK_REALMNAME")
-
-	if baseURL == "" || realmName == "" {
-		log.Println("VITE_KEYCLOAK_URL or VITE_KEYCLOAK_REALMNAME environment variable not set. Failed to create JWKS.")
-		return
-	}
-	jwksURL := fmt.Sprintf("%s/realms/%s/protocol/openid-connect/certs", baseURL, realmName)
-	log.Printf("Using JWKS URL: %s\n", jwksURL)
-	jwks, err = keyfunc.Get(jwksURL, keyfunc.Options{
+func InitializeAuth() {
+	var err error
+	jwks, err = keyfunc.Get(common.KeycloakJwksUrl, keyfunc.Options{
 		RefreshInterval: time.Hour,
 	})
 	if err != nil {
@@ -99,12 +84,11 @@ func IsUserAuthorized(operation models.Operation, roles []string) (bool, error) 
 
 func ExtractRoles(claims *jwt.MapClaims) ([]string, *models.ModelError) {
 	var roles []string
-	client := common.GetOrDefaultEnv("VITE_KEYCLOAK_CLIENTNAME", "account")
 	if realmAccess, ok := (*claims)["realm_access"].(map[string]interface{}); ok {
 		extractRolesFromMapInterface(realmAccess, "roles", &roles)
 	}
 	if resourceAccess, ok := (*claims)["resource_access"].(map[string]interface{}); ok {
-		if resource, ok := resourceAccess[client]; ok {
+		if resource, ok := resourceAccess[common.KeycloakClient]; ok {
 			if resourceMap, ok := resource.(map[string]interface{}); ok {
 				extractRolesFromMapInterface(resourceMap, "roles", &roles)
 			}
