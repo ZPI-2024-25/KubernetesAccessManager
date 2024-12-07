@@ -37,7 +37,7 @@ func InitEnv() {
 	}
 	KeycloakClient = getEnvOrPanic("VITE_KEYCLOAK_CLIENTNAME")
 	HealthPort = getEnvAsInt("HEALTH_PORT", 8082)
-	AppPort = getEnvAsInt("APP_PORT", 8080)
+	AppPort = getEnvAsInt("BACKEND_PORT", 8080)
 	RoleMapNamespace = getEnvOrDefault("ROLEMAP_NAMESPACE", DEFAULT_ROLEMAP_NAMESPACE)
 	RoleMapName = getEnvOrDefault("ROLEMAP_NAME", DEFAULT_ROLEMAP_NAME)
 }
