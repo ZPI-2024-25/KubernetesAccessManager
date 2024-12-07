@@ -88,6 +88,8 @@ const RoleOperationsTable: React.FC<RoleOperationsTableProps> = ({
                     value={resource}
                     options={resourcesOptions}
                     onChange={(val) => handleUpdateOperationField(role, record, mapType, 'resource', val)}
+                    showSearch
+                    optionFilterProp="label"
                 />
             ),
         },

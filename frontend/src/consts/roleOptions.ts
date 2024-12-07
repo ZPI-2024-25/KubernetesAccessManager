@@ -20,6 +20,7 @@ export const resourcesOptions = [
     {value: "StorageClass", label: "StorageClass"},
     {value: "ClusterRole", label: "ClusterRole"},
     {value: "ClusterRoleBinding", label: "ClusterRoleBinding"},
+    {value: "Helm", label: "Helm"},
 ];
 
 export const operationsOptions = [

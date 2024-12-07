@@ -136,9 +136,14 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
     const renderOperationsTable = (role: Role, operationType: "permit" | "deny", mapType: "role" | "sub") => {
         return (
             <>
-                <RoleOperationsTable role={role} mapType={mapType}
-                                     handleUpdateOperationField={handleUpdateOperationField}
-                                     handleRemoveOperation={handleRemoveOperation} operationType={operationType}/>
+                {
+                    (operationType === "permit" && role.permit && role.permit.length > 0) || (operationType === "deny" && role.deny && role.deny.length > 0) ? (
+                        <RoleOperationsTable role={role} mapType={mapType}
+                                             handleUpdateOperationField={handleUpdateOperationField}
+                                             handleRemoveOperation={handleRemoveOperation}
+                                             operationType={operationType}/>
+                    ) : null
+                }
                 <Button className={styles.addPermissionButton} type="default"
                         onClick={() => handleAddOperation(role, operationType, mapType)}>
                     Add {operationType === "permit" ? "Permission" : "Deny"}
