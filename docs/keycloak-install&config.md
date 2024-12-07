@@ -131,13 +131,13 @@ docker run -d -p 4000:8080 \
 ## 9. Konfiguracja zmiennych środowiskowych
 Zmienne środowiskowe niezbęne do zaimportowania w związku z Keycloackiem to:
 ```env
-VITE_KEYCLOAK_URL=http://{adres-keycloak}:{port-keycloak}/
+VITE_KEYCLOAK_URL=http://{adres-keycloak}:{port-keycloak}
 VITE_KEYCLOAK_CLIENTNAME={nazwa-clienta}
 VITE_KEYCLOAK_REALMNAME={nazwa-realm}
 ```
 W przypadku przykładowej konfiguracji będzie to:
 ```env
-VITE_KEYCLOAK_URL=http://localhost:4000/
+VITE_KEYCLOAK_URL=http://localhost:4000
 VITE_KEYCLOAK_CLIENTNAME=ZPI-client
 VITE_KEYCLOAK_REALMNAME=ZPI-realm
 ```
@@ -283,13 +283,13 @@ docker run -d -p 4000:8080 \
 ## 9. Configuring Environment Variables
 The following environment variables are required for Keycloak integration:
 ```env
-VITE_KEYCLOAK_URL=http://{keycloak-address}:{keycloak-port}/
+VITE_KEYCLOAK_URL=http://{keycloak-address}:{keycloak-port}
 VITE_KEYCLOAK_CLIENTNAME={client-name}
 VITE_KEYCLOAK_REALMNAME={realm-name}
 ```
 For the example configuration:
 ```env
-VITE_KEYCLOAK_URL=http://localhost:4000/
+VITE_KEYCLOAK_URL=http://localhost:4000
 VITE_KEYCLOAK_CLIENTNAME=ZPI-client
 VITE_KEYCLOAK_REALMNAME=ZPI-realm
 ```
@@ -436,13 +436,13 @@ docker run -d -p 4000:8080 \
 ## 9. Настройка переменных окружения
 Необходимые переменные окружения для интеграции с Keycloak:
 ```env
-VITE_KEYCLOAK_URL=http://{keycloak_address}:{keycloak_port}/
+VITE_KEYCLOAK_URL=http://{keycloak_address}:{keycloak_port}
 VITE_KEYCLOAK_CLIENTNAME={client_name}
 VITE_KEYCLOAK_REALMNAME={realm_name}
 ```
 Для примера:
 ```env
-VITE_KEYCLOAK_URL=http://localhost:4000/
+VITE_KEYCLOAK_URL=http://localhost:4000
 VITE_KEYCLOAK_CLIENTNAME=ZPI-client
 VITE_KEYCLOAK_REALMNAME=ZPI-realm
 ```

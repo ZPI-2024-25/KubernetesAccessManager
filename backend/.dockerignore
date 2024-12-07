@@ -1,0 +1,12 @@
+*.env
+.env_temp
+*.log
+*.out
+*.test
+*.bak
+*.tmp
+*.temp
+*.swp
+*.DS_Store
+*_test.go
+Dockerfile

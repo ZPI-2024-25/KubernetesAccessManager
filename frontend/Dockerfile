@@ -1,21 +1,15 @@
-FROM node as vite-app
-
-WORKDIR /app/
+FROM node:23-alpine AS build-stage
+WORKDIR /app
+COPY package.json ./
+RUN npm install
 COPY . .
+RUN npm run build
 
-RUN ["npm", "i"]
-RUN ["npm", "run", "build"]
-
-FROM nginx:alpine
-
-RUN apk add --no-cache gettext
-
-COPY --from=vite-app /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/templates/nginx.conf.template
-
-ENV BACKEND_SERVICE_HOST=kam-backend
-ENV BACKEND_SERVICE_PORT=8080
+FROM nginx:1.27.3-alpine AS production-stage
+COPY --from=build-stage /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY env.sh /docker-entrypoint.d/
+RUN chmod +x /docker-entrypoint.d/env.sh
 
 EXPOSE 80
-
-CMD ["/bin/sh", "-c", "envsubst '$BACKEND_SERVICE_HOST $BACKEND_SERVICE_PORT' < /etc/nginx/templates/nginx.conf.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"]
+CMD ["nginx", "-g", "daemon off;"]
