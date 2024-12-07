@@ -4,12 +4,6 @@ fullnameOverride: ""
 podAnnotations: {}
 podLabels: {}
 
-KEYCLOAK_URL: ""
-KEYCLOAK_CLIENTNAME: ""
-KEYCLOAK_REALMNAME: ""
-ROLEMAP_NAMESPACE: ""
-ROLEMAP_NAME: ""
-
 backend:
   replicaCount: 1
   image:
@@ -17,6 +11,12 @@ backend:
     pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
+
+    env:
+      KEYCLOAK_URL: ""
+      KEYCLOAK_CLIENTNAME: ""
+      ROLEMAP_NAMESPACE: ""
+      ROLEMAP_NAME: ""
 
   serviceAccount:
     create: true
