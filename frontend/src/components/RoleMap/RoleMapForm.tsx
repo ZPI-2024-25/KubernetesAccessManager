@@ -13,6 +13,7 @@ import {getAuthStatus} from "../../api";
 import {Permissions} from "../../types/authTypes.ts";
 import * as Constants from "../../consts/consts.ts";
 import {useAuth} from "../AuthProvider/AuthProvider.tsx";
+import {AiOutlinePlus} from "react-icons/ai";
 
 const RoleMapForm = ({data}: { data: RoleMap }) => {
     const [form] = Form.useForm();
@@ -142,10 +143,8 @@ const RoleMapForm = ({data}: { data: RoleMap }) => {
                                              operationType={operationType}/>
                     ) : null
                 }
-                <Button className={styles.addPermissionButton} type="default"
-                        onClick={() => handleAddOperation(role, operationType, mapType)}>
-                    Add {operationType === "permit" ? "Permission" : "Deny"}
-                </Button>
+                <Button className={styles.addPermissionButton} type="text"
+                        onClick={() => handleAddOperation(role, operationType, mapType)} icon={<AiOutlinePlus />}/>
             </>
         )
     }
