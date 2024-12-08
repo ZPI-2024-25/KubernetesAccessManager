@@ -1037,13 +1037,7 @@ func TestFromOperationConfigList(t *testing.T) {
 					Operations: []models.OperationType{},
 				},
 			},
-			expected: []models.Operation{
-				{
-					Namespace: "namespace1",
-					Resource:  "resource1",
-					Type:      models.All,
-				},
-			},
+			expected: []models.Operation{},
 		},
 		{
 			name: "Multiple operation configs",
