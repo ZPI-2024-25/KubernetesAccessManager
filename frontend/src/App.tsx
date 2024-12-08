@@ -9,6 +9,8 @@ import { initializeAxiosInterceptors } from './config/axiosConfig.ts';
 import { AuthProvider } from "./components/AuthProvider/AuthProvider.tsx";
 import { LoginPage } from "./pages/LoginPage.tsx";
 import PrivateRoute from "./components/PrivateRoute/PrivateRoute.tsx";
+import RolesPage from "./pages/RolesPage.tsx";
+import EditRolesPage from "./pages/EditRolesPage.tsx";
 
 initializeAxiosInterceptors();
 
@@ -23,6 +25,8 @@ function App() {
                         <Route element={<PrivateRoute />}>
                             <Route index element={<div/>} /> {/* Temporary fix until proper login page and main page is done */}
                             <Route path="Helm" element={<HelmPage />} />
+                            <Route path="Roles" element={<RolesPage />} />
+                            <Route path="Roles/edit" element={<EditRolesPage />} />
                             <Route path=":resourceType" element={<ResourcePage />} />
                             <Route path="/editor" element={<EditorPage />} />
                             <Route path="/create" element={<CreateResourcePage />} />

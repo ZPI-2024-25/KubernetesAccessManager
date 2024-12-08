@@ -4,7 +4,9 @@ import {MdStorage, MdDashboardCustomize, MdAssuredWorkload, MdDriveFileRenameOut
 import {FaCubes} from "react-icons/fa6";
 import {IoServerSharp, IoDocumentText, IoGitNetwork} from "react-icons/io5";
 
+
 import {MenuItem} from "../types";
+import {IoMdPeople} from "react-icons/io";
 
 function getItem(
     label: React.ReactNode,
@@ -56,6 +58,7 @@ export const items: MenuItem[] = [
     getItem('Custom Resources', 'sub7', 'CustomResource', <MdDashboardCustomize style={{ fontSize: '140%'}}/>, [
         getItem('Definitions', '21', 'CustomResourceDefinition')
     ]),
+    getItem('Roles', '22', 'Roles', <IoMdPeople style={{ fontSize: '140%'}}/>),
 ];
 
 export const helmResourceLabel = 'Helm';

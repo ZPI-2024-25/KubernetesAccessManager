@@ -4,6 +4,7 @@ import { HelmDataSourceItem, ResourceDataSourceItem } from "../../types";
 import { getResource } from "../../api/k8s/getResource";
 import styles from "./ResourceDetailsDrawer.module.css";
 import { fetchRelease, fetchReleaseHistory } from "../../api";
+import {extractCRDname} from "../../functions/extractCRDname.ts";
 
 const { Paragraph } = Typography;
 const { Panel } = Collapse;
@@ -66,8 +67,8 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
         if (visible && record) {
             if ("name" in record || "resource" in record) {
                 const namespace = "resource" in record ? "default" : (record.namespace as string);
-                const resourceName = "resource" in record ? (record.resource as string) : (record.name as string);
-                fetchResourceData(resourceType, resourceName, namespace);
+                const name = "resource" in record ? extractCRDname(record) : record.name as string;
+                fetchResourceData(resourceType, name, namespace);
             }
         }
     }, [visible, record]);
@@ -104,6 +105,8 @@ const ResourceDetailsDrawer: React.FC<DrawerDetailsProps> = ({
     const renderTitle = () => {
         if (record && "name" in record) {
             return `${resourceType}: ${record.name}`;
+        } else if (record && "resource" in record) {
+            return `${resourceType}: ${extractCRDname(record)}`;
         }
         return `${resourceType}: Unknown`;
     };

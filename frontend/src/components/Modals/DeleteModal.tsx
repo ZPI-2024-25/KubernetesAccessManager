@@ -2,15 +2,18 @@ import {Button, Modal} from "antd";
 import {ResourceModalProps} from "../../types";
 import useShowMessage from "../../hooks/useShowMessage.ts";
 import {deleteResource} from "../../api/k8s/deleteResource.ts";
+import {extractCRDname} from "../../functions/extractCRDname.ts";
 
 const DeleteConfirmModal = ({open, setOpen, resourceType, resource, removeResource}: ResourceModalProps) => {
     const {showMessage, contextHolder} = useShowMessage();
+
+    const name = resource ? ("resource" in resource ? extractCRDname(resource) : resource.name as string) : "";
 
     const handleOk = async () => {
         if (!resource) return;
 
         try {
-            const result = await deleteResource(resourceType, resource.name as string, resource.namespace as string);
+            const result = await deleteResource(resourceType, name, resource.namespace as string);
 
             if (result.code === 200) {
                 if (removeResource) {
@@ -47,9 +50,7 @@ const DeleteConfirmModal = ({open, setOpen, resourceType, resource, removeResour
         <>
             {contextHolder}
             <Modal
-                title={resource?.name ? `Delete
-                ${resource.name} from
-                ${resource.namespace}` : 'Delete'}
+                title={`Delete ${name} ${resource?.namespace ? `from ${resource.namespace}` : ''}`}
                 open={open}
                 onCancel={() => setOpen(false)}
                 footer={
@@ -65,7 +66,7 @@ const DeleteConfirmModal = ({open, setOpen, resourceType, resource, removeResour
             >
                 <p>
                     Do you really want to delete the resource
-                    <strong>{` ${resource?.name as string}`}</strong>
+                    <strong>{` ${name}`}</strong>
                     {resource?.namespace ? (
                         <>
                             {' '}
