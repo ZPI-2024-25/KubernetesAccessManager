@@ -38,3 +38,9 @@ export interface RoleMap {
         subroleMap: Role[];
     };
 }
+
+export interface SimpleRole {
+    deny?: RoleOperation[];
+    permit?: RoleOperation[];
+    subroles?: string[];
+}

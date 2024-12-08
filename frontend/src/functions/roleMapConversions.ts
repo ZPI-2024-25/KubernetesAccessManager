@@ -1,5 +1,6 @@
-import { Role, RoleConfigMap, RoleMap } from "../types";
-import { parseYaml, stringifyYaml } from "./jsonYamlFunctions.ts";
+import {Role, RoleConfigMap, RoleMap} from "../types";
+import {parseYaml, stringifyYaml} from "./jsonYamlFunctions.ts";
+import {SimpleRole} from "../types/roles.ts";
 
 /**
  * Converts a RoleConfigMap object to a RoleMap object.
@@ -13,13 +14,23 @@ export const convertRoleConfigMapToRoleMap = (roleConfigMap: RoleConfigMap): Rol
     const roleMapYaml = roleConfigMap.data["role-map"];
     const subroleMapYaml = roleConfigMap.data["subrole-map"];
 
-    console.log(subroleMapYaml);
+    console.log("here: " + roleMapYaml);
 
     const roleMapObj = roleMapYaml ? parseYaml<Record<string, Role>>(roleMapYaml) : {};
     const subroleMapObj = subroleMapYaml ? parseYaml<Record<string, Role>>(subroleMapYaml) : {};
 
-    const roleMapArray = roleMapObj ? Object.values(roleMapObj) : [];
-    const subroleMapArray = subroleMapObj ? Object.values(subroleMapObj) : [];
+    const roleMapArray = roleMapObj
+        ? Object.entries(roleMapObj).map(([key, value]) => ({
+            ...value,
+            name: key
+        }))
+        : [];
+    const subroleMapArray = subroleMapObj
+        ? Object.entries(subroleMapObj).map(([key, value]) => ({
+            ...value,
+            name: key
+        }))
+        : [];
 
     return {
         apiVersion: roleConfigMap.apiVersion,
@@ -43,19 +54,27 @@ export const convertRoleConfigMapToRoleMap = (roleConfigMap: RoleConfigMap): Rol
  * @returns An object of type RoleConfigMap
  */
 export const convertRoleMapToRoleConfigMap = (roleMap: RoleMap): RoleConfigMap => {
-    const { roleMap: roles, subroleMap: subroles } = roleMap.data;
+    const {roleMap: roles, subroleMap: subroles} = roleMap.data;
 
-    const roleMapObj: Record<string, Role> = {};
+    const roleMapObj: Record<string, SimpleRole> = {};
     roles.forEach(r => {
         if (r.name) {
-            roleMapObj[r.name] = r;
+            roleMapObj[r.name] = {
+                deny: r.deny,
+                permit: r.permit,
+                subroles: r.subroles
+            };
         }
     });
 
-    const subroleMapObj: Record<string, Role> = {};
+    const subroleMapObj: Record<string, SimpleRole> = {};
     subroles.forEach(sr => {
         if (sr.name) {
-            subroleMapObj[sr.name] = sr;
+            subroleMapObj[sr.name] = {
+                deny: sr.deny,
+                permit: sr.permit,
+                subroles: sr.subroles
+            }
         }
     });
 
