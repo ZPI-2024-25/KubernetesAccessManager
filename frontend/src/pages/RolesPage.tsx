@@ -23,9 +23,8 @@ const RolesPage = () => {
             try {
                 const response = await getRoles();
 
-                console.log(response);
                 const rolemap = convertRoleConfigMapToRoleMap(response);
-                console.log(rolemap);
+
                 setRoleMap(rolemap);
             } catch (error) {
                 if (error instanceof Error) {

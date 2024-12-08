@@ -10,7 +10,7 @@ const RoleMapCollapse = ({data}: { data: RoleMap }) => {
     const [activeSubrolePanel, setActiveSubrolePanel] = useState<string | undefined>();
     const subroleRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-    function capitalizeFirst(s: string){
+    function capitalizeFirst(s: string) {
         return s[0].toUpperCase() + s.slice(1)
     }
 
@@ -132,36 +132,45 @@ const RoleMapCollapse = ({data}: { data: RoleMap }) => {
     return (
         <>
             <h2>Roles</h2>
-            <Collapse accordion>
-                {roleMap.map((role) => (
-                    <Collapse.Panel header={role.name} key={role.name}>
-                        {renderRoleDetails(role)}
-                    </Collapse.Panel>
-                ))}
-            </Collapse>
+            {(roleMap && roleMap.length > 0) ? (
+                <Collapse accordion>
+                    {roleMap.map((role) => (
+                        <Collapse.Panel header={role.name} key={role.name}>
+                            {renderRoleDetails(role)}
+                        </Collapse.Panel>
+                    ))}
+                </Collapse>
+            ) : (
+                <p>No roles yet</p>
+            )}
+
 
             <h2>Subroles</h2>
-            <Collapse
-                accordion
-                activeKey={activeSubrolePanel}
-                onChange={(key) => {
-                    if (Array.isArray(key) && key.length > 0) {
-                        setActiveSubrolePanel(key[0]);
-                    } else {
-                        setActiveSubrolePanel(undefined);
-                    }
-                }}
-            >
-                {subroleMap.map((subrole) => (
-                    <Collapse.Panel
-                        header={subrole.name}
-                        key={subrole.name}
-                        ref={(el) => (subroleRefs.current[subrole.name] = el)}
-                    >
-                        {renderRoleDetails(subrole)}
-                    </Collapse.Panel>
-                ))}
-            </Collapse>
+            {(subroleMap && subroleMap.length > 0) ? (
+                <Collapse
+                    accordion
+                    activeKey={activeSubrolePanel}
+                    onChange={(key) => {
+                        if (Array.isArray(key) && key.length > 0) {
+                            setActiveSubrolePanel(key[0]);
+                        } else {
+                            setActiveSubrolePanel(undefined);
+                        }
+                    }}
+                >
+                    {subroleMap.map((subrole) => (
+                        <Collapse.Panel
+                            header={subrole.name}
+                            key={subrole.name}
+                            ref={(el) => (subroleRefs.current[subrole.name] = el)}
+                        >
+                            {renderRoleDetails(subrole)}
+                        </Collapse.Panel>
+                    ))}
+                </Collapse>
+            ) : (
+                <p>No subroles yet</p>
+            )}
         </>
     );
 };

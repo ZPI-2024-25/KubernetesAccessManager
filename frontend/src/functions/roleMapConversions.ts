@@ -13,8 +13,10 @@ export const convertRoleConfigMapToRoleMap = (roleConfigMap: RoleConfigMap): Rol
     const roleMapYaml = roleConfigMap.data["role-map"];
     const subroleMapYaml = roleConfigMap.data["subrole-map"];
 
-    const roleMapObj = parseYaml<Record<string, Role>>(roleMapYaml);
-    const subroleMapObj = parseYaml<Record<string, Role>>(subroleMapYaml);
+    console.log(subroleMapYaml);
+
+    const roleMapObj = roleMapYaml ? parseYaml<Record<string, Role>>(roleMapYaml) : {};
+    const subroleMapObj = subroleMapYaml ? parseYaml<Record<string, Role>>(subroleMapYaml) : {};
 
     const roleMapArray = roleMapObj ? Object.values(roleMapObj) : [];
     const subroleMapArray = subroleMapObj ? Object.values(subroleMapObj) : [];
