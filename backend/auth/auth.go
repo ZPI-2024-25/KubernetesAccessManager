@@ -119,6 +119,24 @@ func extractRolesFromMapInterface(claims map[string]interface{}, rolekey string,
 	}
 }
 
+func extractRolesFromPath(claims *jwt.MapClaims, path string, sep string) ([]string, *models.ModelError) {
+	var roles []string
+	pathSegments := strings.Split(path, sep)
+	segmentsLen := len(pathSegments)
+	head = []interface{}{(*claims)}
+	for i, segment := range pathSegments {
+		if i == segmentsLen-1 {
+			extractRolesFromMapInterface((*claims), segment, &roles)
+		} else {
+			if claimsMap, ok := (*claims)[segment].(map[string]interface{}); ok {
+
+			}
+		}
+	}
+
+	return roles
+}
+
 func ExtractUserStatus(claims *jwt.MapClaims) (int32, string, string) {
 	var exp int32
 	var preferredUsername string
