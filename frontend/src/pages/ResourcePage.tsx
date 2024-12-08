@@ -17,7 +17,12 @@ const ResourcePage = () => {
     const [selectedRecord, setSelectedRecord] = useState<ResourceDataSourceItem>();
 
     const navigate = useNavigate();
-    const {columns, dataSource, setDataSource, wasSuccessful} = useListResource(typeof resourceType === "string" ? resourceType : "", "");
+    const {
+        columns,
+        dataSource,
+        setDataSource,
+        wasSuccessful
+    } = useListResource(typeof resourceType === "string" ? resourceType : "", "");
     const {permissions} = useAuth();
     const columnsWithActions = columns.concat({
         dataIndex: "",
@@ -28,7 +33,11 @@ const ResourcePage = () => {
                 && !hasPermission(permissions, record.namespace as string, resourceType, "u");
             const deleteDisabled = permissions !== null && typeof resourceType === "string" && !hasPermission(permissions, record.namespace as string, resourceType, "d");
             return (
-                <div>
+                <div
+                    onClick={e => {
+                        e.stopPropagation()
+                    }}
+                >
                     <Button
                         type="link"
                         icon={<EditOutlined/>}
@@ -44,9 +53,8 @@ const ResourcePage = () => {
                     />
                 </div>
             )
-        }
-        ,
-        width: 100
+        },
+        width: 100,
     });
 
     const handleDelete = (record: ResourceDataSourceItem) => {
@@ -71,7 +79,7 @@ const ResourcePage = () => {
 
     function handleAdd() {
         navigate(`/create`, {
-            state: { resourceType },
+            state: {resourceType},
         });
     }
 
@@ -96,8 +104,9 @@ const ResourcePage = () => {
                 >
                     Add
                 </Button>
-                {wasSuccessful ? <Tab columns={columnsWithActions} dataSource={dataSource} resourceType={typeof resourceType === "string" ? resourceType : ""} /> :
-                    <Tab columns={[]} dataSource={[]} resourceType={""} />}
+                {wasSuccessful ? <Tab columns={columnsWithActions} dataSource={dataSource}
+                                      resourceType={typeof resourceType === "string" ? resourceType : ""}/> :
+                    <Tab columns={[]} dataSource={[]} resourceType={""}/>}
             </div>
             <DeleteModal open={openDeleteModal} setOpen={setOpenDeleteModal}
                          resourceType={typeof resourceType === "string" ? resourceType : ""}
