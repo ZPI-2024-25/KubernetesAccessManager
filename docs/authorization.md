@@ -1,4 +1,4 @@
-## For english press [here](#authorization-in-the-application)
+## For english press [here](#authorization-in-kubernetes-access-manager)
 ## Opis autoryzacji w Kubernetes Access Manager
 ### Token JWT
 
