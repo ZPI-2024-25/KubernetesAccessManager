@@ -24,7 +24,7 @@
 
 .controlSection {
     display: flex;
-    justify-content: end;
+    justify-content: start;
     align-items: center;
 }
 

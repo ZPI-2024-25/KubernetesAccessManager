@@ -4,15 +4,24 @@ import ResourceDetailsDrawer from "../DrawerDetails/ResourceDetailsDrawer.tsx";
 import {useState} from "react";
 import {HelmDataSourceItem, ResourceDataSourceItem} from "../../types";
 
-const Tab = ({columns, dataSource, namespaces, setCurrentNamespace, resourceType}: {
+const Tab = ({columns, dataSource, resourceType}: {
     columns: object[],
     dataSource: ResourceDataSourceItem[] | HelmDataSourceItem[],
-    namespaces: string[],
-    setCurrentNamespace: (namespace: string) => void,
     resourceType: string
 }) => {
     const [selectedRecord, setSelectedRecord] = useState<object | null>(null);
     const [isDrawerVisible, setDrawerVisible] = useState(false);
+    const [selectedNamespace, setSelectedNamespace] = useState<string>('');
+
+    const extractNamespaces = () => {
+        const namespaces = new Set<string>();
+        dataSource.forEach((record) => namespaces.add(record.namespace ? record.namespace as string : ''));
+        return Array.from(namespaces).filter((namespace) => namespace !== '');
+    }
+
+    const namespaces = extractNamespaces();
+
+    const filteredDataSource = dataSource.filter(item => item.namespace === selectedNamespace || selectedNamespace === '');
 
     const handleRowClick = (record: object) => {
         setSelectedRecord(record);
@@ -33,7 +42,7 @@ const Tab = ({columns, dataSource, namespaces, setCurrentNamespace, resourceType
                         showSearch
                         placeholder="Select namespace"
                         optionFilterProp="label"
-                        onChange={(value) => setCurrentNamespace(value)}
+                        onChange={(value) => setSelectedNamespace(value)}
                         options={namespaces.map((namespace) => ({
                                 value: namespace,
                                 label: namespace,
@@ -50,7 +59,7 @@ const Tab = ({columns, dataSource, namespaces, setCurrentNamespace, resourceType
                 columns={columns.map((col, index) =>
                     index === columns.length - 1 ? {...col, fixed: 'right'} : col
                 )}
-                dataSource={dataSource}
+                dataSource={filteredDataSource}
                 scroll={{x: 'max-content'}}
                 pagination={{
                     showSizeChanger: true,

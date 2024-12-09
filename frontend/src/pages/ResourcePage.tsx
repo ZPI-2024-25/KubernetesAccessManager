@@ -14,18 +14,16 @@ const ResourcePage = () => {
     const {resourceType} = useParams();
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState<ResourceDataSourceItem>();
-    const [selectedNamespace, setSelectedNamespace] = useState<string>('');
+
+    const {permissions} = useAuth();
 
     const navigate = useNavigate();
     const {
         columns,
         dataSource,
         setDataSource,
-        namespaces,
         wasSuccessful
-    } = useListResource(typeof resourceType === "string" ? resourceType : "", selectedNamespace);
-
-    const {permissions} = useAuth();
+    } = useListResource(typeof resourceType === "string" ? resourceType : "", '');
 
     const columnsWithActions = columns.concat({
         dataIndex: "",
@@ -75,7 +73,7 @@ const ResourcePage = () => {
 
     function handleAdd() {
         navigate(`/create`, {
-            state: {resourceType, namespaces: namespaces},
+            state: {resourceType},
         });
     }
 
@@ -101,11 +99,9 @@ const ResourcePage = () => {
                     Add
                 </Button>
                 {wasSuccessful ?
-                    <Tab columns={columnsWithActions} dataSource={dataSource} namespaces={namespaces}
-                         setCurrentNamespace={setSelectedNamespace}
+                    <Tab columns={columnsWithActions} dataSource={dataSource}
                          resourceType={typeof resourceType === "string" ? resourceType : ""}/>
-                    : <Tab columns={[]} dataSource={[]} namespaces={[]} setCurrentNamespace={() => null}
-                           resourceType={""}/>}
+                    : <Tab columns={[]} dataSource={[]} resourceType={""}/>}
 
             </div>
             <DeleteModal open={openDeleteModal} setOpen={setOpenDeleteModal}
