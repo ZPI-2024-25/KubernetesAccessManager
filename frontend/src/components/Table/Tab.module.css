@@ -1,5 +1,5 @@
 .tabContainer {
-    margin-top: 50px;
+    margin-top: 48px;
     display: flex;
     flex-direction: column;
     max-height: calc(100vh - 100px);
@@ -7,7 +7,6 @@
 }
 
 .tab {
-    margin-top: 48px;
     max-height: calc(100vh - 80px);
     overflow-y: auto;
 }
