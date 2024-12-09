@@ -1,5 +1,5 @@
 .tabContainer {
-    margin-top: 64px;
+    margin-top: 50px;
     display: flex;
     flex-direction: column;
     max-height: calc(100vh - 100px);
@@ -26,10 +26,15 @@
     display: flex;
     justify-content: start;
     align-items: center;
+    gap: 10px;
 }
 
 .namespaceSelect {
     min-width: 200px;
+}
+
+.searchInput {
+    width: 200px;
 }
 
 

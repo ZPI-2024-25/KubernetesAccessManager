@@ -1,8 +1,11 @@
-import {Select, Table} from 'antd';
+import {Input, Select, Table} from 'antd';
 import styles from './Tab.module.css';
 import ResourceDetailsDrawer from "../DrawerDetails/ResourceDetailsDrawer.tsx";
 import {useState} from "react";
 import {HelmDataSourceItem, ResourceDataSourceItem} from "../../types";
+import {extractCRDname} from "../../functions/extractCRDname.ts";
+
+const {Search} = Input;
 
 const Tab = ({columns, dataSource, resourceType}: {
     columns: object[],
@@ -11,6 +14,7 @@ const Tab = ({columns, dataSource, resourceType}: {
 }) => {
     const [selectedRecord, setSelectedRecord] = useState<object | null>(null);
     const [isDrawerVisible, setDrawerVisible] = useState(false);
+    const [query, setQuery] = useState<string>('');
     const [selectedNamespace, setSelectedNamespace] = useState<string>('');
 
     const extractNamespaces = () => {
@@ -21,7 +25,17 @@ const Tab = ({columns, dataSource, resourceType}: {
 
     const namespaces = extractNamespaces();
 
-    const filteredDataSource = dataSource.filter(item => item.namespace === selectedNamespace || selectedNamespace === '');
+    const filterDataSource = (dataSource: ResourceDataSourceItem[] | HelmDataSourceItem[], selectedNamespace: string, query: string) => {
+        const filteredByNamespace = dataSource.filter(item => item.namespace === selectedNamespace || selectedNamespace === '');
+
+        if (dataSource.length > 0 && 'resource' in dataSource[0]) {
+            return filteredByNamespace.filter(item => extractCRDname(item as ResourceDataSourceItem).toLowerCase().includes(query.toLowerCase()));
+        } else {
+            return filteredByNamespace.filter(item => (item.name ? item.name as string : "").toLowerCase().includes(query.toLowerCase()));
+        }
+    }
+
+    const filteredDataSource = filterDataSource(dataSource, selectedNamespace, query);
 
     const handleRowClick = (record: object) => {
         setSelectedRecord(record);
@@ -36,6 +50,13 @@ const Tab = ({columns, dataSource, resourceType}: {
     return (
         <div className={styles.tabContainer}>
             <div className={styles.controlSection}>
+                <Search
+                    className={styles.searchInput}
+                    placeholder="Search"
+                    onChange={(e) => setQuery(e.target.value)}
+                    value={query}
+                />
+
                 {namespaces.length > 0 && (
                     <Select
                         className={styles.namespaceSelect}
