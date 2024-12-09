@@ -1,15 +1,25 @@
-import { Table } from 'antd';
+import {Select, Table} from 'antd';
 import styles from './Tab.module.css';
 import ResourceDetailsDrawer from "../DrawerDetails/ResourceDetailsDrawer.tsx";
-import { useState } from "react";
+import {useState} from "react";
+import {HelmDataSourceItem, ResourceDataSourceItem} from "../../types";
 
-const Tab = ({ columns, dataSource, resourceType }: {
+const Tab = ({columns, dataSource, setCurrentNamespace, resourceType}: {
     columns: object[],
-    dataSource: object[],
+    dataSource: ResourceDataSourceItem[] | HelmDataSourceItem[],
+    setCurrentNamespace: (namespace: string) => void,
     resourceType: string
 }) => {
     const [selectedRecord, setSelectedRecord] = useState<object | null>(null);
     const [isDrawerVisible, setDrawerVisible] = useState(false);
+
+    const extractNamespaces = () => {
+        const namespaces = new Set<string>();
+        dataSource.forEach((record) => namespaces.add(record.namespace ? record.namespace as string : ''));
+        return Array.from(namespaces).filter((namespace) => namespace !== '');
+    }
+
+    const namespaces = extractNamespaces();
 
     const handleRowClick = (record: object) => {
         setSelectedRecord(record);
@@ -22,13 +32,32 @@ const Tab = ({ columns, dataSource, resourceType }: {
     };
 
     return (
-        <>
+        <div className={styles.tabContainer}>
+            <div className={styles.controlSection}>
+                {namespaces.length > 0 && (
+                    <Select
+                        showSearch
+                        placeholder="Select namespace"
+                        optionFilterProp="label"
+                        onChange={(value) => setCurrentNamespace(value)}
+                        options={namespaces.map((namespace) => ({
+                                value: namespace,
+                                label: namespace,
+                            })
+                        ).concat({value: '', label: 'All namespaces'})
+                            .sort((a, b) => a.label.localeCompare(b.label))
+                        }
+                    />
+                )}
+
+            </div>
+
             <Table
                 columns={columns.map((col, index) =>
-                    index === columns.length - 1 ? { ...col, fixed: 'right' } : col
+                    index === columns.length - 1 ? {...col, fixed: 'right'} : col
                 )}
                 dataSource={dataSource}
-                scroll={{ x: 'max-content' }}
+                scroll={{x: 'max-content'}}
                 pagination={{
                     showSizeChanger: true,
                     pageSizeOptions: ['10', '20', '50'],
@@ -50,7 +79,7 @@ const Tab = ({ columns, dataSource, resourceType }: {
                 loading={false}
                 resourceType={resourceType}
             />
-        </>
+        </div>
     );
 };
 
