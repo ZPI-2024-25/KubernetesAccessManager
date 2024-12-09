@@ -30,10 +30,7 @@ spec:
           imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.frontend.service.port }}
+              containerPort: 80
               protocol: TCP
           env:
-            - name: BACKEND_SERVICE_HOST
-              value: {{ include "charts.fullnameBackend" . }}
-            - name: BACKEND_SERVICE_PORT
-              value: {{ .Values.backend.service.port | quote }}
+            {{- include "charts.frontendEnvVars" . | nindent 12 }}
