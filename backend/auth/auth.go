@@ -95,6 +95,10 @@ func IsUserAuthorized(operation models.Operation, roles []string) (bool, error) 
 
 func ExtractRoles(claims *jwt.MapClaims) ([]string, *models.ModelError) {
 	var roles []string
+	if common.USE_PATHS_FOR_ROLES {
+		roles = extractRolesFromPaths(claims, common.TOKEN_ROLE_PATH, common.TOKEN_PATHS_SEP, common.TOKEN_PATH_SEGMENT_SEP)
+		return roles, nil
+	}
 	client := common.GetOrDefaultEnv("VITE_KEYCLOAK_CLIENTNAME", "account")
 	if realmAccess, ok := (*claims)["realm_access"].(map[string]interface{}); ok {
 		extractRolesFromMapInterface(realmAccess, "roles", &roles)
@@ -119,22 +123,53 @@ func extractRolesFromMapInterface(claims map[string]interface{}, rolekey string,
 	}
 }
 
-func extractRolesFromPath(claims *jwt.MapClaims, path string, sep string) ([]string, *models.ModelError) {
-	var roles []string
-	pathSegments := strings.Split(path, sep)
-	segmentsLen := len(pathSegments)
-	head = []interface{}{(*claims)}
-	for i, segment := range pathSegments {
-		if i == segmentsLen-1 {
-			extractRolesFromMapInterface((*claims), segment, &roles)
-		} else {
-			if claimsMap, ok := (*claims)[segment].(map[string]interface{}); ok {
+func extractRolesFromPaths(claims *jwt.MapClaims, path string, pathSep string, sep string) ([]string) {
+	roles := make(map[string]struct{})
+	paths := strings.Split(path, pathSep)
+	for _, path := range paths {
+		pathSegments := strings.Split(path, sep)
+		extractRolesFromPathRecursively(*claims, pathSegments, roles)
+	}
+	rolesSlice := make([]string, 0, len(roles))
+	for role := range roles {
+		rolesSlice = append(rolesSlice, role)
+	}
+	return rolesSlice 
+}
 
+func extractRolesFromPathRecursively(current interface{}, pathSegments []string, roles map[string]struct{}) {
+	if len(pathSegments) == 0 {
+		// end of path, get the roles, if it is correct
+		if finalArray, ok := current.([]interface{}); ok {
+			for _, item := range finalArray {
+				if roleStr, ok := item.(string); ok {
+					roles[roleStr] = struct{}{}
+				}
 			}
 		}
+		return
 	}
 
-	return roles
+	// Get the current path segment
+	segment := pathSegments[0]
+	// Process based on the type of the current value
+	if value, ok := current.(map[string]interface{}); ok {
+		// If it's a map, move to the next segment
+		if next, ok := value[segment]; ok {
+			extractRolesFromPathRecursively(next, pathSegments[1:], roles)
+		}
+	} else if value, ok := current.(jwt.MapClaims); ok {
+		// I dont understand go type conversion :(
+		if next, ok := value[segment]; ok {
+			extractRolesFromPathRecursively(next, pathSegments[1:], roles)
+		}
+	} else if value, ok := current.([]interface{}); ok {
+		// If it's an array, process each item in the array, without moving to the next segment
+		for _, item := range value {
+			extractRolesFromPathRecursively(item, pathSegments, roles)
+		}
+	}
+	// omit other types, they are not on the path
 }
 
 func ExtractUserStatus(claims *jwt.MapClaims) (int32, string, string) {

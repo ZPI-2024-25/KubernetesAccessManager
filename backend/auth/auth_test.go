@@ -130,3 +130,126 @@ func TestExtractRoles(t *testing.T) {
 		assert.ElementsMatch(t, expectedRoles, roles)
 	})
 }
+
+func TestExtractRolesFromPaths(t *testing.T) {
+    tests := []struct {
+        name        string
+        claims      jwt.MapClaims
+        path        string
+        pathSep     string
+        sep         string
+        expected    []string
+    }{
+        {
+            name: "Single path with roles",
+            claims: jwt.MapClaims{
+                "realm_access": map[string]interface{}{
+                    "roles": []interface{}{"admin", "user"},
+                },
+            },
+            path:     "realm_access.roles",
+            pathSep:  ",",
+            sep:      ".",
+            expected: []string{"admin", "user"},
+        },
+        {
+            name: "Multiple paths with roles",
+            claims: jwt.MapClaims{
+                "realm_access": map[string]interface{}{
+                    "roles": []interface{}{"admin", "user"},
+                },
+                "resource_access": map[string]interface{}{
+                    "account": map[string]interface{}{
+                        "roles": []interface{}{"manage-account", "manage-account-links"},
+                    },
+                },
+            },
+            path:     "realm_access.roles,resource_access.account.roles",
+            pathSep:  ",",
+            sep:      ".",
+            expected: []string{"admin", "user", "manage-account", "manage-account-links"},
+        },
+        {
+            name: "No roles found",
+            claims: jwt.MapClaims{
+                "realm_access": map[string]interface{}{
+                    "roles": []interface{}{},
+                },
+            },
+            path:     "realm_access.roles",
+            pathSep:  ",",
+            sep:      ".",
+            expected: []string{},
+        },
+        {
+            name: "Nested roles",
+            claims: jwt.MapClaims{
+                "resource_access": map[string]interface{}{
+                    "account": map[string]interface{}{
+                        "roles": []interface{}{"manage-account"},
+                    },
+                    "account-console": map[string]interface{}{
+                        "roles": []interface{}{"pod-reader"},
+                    },
+                },
+            },
+            path:     "resource_access.account.roles,resource_access.account-console.roles",
+            pathSep:  ",",
+            sep:      ".",
+            expected: []string{"manage-account", "pod-reader"},
+        },
+		{
+            name: "Array in between path segments",
+            claims: jwt.MapClaims{
+                "resource_access": map[string]interface{}{
+                    "accounts": []interface{}{
+                        map[string]interface{}{
+                            "roles": []interface{}{"manage-account"},
+                        },
+                        map[string]interface{}{
+                            "roles": []interface{}{"manage-account-links"},
+                        },
+                    },
+                },
+            },
+            path:     "resource_access.accounts.roles",
+            pathSep:  ",",
+            sep:      ".",
+            expected: []string{"manage-account", "manage-account-links"},
+        },
+        {
+            name: "Complex nested structure with arrays",
+            claims: jwt.MapClaims{
+                "resource_access": map[string]interface{}{
+                    "accounts": []interface{}{
+                        map[string]interface{}{
+                            "roles": []interface{}{"manage-account"},
+                        },
+                        map[string]interface{}{
+                            "roles": []interface{}{"manage-account-links"},
+                        },
+                    },
+                    "projects": []interface{}{
+                        map[string]interface{}{
+                            "roles": []interface{}{"project-admin"},
+                        },
+                        map[string]interface{}{
+                            "roles": []interface{}{"project-user"},
+                        },
+                    },
+                },
+            },
+            path:     "resource_access.accounts.roles,resource_access.projects.roles",
+            pathSep:  ",",
+            sep:      ".",
+            expected: []string{"manage-account", "manage-account-links", "project-admin", "project-user"},
+        },
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            roles := extractRolesFromPaths(&tt.claims, tt.path, tt.pathSep, tt.sep)
+            assert.ElementsMatch(t, tt.expected, roles)
+        })
+    }
+}
