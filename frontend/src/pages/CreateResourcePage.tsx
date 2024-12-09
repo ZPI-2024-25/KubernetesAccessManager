@@ -18,7 +18,7 @@ const CreateResourcePage = () => {
 
     const namespaceSelector = (
         <Input
-            placeholder="Namespace"
+            placeholder="default"
             onChange={(e) => setNamespace(e.target.value)}
             value={namespace}
         />
