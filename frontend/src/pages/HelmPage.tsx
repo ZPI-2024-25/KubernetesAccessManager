@@ -29,7 +29,11 @@ const HelmPage = () => {
             const rollbackDisabled = permissions !== null && !hasPermission(permissions, record.namespace as string, helmResourceLabel, "u");
             const deleteDisabled = permissions !== null && !hasPermission(permissions, record.namespace as string, helmResourceLabel, "d");
             return (
-                <div>
+                <div
+                    onClick={e => {
+                        e.stopPropagation()
+                    }}
+                >
                     <Button
                         type="link"
                         icon={<MdOutlineRestore/>}

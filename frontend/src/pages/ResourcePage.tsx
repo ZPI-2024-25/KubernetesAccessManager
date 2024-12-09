@@ -9,6 +9,7 @@ import DeleteModal from "../components/Modals/DeleteModal.tsx";
 import Tab from "../components/Table/Tab.tsx";
 import {hasPermission, hasPermissionInAnyNamespace} from "../functions/authorization.ts";
 import {useAuth} from "../components/AuthProvider/AuthProvider.tsx";
+import {extractCRDname} from "../functions/extractCRDname.ts";
 
 const ResourcePage = () => {
     const {resourceType} = useParams();
@@ -30,10 +31,15 @@ const ResourcePage = () => {
         title: 'Actions',
         key: 'actions',
         render: (_, record: ResourceDataSourceItem) => {
-            const editDisabled = permissions !== null && typeof resourceType === "string" && !hasPermission(permissions, record.namespace as string, resourceType, "u");
+            const editDisabled = permissions !== null && typeof resourceType === "string" && !hasPermission(permissions, record.namespace as string, resourceType, "r")
+                && !hasPermission(permissions, record.namespace as string, resourceType, "u");
             const deleteDisabled = permissions !== null && typeof resourceType === "string" && !hasPermission(permissions, record.namespace as string, resourceType, "d");
             return (
-                <div>
+                <div
+                    onClick={e => {
+                        e.stopPropagation()
+                    }}
+                >
                     <Button
                         type="link"
                         icon={<EditOutlined/>}
@@ -50,7 +56,7 @@ const ResourcePage = () => {
                 </div>
             )
         },
-        width: 100
+        width: 100,
     });
 
     const handleDelete = (record: ResourceDataSourceItem) => {
@@ -60,7 +66,9 @@ const ResourcePage = () => {
 
     const handleEdit = (record: ResourceDataSourceItem) => {
         const namespace = record.namespace as string;
-        const resourceName = record.name as string;
+        const resourceName = "resource" in record ? extractCRDname(record) : record.name as string;
+        console.log(resourceName)
+
 
         navigate(`/editor`, {
             state: {resourceType, namespace, resourceName},
@@ -108,7 +116,6 @@ const ResourcePage = () => {
                          resourceType={typeof resourceType === "string" ? resourceType : ""}
                          resource={selectedRecord}
                          removeResource={removeRecord}/>
-
         </>
     );
 };

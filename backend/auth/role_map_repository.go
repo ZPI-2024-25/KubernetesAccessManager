@@ -232,7 +232,7 @@ func fromOperationConfigList(operations []operationConfig) []models.Operation {
 		if resource == "" {
 			resource = "*"
 		}
-		if len(opConfig.Operations) == 0 {
+		if opConfig.Operations == nil {
 			ops = append(ops, models.Operation{
 				Namespace: namespace,
 				Resource:  resource,

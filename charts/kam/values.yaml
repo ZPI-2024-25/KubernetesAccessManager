@@ -85,11 +85,7 @@ ingress:
     - host: "kam.local"
       paths:
         - backend:
-            - path: /api/v1/k8s
-              pathType: Prefix
-            - path: /api/v1/auth
-              pathType: Prefix
-            - path: /api/v1/helm
+            - path: /api
               pathType: Prefix
         - frontend:
             - path: /
