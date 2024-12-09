@@ -9,7 +9,7 @@ import {DeleteOutlined} from "@ant-design/icons";
 import {Button} from "antd";
 import {hasPermission} from "../functions/authorization.ts";
 import {useAuth} from "../components/AuthProvider/AuthProvider.tsx";
-import { helmResourceLabel } from "../consts/MenuItem.tsx"
+import {helmResourceLabel} from "../consts/MenuItem.tsx"
 
 const HelmPage = () => {
 
@@ -17,9 +17,9 @@ const HelmPage = () => {
     const [openUninstallModal, setOpenUninstallModal] = useState(false);
     const [currentRelease, setCurrentRelease] = useState<HelmDataSourceItem>();
     const [selectedNamespace, setSelectedNamespace] = useState<string>('');
-    const { permissions } = useAuth();
+    const {permissions} = useAuth();
 
-    const {helmColumns, dataSource, setDataSource, namespaces} = useListReleases(selectedNamespace);
+    const {helmColumns, dataSource, setDataSource, namespaces, wasSuccessful} = useListReleases(selectedNamespace);
     const columns = helmColumns.concat({
         title: 'Actions',
         dataIndex: "",
@@ -64,9 +64,13 @@ const HelmPage = () => {
 
     return (
         <div>
-            <Tab columns={columns} dataSource={dataSource} namespaces={namespaces.current} setCurrentNamespace={setSelectedNamespace} resourceType={"Helm"}/>
+            {wasSuccessful ? <Tab columns={columns} dataSource={dataSource} namespaces={namespaces}
+                                  setCurrentNamespace={setSelectedNamespace} resourceType={"Helm"}/> :
+                <Tab columns={[]} dataSource={[]} namespaces={[]} setCurrentNamespace={() => null} resourceType={""}/>
+            }
             <RollbackModal open={openRollbackModal} setOpen={setOpenRollbackModal} release={currentRelease}/>
-            <UninstallModal open={openUninstallModal} setOpen={setOpenUninstallModal} release={currentRelease} removeRelease={removeRelease}/>
+            <UninstallModal open={openUninstallModal} setOpen={setOpenUninstallModal} release={currentRelease}
+                            removeRelease={removeRelease}/>
         </div>
     );
 };

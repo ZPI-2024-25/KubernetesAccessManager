@@ -17,8 +17,16 @@ const ResourcePage = () => {
     const [selectedNamespace, setSelectedNamespace] = useState<string>('');
 
     const navigate = useNavigate();
-    const {columns, dataSource, setDataSource, namespaces, wasSuccessful} = useListResource(typeof resourceType === "string" ? resourceType : "", selectedNamespace);
+    const {
+        columns,
+        dataSource,
+        setDataSource,
+        namespaces,
+        wasSuccessful
+    } = useListResource(typeof resourceType === "string" ? resourceType : "", selectedNamespace);
+
     const {permissions} = useAuth();
+
     const columnsWithActions = columns.concat({
         dataIndex: "",
         title: 'Actions',
@@ -42,8 +50,8 @@ const ResourcePage = () => {
                         danger
                     />
                 </div>
-                )}
-        ,
+            )
+        },
         width: 100
     });
 
@@ -67,7 +75,7 @@ const ResourcePage = () => {
 
     function handleAdd() {
         navigate(`/create`, {
-            state: { resourceType },
+            state: {resourceType, namespaces: namespaces},
         });
     }
 
@@ -92,8 +100,12 @@ const ResourcePage = () => {
                 >
                     Add
                 </Button>
-                {wasSuccessful ? <Tab columns={columnsWithActions} dataSource={dataSource} namespaces={namespaces.current} setCurrentNamespace={setSelectedNamespace} resourceType={typeof resourceType === "string" ? resourceType : ""} />
-                    : <Tab columns={[]} dataSource={[]} namespaces={[]} setCurrentNamespace={() => null}   resourceType={""} />}
+                {wasSuccessful ?
+                    <Tab columns={columnsWithActions} dataSource={dataSource} namespaces={namespaces}
+                         setCurrentNamespace={setSelectedNamespace}
+                         resourceType={typeof resourceType === "string" ? resourceType : ""}/>
+                    : <Tab columns={[]} dataSource={[]} namespaces={[]} setCurrentNamespace={() => null}
+                           resourceType={""}/>}
 
             </div>
             <DeleteModal open={openDeleteModal} setOpen={setOpenDeleteModal}

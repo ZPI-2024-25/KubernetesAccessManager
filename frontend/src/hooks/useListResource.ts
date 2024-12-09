@@ -1,4 +1,4 @@
-import {ReactNode, useEffect, useRef, useState} from "react";
+import {ReactNode, useEffect, useState} from "react";
 import {ResourceColumnType, ResourceDataSourceItem} from "../types";
 import {fetchResources} from "../api";
 import {formatAge} from "../functions/formatAge.ts";
@@ -10,7 +10,7 @@ export const useListResource = (resourcelabel: string, namespace: string ) => {
     const [columns, setColumns] = useState<ResourceColumnType[]>([]);
     const [dataSource, setDataSource] = useState<ResourceDataSourceItem[]>([]);
     const [wasSuccessful, setWasSuccessful] = useState(false);
-    const namespaces = useRef<string[]>([]);
+    const [namespaces, setNamespaces] = useState<string[]>([]);
     const { permissions } = useAuth();
 
     const extractNamespaces = () => {
@@ -69,7 +69,7 @@ export const useListResource = (resourcelabel: string, namespace: string ) => {
     }, [resourcelabel, namespace]);
 
     useEffect(() => {
-        namespaces.current = extractNamespaces();
+        setNamespaces(extractNamespaces());
     }, [resourcelabel]);
 
     return { columns, dataSource, namespaces, setDataSource, wasSuccessful };
