@@ -1,5 +1,5 @@
 .tab {
-    margin-top: 64px;
+    margin-top: 48px;
     max-height: calc(100vh - 80px);
     overflow-y: auto;
 }

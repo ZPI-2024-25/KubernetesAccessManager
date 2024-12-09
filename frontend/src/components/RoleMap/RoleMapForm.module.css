@@ -1,0 +1,16 @@
+.editButtonContainer {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+    gap: 8px;
+}
+
+.addPermissionButton {
+  margin-top: 8px;
+  margin-left: 4px;
+  border-color: #1677ff;
+}
+
+.roleHeader {
+    display: flex;
+}
