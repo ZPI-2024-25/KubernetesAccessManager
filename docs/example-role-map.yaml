@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: role-mapper
+  name: role-map
   namespace: default
 data:
   role-map: |
-    admin:
-      name: "admin"
+    zpi-role:
+      name: "zpi-role"
       deny: 
         - resource: "Pod"
           namespace: "default"

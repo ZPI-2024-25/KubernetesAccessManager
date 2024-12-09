@@ -4,7 +4,6 @@ import (
 	"github.com/ZPI-2024-25/KubernetesAccessManager/common"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
-	"log"
 	"regexp"
 	"strings"
 	"testing"
@@ -75,7 +74,6 @@ func TestJsonTokenRoleExtraction(t *testing.T) {
 		_, _ = jwt.ParseWithClaims(tokenStr, &claims, nil)
 		roles, _ := ExtractRoles(&claims)
 		expectedRoles := []string{"manage-account", "manage-account-links"}
-		log.Print(roles)
 		assert.ElementsMatch(t, expectedRoles, roles)
 	})
 }
