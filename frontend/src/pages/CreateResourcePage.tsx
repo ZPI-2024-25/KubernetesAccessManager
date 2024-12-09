@@ -17,27 +17,11 @@ const CreateResourcePage = () => {
     }, [namespaces]);
 
     const namespaceSelector = (
-        <>
-            {/*{namespaces.length > 0 && (*/}
-            {/*    <Select*/}
-            {/*        className={styles.namespaceSelect}*/}
-            {/*        showSearch*/}
-            {/*        placeholder="Select namespace"*/}
-            {/*        optionFilterProp="label"*/}
-            {/*        onChange={(value) => setNamespace(value)}*/}
-            {/*        options={namespaces.map((namespace: string) => ({*/}
-            {/*                value: namespace,*/}
-            {/*                label: namespace,*/}
-            {/*            })*/}
-            {/*        )}*/}
-            {/*    />*/}
-            {/*)}*/}
-            <Input
-                placeholder="Namespace"
-                onChange={(e) => setNamespace(e.target.value)}
-                value={namespace}
-            />
-        </>
+        <Input
+            placeholder="Namespace"
+            onChange={(e) => setNamespace(e.target.value)}
+            value={namespace}
+        />
     );
 
     return (
