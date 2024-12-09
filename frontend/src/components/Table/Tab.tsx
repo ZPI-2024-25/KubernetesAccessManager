@@ -4,22 +4,15 @@ import ResourceDetailsDrawer from "../DrawerDetails/ResourceDetailsDrawer.tsx";
 import {useState} from "react";
 import {HelmDataSourceItem, ResourceDataSourceItem} from "../../types";
 
-const Tab = ({columns, dataSource, setCurrentNamespace, resourceType}: {
+const Tab = ({columns, dataSource, namespaces, setCurrentNamespace, resourceType}: {
     columns: object[],
     dataSource: ResourceDataSourceItem[] | HelmDataSourceItem[],
+    namespaces: string[],
     setCurrentNamespace: (namespace: string) => void,
     resourceType: string
 }) => {
     const [selectedRecord, setSelectedRecord] = useState<object | null>(null);
     const [isDrawerVisible, setDrawerVisible] = useState(false);
-
-    const extractNamespaces = () => {
-        const namespaces = new Set<string>();
-        dataSource.forEach((record) => namespaces.add(record.namespace ? record.namespace as string : ''));
-        return Array.from(namespaces).filter((namespace) => namespace !== '');
-    }
-
-    const namespaces = extractNamespaces();
 
     const handleRowClick = (record: object) => {
         setSelectedRecord(record);
@@ -36,6 +29,7 @@ const Tab = ({columns, dataSource, setCurrentNamespace, resourceType}: {
             <div className={styles.controlSection}>
                 {namespaces.length > 0 && (
                     <Select
+                        className={styles.namespaceSelect}
                         showSearch
                         placeholder="Select namespace"
                         optionFilterProp="label"

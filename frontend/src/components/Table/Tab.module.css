@@ -28,5 +28,9 @@
     align-items: center;
 }
 
+.namespaceSelect {
+    min-width: 200px;
+}
+
 
 

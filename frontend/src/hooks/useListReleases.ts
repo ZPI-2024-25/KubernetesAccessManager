@@ -1,6 +1,6 @@
 import {helmColumns} from "../consts/HelmColumns.ts";
 import {HelmDataSourceItem} from "../types";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {fetchReleases} from "../api";
 import {message} from "antd";
 import {useAuth} from "../components/AuthProvider/AuthProvider.tsx";
@@ -10,7 +10,14 @@ import { helmResourceLabel } from "../consts/MenuItem.tsx";
 export const useListReleases = (namespace: string) => {
     const [dataSource, setDataSource] = useState<HelmDataSourceItem[]>([]);
     const [wasSuccessful, setWasSuccessful] = useState(false);
+    const namespaces = useRef<string[]>([]);
     const { permissions } = useAuth();
+
+    const extractNamespaces = () => {
+        const namespaces = new Set<string>();
+        dataSource.forEach((record) => namespaces.add(record.namespace ? record.namespace as string : ''));
+        return Array.from(namespaces).filter((namespace) => namespace !== '');
+    }
 
     useEffect(() => {
         if (permissions && !hasPermissionInAnyNamespace(permissions, helmResourceLabel, "l")) {
@@ -42,5 +49,9 @@ export const useListReleases = (namespace: string) => {
         fetchData();
     }, [namespace]);
 
-    return {helmColumns, dataSource, setDataSource, wasSuccessful};
+    useEffect(() => {
+        namespaces.current = extractNamespaces();
+    }, []);
+
+    return {helmColumns, dataSource, setDataSource, namespaces, wasSuccessful};
 }
