@@ -16,14 +16,16 @@ const ResourcePage = () => {
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState<ResourceDataSourceItem>();
 
+    const {permissions} = useAuth();
+
     const navigate = useNavigate();
     const {
         columns,
         dataSource,
         setDataSource,
         wasSuccessful
-    } = useListResource(typeof resourceType === "string" ? resourceType : "", "");
-    const {permissions} = useAuth();
+    } = useListResource(typeof resourceType === "string" ? resourceType : "", '');
+
     const columnsWithActions = columns.concat({
         dataIndex: "",
         title: 'Actions',
@@ -104,9 +106,11 @@ const ResourcePage = () => {
                 >
                     Add
                 </Button>
-                {wasSuccessful ? <Tab columns={columnsWithActions} dataSource={dataSource}
-                                      resourceType={typeof resourceType === "string" ? resourceType : ""}/> :
-                    <Tab columns={[]} dataSource={[]} resourceType={""}/>}
+                {wasSuccessful ?
+                    <Tab columns={columnsWithActions} dataSource={dataSource}
+                         resourceType={typeof resourceType === "string" ? resourceType : ""}/>
+                    : <Tab columns={[]} dataSource={[]} resourceType={""}/>}
+
             </div>
             <DeleteModal open={openDeleteModal} setOpen={setOpenDeleteModal}
                          resourceType={typeof resourceType === "string" ? resourceType : ""}

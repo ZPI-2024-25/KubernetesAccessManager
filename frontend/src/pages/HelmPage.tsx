@@ -18,7 +18,8 @@ const HelmPage = () => {
     const [currentRelease, setCurrentRelease] = useState<HelmDataSourceItem>();
     const {permissions} = useAuth();
 
-    const {helmColumns, dataSource, setDataSource} = useListReleases('');
+    const {helmColumns, dataSource, setDataSource, wasSuccessful} = useListReleases('');
+
     const columns = helmColumns.concat({
         title: 'Actions',
         dataIndex: "",
@@ -67,7 +68,9 @@ const HelmPage = () => {
 
     return (
         <div>
-            <Tab columns={columns} dataSource={dataSource} resourceType={"Helm"}/>
+            {wasSuccessful ? <Tab columns={columns} dataSource={dataSource} resourceType={"Helm"}/> :
+                <Tab columns={[]} dataSource={[]} resourceType={""}/>
+            }
             <RollbackModal open={openRollbackModal} setOpen={setOpenRollbackModal} release={currentRelease}/>
             <UninstallModal open={openUninstallModal} setOpen={setOpenUninstallModal} release={currentRelease}
                             removeRelease={removeRelease}/>
