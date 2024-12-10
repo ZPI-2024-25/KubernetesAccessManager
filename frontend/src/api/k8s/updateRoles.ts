@@ -2,7 +2,7 @@ import {RoleConfigMap} from "../../types";
 import axios from "axios";
 import * as Constants from "../../consts/consts.ts";
 import {parseApiError} from "../../functions/apiErrorParser.ts";
-import {ROLEMAP_NAME, ROLEMAP_NAMESPACE} from "../../consts/roleMap.ts";
+import {ROLEMAP_NAME, ROLEMAP_NAMESPACE} from "../../consts/consts.ts";
 
 export async function updateRoles(roleConfigMap: RoleConfigMap): Promise<RoleConfigMap> {
     try {

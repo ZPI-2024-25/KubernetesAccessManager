@@ -9,7 +9,7 @@ import styles from "./RolesPage.module.css";
 import {useNavigate} from "react-router-dom";
 import {useAuth} from "../components/AuthProvider/AuthProvider.tsx";
 import {hasPermission} from "../functions/authorization.ts";
-import {ROLEMAP_NAMESPACE} from "../consts/roleMap.ts";
+import {ROLEMAP_NAMESPACE} from "../consts/consts.ts";
 
 const RolesPage = () => {
     const [roleMap, setRoleMap] = useState<RoleMap>();

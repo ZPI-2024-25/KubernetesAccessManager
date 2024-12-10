@@ -188,4 +188,12 @@ Define frontend environmental values
 - name: KAM_KEYCLOAK_TOKEN_URL
   value: "{{ .Values.global.env.KAM_KEYCLOAK_TOKEN_URL }}"
 {{- end }}
+{{- if .Values.global.env.ROLEMAP_NAMESPACE }}
+- name: KAM_ROLEMAP_NAMESPACE
+  value: "{{ .Values.global.env.ROLEMAP_NAMESPACE }}"
+{{- end }}
+{{- if .Values.global.env.ROLEMAP_NAME }}
+- name: KAM_ROLEMAP_NAME
+  value: "{{ .Values.global.env.ROLEMAP_NAME }}"
+{{- end }}
 {{- end }}

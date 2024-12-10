@@ -3,6 +3,8 @@
 : "${KAM_KEYCLOAK_LOGIN_URL:=}"
 : "${KAM_KEYCLOAK_LOGOUT_URL:=}"
 : "${KAM_KEYCLOAK_TOKEN_URL:=}"
+: "${KAM_ROLEMAP_NAME:=}"
+: "${KAM_ROLEMAP_NAMESPACE:=}"
 
 for i in $(env | grep KAM_)
 do
