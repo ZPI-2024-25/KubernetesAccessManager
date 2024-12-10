@@ -117,3 +117,75 @@ Create the name of the service account to use
 {{- default "default" .Values.backend.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Define backend enviromental values
+*/}}
+{{- define "charts.backendEnvVars" }}
+{{- if .Values.global.env.KEYCLOAK_JWKS_URL }}
+- name: KEYCLOAK_JWKS_URL
+  value: "{{ .Values.global.env.KEYCLOAK_JWKS_URL }}"
+{{- end }}
+{{- if .Values.global.env.VITE_KEYCLOAK_URL }}
+- name: VITE_KEYCLOAK_URL
+  value: "{{ .Values.global.env.VITE_KEYCLOAK_URL }}"
+{{- end }}
+{{- if .Values.global.env.VITE_KEYCLOAK_REALMNAME }}
+- name: VITE_KEYCLOAK_REALMNAME
+  value: "{{ .Values.global.env.VITE_KEYCLOAK_REALMNAME }}"
+{{- end }}
+{{- if .Values.global.env.VITE_KEYCLOAK_CLIENTNAME }}
+- name: VITE_KEYCLOAK_CLIENTNAME
+  value: "{{ .Values.global.env.VITE_KEYCLOAK_CLIENTNAME }}"
+{{- end }}
+{{- if .Values.backend.healthPort }}
+- name: HEALTH_PORT
+  value: "{{ .Values.backend.healthPort }}"
+{{- end }}
+{{- if .Values.backend.service.port }}
+- name: BACKEND_PORT
+  value: "{{ .Values.backend.service.port }}"
+{{- end }}
+{{- if .Values.global.env.ROLEMAP_NAMESPACE }}
+- name: ROLEMAP_NAMESPACE
+  value: "{{ .Values.global.env.ROLEMAP_NAMESPACE }}"
+{{- end }}
+{{- if .Values.global.env.ROLEMAP_NAME }}
+- name: ROLEMAP_NAME
+  value: "{{ .Values.global.env.ROLEMAP_NAME }}"
+{{- end }}
+- name: IN_CLUSTER_MODE
+  value: "true"
+{{- end }}
+
+{{/*
+Define frontend environmental values
+*/}}
+{{- define "charts.frontendEnvVars" }}
+- name: API_URL
+  value: "{{ include "charts.fullnameBackend" . }}:{{ .Values.backend.service.port }}"
+{{- if .Values.global.env.VITE_KEYCLOAK_URL }}
+- name: KAM_KEYCLOAK_URL
+  value: "{{ .Values.global.env.FRONTEND_KEYCLOAK_URL }}"
+{{- end }}
+{{- if .Values.global.env.VITE_KEYCLOAK_CLIENTNAME }}
+- name: KAM_KEYCLOAK_CLIENTNAME
+  value: "{{ .Values.global.env.VITE_KEYCLOAK_CLIENTNAME }}"
+{{- end }}
+{{- if .Values.global.env.VITE_KEYCLOAK_REALMNAME }}
+- name: KAM_KEYCLOAK_REALMNAME
+  value: "{{ .Values.global.env.VITE_KEYCLOAK_REALMNAME }}"
+{{- end }}
+{{- if .Values.global.env.KAM_KEYCLOAK_LOGIN_URL }}
+- name: KAM_KEYCLOAK_LOGIN_URL
+  value: "{{ .Values.global.env.KAM_KEYCLOAK_LOGIN_URL }}"
+{{- end }}
+{{- if .Values.global.env.KAM_KEYCLOAK_LOGOUT_URL }}
+- name: KAM_KEYCLOAK_LOGOUT_URL
+  value: "{{ .Values.global.env.KAM_KEYCLOAK_LOGOUT_URL }}"
+{{- end }}
+{{- if .Values.global.env.KAM_KEYCLOAK_TOKEN_URL }}
+- name: KAM_KEYCLOAK_TOKEN_URL
+  value: "{{ .Values.global.env.KAM_KEYCLOAK_TOKEN_URL }}"
+{{- end }}
+{{- end }}

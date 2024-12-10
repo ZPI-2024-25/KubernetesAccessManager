@@ -9,14 +9,14 @@ import {DeleteOutlined} from "@ant-design/icons";
 import {Button} from "antd";
 import {hasPermission} from "../functions/authorization.ts";
 import {useAuth} from "../components/AuthProvider/AuthProvider.tsx";
-import { helmResourceLabel } from "../consts/MenuItem.tsx"
+import {helmResourceLabel} from "../consts/MenuItem.tsx"
 
 const HelmPage = () => {
 
     const [openRollbackModal, setOpenRollbackModal] = useState(false);
     const [openUninstallModal, setOpenUninstallModal] = useState(false);
     const [currentRelease, setCurrentRelease] = useState<HelmDataSourceItem>();
-    const { permissions } = useAuth();
+    const {permissions} = useAuth();
 
     const {helmColumns, dataSource, setDataSource} = useListReleases('');
     const columns = helmColumns.concat({
@@ -28,7 +28,11 @@ const HelmPage = () => {
             const rollbackDisabled = permissions !== null && !hasPermission(permissions, record.namespace as string, helmResourceLabel, "u");
             const deleteDisabled = permissions !== null && !hasPermission(permissions, record.namespace as string, helmResourceLabel, "d");
             return (
-                <div>
+                <div
+                    onClick={e => {
+                        e.stopPropagation()
+                    }}
+                >
                     <Button
                         type="link"
                         icon={<MdOutlineRestore/>}
@@ -63,9 +67,10 @@ const HelmPage = () => {
 
     return (
         <div>
-            <Tab columns={columns} dataSource={dataSource}  resourceType={"Helm"}/>
+            <Tab columns={columns} dataSource={dataSource} resourceType={"Helm"}/>
             <RollbackModal open={openRollbackModal} setOpen={setOpenRollbackModal} release={currentRelease}/>
-            <UninstallModal open={openUninstallModal} setOpen={setOpenUninstallModal} release={currentRelease} removeRelease={removeRelease}/>
+            <UninstallModal open={openUninstallModal} setOpen={setOpenUninstallModal} release={currentRelease}
+                            removeRelease={removeRelease}/>
         </div>
     );
 };
