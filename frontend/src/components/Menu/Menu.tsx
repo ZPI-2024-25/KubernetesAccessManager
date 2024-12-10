@@ -1,19 +1,20 @@
-import React, { useState } from 'react';
-import { Button, Layout, Menu } from 'antd';
+import React, {useState} from 'react';
+import {Button, Layout, Menu} from 'antd';
 import styles from './Menu.module.css';
-import { items } from '../../consts/MenuItem';
-import { MenuItem } from '../../types';
-import { Link, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from '../AuthProvider/AuthProvider';
-import { hasAnyPermissionInAnyNamespace } from '../../functions/authorization';
+import {items} from '../../consts/MenuItem';
+import {MenuItem} from '../../types';
+import {Link, Outlet, useLocation} from "react-router-dom";
+import {useAuth} from '../AuthProvider/AuthProvider';
+import {hasAnyPermissionInAnyNamespace, hasPermission} from '../../functions/authorization';
+import {ROLEMAP_NAMESPACE} from "../../consts/roleMap.ts";
 
 
-const { Header, Content, Sider } = Layout;
+const {Header, Content, Sider} = Layout;
 
 const LeftMenu: React.FC = () => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [asideWidth, setAsideWidth] = useState<number>(270);
-    const {user, isLoggedIn, handleLogout, permissions } = useAuth();
+    const {user, isLoggedIn, handleLogout, permissions} = useAuth();
     const location = useLocation();
 
     const generateMenuItems = (menuItems: MenuItem[]): MenuItem[] => {
@@ -24,7 +25,8 @@ const LeftMenu: React.FC = () => {
                     children: generateMenuItems(item.children),
                 };
             }
-            const disabled = permissions !== null && !hasAnyPermissionInAnyNamespace(permissions, item.resourcelabel)
+            const disabled = item.label !== 'Roles' ? (permissions !== null && !hasAnyPermissionInAnyNamespace(permissions, item.resourcelabel)) :
+                (permissions !== null && !hasPermission(permissions, ROLEMAP_NAMESPACE, 'ConfigMap', 'r'));
             return {
                 ...item,
                 label: (
@@ -91,7 +93,8 @@ const LeftMenu: React.FC = () => {
                 }}
                 width={`${asideWidth}px`}
             >
-                <div className={styles.user} style={{marginLeft: `${collapsed ? 10 : 40}px`, marginRight: `${collapsed ? 10 : 40}px`}}>
+                <div className={styles.user}
+                     style={{marginLeft: `${collapsed ? 10 : 40}px`, marginRight: `${collapsed ? 10 : 40}px`}}>
                     <span className={styles.userText}>
                         {collapsed ? (user?.preferred_username ? user.preferred_username.slice(0, 2) : 'U') : (user?.preferred_username || 'User')}
                     </span>

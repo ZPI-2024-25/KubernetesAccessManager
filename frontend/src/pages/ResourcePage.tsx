@@ -9,6 +9,7 @@ import DeleteModal from "../components/Modals/DeleteModal.tsx";
 import Tab from "../components/Table/Tab.tsx";
 import {hasPermission, hasPermissionInAnyNamespace} from "../functions/authorization.ts";
 import {useAuth} from "../components/AuthProvider/AuthProvider.tsx";
+import {extractCRDname} from "../functions/extractCRDname.ts";
 
 const ResourcePage = () => {
     const {resourceType} = useParams();
@@ -16,17 +17,27 @@ const ResourcePage = () => {
     const [selectedRecord, setSelectedRecord] = useState<ResourceDataSourceItem>();
 
     const navigate = useNavigate();
-    const {columns, dataSource, setDataSource, wasSuccessful} = useListResource(typeof resourceType === "string" ? resourceType : "", "");
+    const {
+        columns,
+        dataSource,
+        setDataSource,
+        wasSuccessful
+    } = useListResource(typeof resourceType === "string" ? resourceType : "", "");
     const {permissions} = useAuth();
     const columnsWithActions = columns.concat({
         dataIndex: "",
         title: 'Actions',
         key: 'actions',
         render: (_, record: ResourceDataSourceItem) => {
-            const editDisabled = permissions !== null && typeof resourceType === "string" && !hasPermission(permissions, record.namespace as string, resourceType, "u");
+            const editDisabled = permissions !== null && typeof resourceType === "string" && !hasPermission(permissions, record.namespace as string, resourceType, "r")
+                && !hasPermission(permissions, record.namespace as string, resourceType, "u");
             const deleteDisabled = permissions !== null && typeof resourceType === "string" && !hasPermission(permissions, record.namespace as string, resourceType, "d");
             return (
-                <div>
+                <div
+                    onClick={e => {
+                        e.stopPropagation()
+                    }}
+                >
                     <Button
                         type="link"
                         icon={<EditOutlined/>}
@@ -41,9 +52,9 @@ const ResourcePage = () => {
                         danger
                     />
                 </div>
-                )}
-        ,
-        width: 100
+            )
+        },
+        width: 100,
     });
 
     const handleDelete = (record: ResourceDataSourceItem) => {
@@ -53,7 +64,9 @@ const ResourcePage = () => {
 
     const handleEdit = (record: ResourceDataSourceItem) => {
         const namespace = record.namespace as string;
-        const resourceName = record.name as string;
+        const resourceName = "resource" in record ? extractCRDname(record) : record.name as string;
+        console.log(resourceName)
+
 
         navigate(`/editor`, {
             state: {resourceType, namespace, resourceName},
@@ -66,7 +79,7 @@ const ResourcePage = () => {
 
     function handleAdd() {
         navigate(`/create`, {
-            state: { resourceType },
+            state: {resourceType},
         });
     }
 
@@ -91,7 +104,9 @@ const ResourcePage = () => {
                 >
                     Add
                 </Button>
-                {wasSuccessful ? <Tab columns={columnsWithActions} dataSource={dataSource}/> : <Tab columns={[]} dataSource={[]} />}
+                {wasSuccessful ? <Tab columns={columnsWithActions} dataSource={dataSource}
+                                      resourceType={typeof resourceType === "string" ? resourceType : ""}/> :
+                    <Tab columns={[]} dataSource={[]} resourceType={""}/>}
             </div>
             <DeleteModal open={openDeleteModal} setOpen={setOpenDeleteModal}
                          resourceType={typeof resourceType === "string" ? resourceType : ""}
