@@ -1,6 +1,9 @@
 /*
   While adding a new environment variable to this file, also add this variable to env.sh, .env.production, _helpers.tpl
   and values.yaml files according to the scheme.
+  Make sure that the environment variables at the vite level have the prefix VITE_, and those at the docker level KAM_.
+  Also make sure that the name of any environment variable is not a prefix of another environment variable.
+
   I apologize from the bottom of my heart and beg for your forgiveness, but it is the frontend's fault.
  */
 export const API_PREFIX = import.meta.env.VITE_API_URL || 'http://localhost:8080'
@@ -14,7 +17,7 @@ export const KEYCLOAK_LOGIN_URL = import.meta.env.KEYCLOAK_LOGIN_URL || `${KEYCL
 export const KEYCLOAK_LOGOUT_URL = import.meta.env.KEYCLOAK_LOGOUT_URL || `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/logout`
 export const KEYCLOAK_TOKEN_URL = import.meta.env.KEYCLOAK_TOKEN_URL || `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`
 
-export const ROLMAP_NAME = import.meta.env.VITE_ROLMAP_NAME || 'role-map';
+export const ROLEMAP_NAME = import.meta.env.VITE_ROLEMAP_NAME || 'role-map';
 export const ROLEMAP_NAMESPACE = import.meta.env.VITE_ROLEMAP_NAMESPACE || 'default';
 
 export const ACCESS_TOKEN_STR = 'access_token';
