@@ -67,9 +67,25 @@ Domyślnie wyświetlane są wszystkie zasoby ze wszystkich namespace'ów.
 ![img.png](images/user_guide_7.png)
 ![img.png](images/user_guide_8.png)
 
+W przypadku zasobów nie posiadających namespace, pole namespace nie będzie wyświetlane.
+
+![img.png](images/user_guide_9.png)
+
 ### 3.2. Tworzenie zasobów
 Zasób można utworzyć klikając przycisk "Add" znajdujący się w prawym dolnym rogu. Po kliknięciu przekierowani zostaniemy do edytora tekstu z domyślną konfiguracją zasobu. 
 Po zakończeniu edycji należy kliknąć przycisk "Save" w prawym górnym rogu. Zasób zostanie utworzony na klastrze.
 
 Aby porzucić zmiany, należy kliknąć przycisk "Back" w prawym górnym rogu.
+
+![img.png](images/user_guide_10.png)
+
+Możliwa jest zmiana formatu definicji zasobu. Domyślnie wyświetlany jest format YAML. Dostępny jest również format JSON.
+Pole wyboru formatu znajduje się lewym górnym rogu. Po wybraniu formatu, edytor tekstu zostanie zaktualizowany.
+
+![img.png](images/user_guide_11.png)
+
+Jeżeli zasób jest namespace'owany, to widoczne będzie pole do wpisania namespace'u. 
+W przypadku zasobów nie posiadających namespace, pole nie będzie wyświetlane. Domyślnie wybrany jest namespace "default".
+
+![img.png](images/user_guide_12.png)
 
