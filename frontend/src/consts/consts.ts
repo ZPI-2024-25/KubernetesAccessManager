@@ -21,7 +21,7 @@ export const KEYCLOAK_TOKEN_URL = isDefaultEnv(import.meta.env.VITE_KEYCLOAK_TOK
     ? `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`
     : import.meta.env.VITE_KEYCLOAK_TOKEN_URL;
 
-export const ROLEMAP_NAME = import.meta.env.VITE_ROLEMAP_NAME || 'role-map';
+export const ROLMAP_NAME = import.meta.env.VITE_ROLMAP_NAME || 'role-map';
 export const ROLEMAP_NAMESPACE = import.meta.env.VITE_ROLEMAP_NAMESPACE || 'default';
 
 export const ACCESS_TOKEN_STR = 'access_token';

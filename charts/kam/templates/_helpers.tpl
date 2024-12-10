@@ -193,7 +193,7 @@ Define frontend environmental values
   value: "{{ .Values.global.env.ROLEMAP_NAMESPACE }}"
 {{- end }}
 {{- if .Values.global.env.ROLEMAP_NAME }}
-- name: KAM_ROLEMAP_NAME
+- name: KAM_ROLMAP_NAME
   value: "{{ .Values.global.env.ROLEMAP_NAME }}"
 {{- end }}
 {{- end }}
