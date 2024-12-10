@@ -80,8 +80,10 @@ const ResourcePage = () => {
     }
 
     function handleAdd() {
+        const namespaced = dataSource.length > 0 && 'namespace' in dataSource[0];
+
         navigate(`/create`, {
-            state: {resourceType},
+            state: {resourceType, namespaced: namespaced},
         });
     }
 

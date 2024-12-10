@@ -49,32 +49,33 @@ const Tab = ({columns, dataSource, resourceType}: {
 
     return (
         <div className={styles.tabContainer}>
-            <div className={styles.controlSection}>
-                <Search
-                    className={styles.searchInput}
-                    placeholder="Search"
-                    onChange={(e) => setQuery(e.target.value)}
-                    value={query}
-                />
-
-                {namespaces.length > 0 && (
-                    <Select
-                        className={styles.namespaceSelect}
-                        showSearch
-                        placeholder="Select namespace"
-                        optionFilterProp="label"
-                        onChange={(value) => setSelectedNamespace(value)}
-                        options={namespaces.map((namespace) => ({
-                                value: namespace,
-                                label: namespace,
-                            })
-                        ).concat({value: '', label: 'All namespaces'})
-                            .sort((a, b) => a.label.localeCompare(b.label))
-                        }
+            {dataSource.length > 0 && (
+                <div className={styles.controlSection}>
+                    <Search
+                        className={styles.searchInput}
+                        placeholder="Search"
+                        onChange={(e) => setQuery(e.target.value)}
+                        value={query}
                     />
-                )}
 
-            </div>
+                    {namespaces.length > 0 && (
+                        <Select
+                            className={styles.namespaceSelect}
+                            showSearch
+                            placeholder="Select namespace"
+                            optionFilterProp="label"
+                            onChange={(value) => setSelectedNamespace(value)}
+                            options={namespaces.map((namespace) => ({
+                                    value: namespace,
+                                    label: namespace,
+                                })
+                            ).concat({value: '', label: 'All namespaces'})
+                                .sort((a, b) => a.label.localeCompare(b.label))
+                            }
+                        />
+                    )}
+                </div>
+            )}
 
             <Table
                 columns={columns.map((col, index) =>

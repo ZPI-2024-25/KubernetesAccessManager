@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import Editor from "../components/Editor/Editor.tsx";
 import {createResource} from "../api/k8s/createResource.ts";
 import {exampleResourceDefinition} from "../consts/exampleResourceDefinitions.ts";
@@ -8,20 +8,19 @@ import {Input} from "antd";
 
 const CreateResourcePage = () => {
     const location = useLocation();
-    const {resourceType, namespaces} = location.state || {};
+    const {resourceType, namespaced} = location.state || {};
 
     const [namespace, setNamespace] = useState<string>('');
 
-    useEffect(() => {
-        console.log(namespaces);
-    }, [namespaces]);
-
     const namespaceSelector = (
-        <Input
-            placeholder="default"
-            onChange={(e) => setNamespace(e.target.value)}
-            value={namespace}
-        />
+        (namespaced &&
+            <Input
+                placeholder="default"
+                onChange={(e) => setNamespace(e.target.value)}
+                value={namespace}
+            />
+        )
+
     );
 
     return (
