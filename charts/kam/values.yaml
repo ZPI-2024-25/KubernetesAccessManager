@@ -7,7 +7,8 @@ podLabels: {}
 global:
   env:
     KEYCLOAK_JWKS_URL: ""
-    VITE_KEYCLOAK_URL: "http://keycloak.192.168.8.129.nip.io:4000"
+    VITE_KEYCLOAK_URL: ""
+    FRONTEND_KEYCLOAK_URL: ""
     VITE_KEYCLOAK_REALMNAME: "ZPI-realm"
     VITE_KEYCLOAK_CLIENTNAME: "ZPI-client"
     ROLEMAP_NAMESPACE: ""
@@ -17,10 +18,10 @@ backend:
   healthPort: 8082
   replicaCount: 1
   image:
-    repository: backend-naprawa
-    pullPolicy: IfNotPresent
+    repository: zpikam/backend
+    pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "latest"
+    tag: ""
 
   serviceAccount:
     create: true
@@ -53,10 +54,10 @@ backend:
 frontend:
   replicaCount: 1
   image:
-    repository: front-naprawa
-    pullPolicy: IfNotPresent
+    repository: zpikam/frontend
+    pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "latest"
+    tag: ""
 
   service:
     type: LoadBalancer

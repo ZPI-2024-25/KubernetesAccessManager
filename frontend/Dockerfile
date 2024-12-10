@@ -13,4 +13,4 @@ COPY env.sh /docker-entrypoint.d/
 RUN chmod +x /docker-entrypoint.d/env.sh
 
 EXPOSE 80
-CMD ["/bin/sh", "-c", "for f in /docker-entrypoint.d/*; do [ -x \"$f\" ] && \"$f\"; done; envsubst '$CUM_API_URL' < /etc/nginx/templates/nginx.conf.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"]
+CMD ["/bin/sh", "-c", "for f in /docker-entrypoint.d/*; do [ -x \"$f\" ] && \"$f\"; done; envsubst '$API_URL' < /etc/nginx/templates/nginx.conf.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"]
