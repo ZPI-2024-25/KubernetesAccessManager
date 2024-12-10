@@ -2,12 +2,13 @@
   Kubernetes Access Manager (KAM)
   <img src="./docs/images/KAM_logo.png" alt="KAM Logo" style="height: 125px;">
 </h1>
+<img src="https://github-readme-tech-stack.vercel.app/api/cards?title=Tech+Stack&align=center&lineCount=1&width=600&hideTitle=true&bg=%230D1117&badge=%23161B22&border=%2321262D&titleColor=%2358A6FF&line1=go%2Cgo%2C2596be%3Bkubernetes%2Ckuberenetes%2C2e6ce6%3Bhelm%2Chelm%2Cffffff%3Btypescript%2Ctypescript%2C2d79c7%3Breact%2Creact%2C00d8ff%3B" alt="Tech Stack" />
 
 ---
-## For English Press [Here](#documentation-in-english) / Для русского нажмите [здесь](#документация-на-русском-языке)
+## For English Press [Here](#introduction) / Для русского нажмите [здесь](#введение)
 
 ---
-## Dokumentacja w języku polskim
+## Opis
 
 Aplikacja **Kubernetes Access Manager (KAM)** pomaga rozwiązać problem braku elastyczności w zarządzaniu dostępem do 
 klastrów Kubernetes. Dzięki precyzyjnemu przypisywaniu uprawnień na podstawie przestrzeni nazw (namespace) i typów 
@@ -61,8 +62,8 @@ Podążaj zgodnie z instrukcją [tutaj](./path/to/quickstart.md)
 Jeśli masz pytania lub sugestie, skontaktuj się z nami poprzez
 [issues](https://github.com/ZPI-2024-25/KubernetesAccessManager/issues).
 
-Projekt został zrealizowany pod nadzorem prowadzących kursu **Zespołowe przedsięwzięcie inżynierskie** na Politechnice 
-Wrocławskiej:
+Projekt został zrealizowany w ramach kursu **Zespołowe przedsięwzięcie inżynierskie** na Politechnice Wrocławskiej pod 
+nadzorem prowadzących: 
 - **mgr inż. Piotr Jóźwiak**
 - **dr hab. inż. Ireneusz Jóźwiak**
 
@@ -70,11 +71,11 @@ Wrocławskiej:
 
 ## Licencja
 
-Projekt jest dostępny na licencji XXX *(Wybieranie licencji in progress)*. Szczegóły w pliku [LICENSE](./LICENSE).
+Projekt jest dostępny na licencji MIT. Szczegóły w pliku [LICENSE](./LICENSE).
 
 ---
 
-## Documentation in English
+## Introduction
 
 The **Kubernetes Access Manager (KAM)** application addresses the lack of flexibility in managing access to Kubernetes clusters. By assigning precise permissions based on namespaces and resource types, KAM simplifies cluster management and enhances security.
 
@@ -132,11 +133,11 @@ The project was developed under the supervision of the instructors of the **Team
 
 ## License
 
-The project is available under the XXX license *(License selection in progress)*. Details in the [LICENSE](./LICENSE) file.
+The project is available under the MIT license. Details in the [LICENSE](./LICENSE) file.
 
 ---
 
-## Документация на русском языке
+## Введение
 
 Приложение **Kubernetes Access Manager (KAM)** помогает решить проблему недостаточной гибкости при управлении доступом
 к кластерам Kubernetes. Благодаря точному распределению прав доступа на основе пространств имен (namespace) и типов
@@ -157,7 +158,7 @@ The project is available under the XXX license *(License selection in progress)*
 - **Управление доступом**:
     - 5 уровней прав доступа:
         - Просмотр списка.
-        - Детальный просмотр.
+        - Просмотр деталей.
         - Создание.
         - Редактирование.
         - Удаление.
@@ -190,7 +191,7 @@ The project is available under the XXX license *(License selection in progress)*
 Если у вас есть вопросы или предложения, свяжитесь с нами через
 [issues](https://github.com/ZPI-2024-25/KubernetesAccessManager/issues).
 
-Проект был выполнен под руководством преподавателей курса **Инженерный проект в команде** во Вроцлавском политехническом
+Проект был выполнен под руководством преподавателей курса **ИКомандный инженерный проект** во Вроцлавском политехническом
 университете:
 - **mgr inż. Piotr Jóźwiak**
 - **dr hab. inż. Ireneusz Jóźwiak**
@@ -198,4 +199,4 @@ The project is available under the XXX license *(License selection in progress)*
 
 ## Лицензия
 
-Проект доступен по лицензии XXX *(Выбор лицензии в процессе)*. Подробности в файле [LICENSE](./LICENSE).
+Проект доступен по лицензии MIT. Подробности в файле [LICENSE](./LICENSE).
