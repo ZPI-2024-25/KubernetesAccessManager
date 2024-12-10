@@ -2,21 +2,26 @@ package common
 
 import (
 	"fmt"
-	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"strconv"
+
+	"github.com/joho/godotenv"
 )
 
 var (
-	HealthPort       int
-	AppPort          int
-	KeycloakURL      string
-	KeycloakClient   string
-	KeycloakRealm    string
-	KeycloakJwksUrl  string
-	RoleMapNamespace string
-	RoleMapName      string
+	HealthPort             int
+	AppPort                int
+	KeycloakURL            string
+	KeycloakClient         string
+	KeycloakRealm          string
+	KeycloakJwksUrl        string
+	RoleMapNamespace       string
+	RoleMapName            string
+	USE_JWT_TOKEN_PATHS    bool
+	TOKEN_ROLE_PATHS       string
+	TOKEN_PATHS_SEP        string
+	TOKEN_PATH_SEGMENT_SEP string
 )
 
 func InitEnv() {
@@ -35,6 +40,13 @@ func InitEnv() {
 		KeycloakJwksUrl = fmt.Sprintf("%s/realms/%s/protocol/openid-connect/certs", KeycloakURL, KeycloakRealm)
 		log.Printf("Using JWKS URL: %s\n", KeycloakJwksUrl)
 	}
+	usePaths := getEnvOrDefault("USE_JWT_TOKEN_PATHS", "false")
+	if usePaths == "true" {
+		USE_JWT_TOKEN_PATHS = true
+		TOKEN_ROLE_PATHS = getEnvOrDefault("TOKEN_ROLE_PATHS", DEFAULT_TOKEN_ROLE_PATHS)
+		TOKEN_PATHS_SEP = getEnvOrDefault("TOKEN_PATHS_SEP", DEFAULT_PATHS_SEP)
+		TOKEN_PATH_SEGMENT_SEP = getEnvOrDefault("TOKEN_PATH_SEGMENT_SEP", DEFAULT_PATH_SEGMENT_SEP)
+	}
 	KeycloakClient = getEnvOrPanic("VITE_KEYCLOAK_CLIENTNAME")
 	HealthPort = getEnvAsInt("HEALTH_PORT", 8082)
 	AppPort = getEnvAsInt("BACKEND_PORT", 8080)
@@ -43,7 +55,7 @@ func InitEnv() {
 }
 
 func getEnvOrDefault(key, defaultValue string) string {
-	if value, exists := os.LookupEnv(key); exists {
+	if value, exists := os.LookupEnv(key); exists && value != "" {
 		return value
 	}
 	log.Printf("Environment variable %s not set, using default value %s", key, defaultValue)

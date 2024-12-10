@@ -84,6 +84,10 @@ func IsUserAuthorized(operation models.Operation, roles []string) (bool, error) 
 
 func ExtractRoles(claims *jwt.MapClaims) ([]string, *models.ModelError) {
 	var roles []string
+	if common.USE_JWT_TOKEN_PATHS {
+		roles = extractRolesFromPaths(claims, common.TOKEN_ROLE_PATHS, common.TOKEN_PATHS_SEP, common.TOKEN_PATH_SEGMENT_SEP)
+		return roles, nil
+	}
 	if realmAccess, ok := (*claims)["realm_access"].(map[string]interface{}); ok {
 		extractRolesFromMapInterface(realmAccess, "roles", &roles)
 	}
@@ -130,6 +134,8 @@ func extractRolesFromPathRecursively(current interface{}, pathSegments []string,
 					roles[roleStr] = struct{}{}
 				}
 			}
+		} else if value, ok := current.(string); ok {
+			roles[value] = struct{}{}
 		}
 		return
 	}

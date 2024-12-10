@@ -246,6 +246,21 @@ func TestExtractRolesFromPaths(t *testing.T) {
             sep:      ".",
             expected: []string{"manage-account", "manage-account-links", "project-admin", "project-user"},
         },
+		{
+		
+			name: "Last path segment is a single string",
+			claims: jwt.MapClaims{
+				"resource_access": map[string]interface{}{
+					"account": map[string]interface{}{
+						"roles": "manage-account",
+					},
+				},
+			},
+			path:     "resource_access.account.roles",
+			pathSep:  ",",
+			sep:      ".",
+			expected: []string{"manage-account"},
+		},
     }
 
     for _, tt := range tests {
