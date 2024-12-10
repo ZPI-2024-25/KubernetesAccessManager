@@ -4,19 +4,24 @@ fullnameOverride: ""
 podAnnotations: {}
 podLabels: {}
 
+global:
+  env:
+    KEYCLOAK_JWKS_URL: ""
+    VITE_KEYCLOAK_URL: ""
+    FRONTEND_KEYCLOAK_URL: ""
+    VITE_KEYCLOAK_REALMNAME: "ZPI-realm"
+    VITE_KEYCLOAK_CLIENTNAME: "ZPI-client"
+    ROLEMAP_NAMESPACE: ""
+    ROLEMAP_NAME: ""
+
 backend:
+  healthPort: 8082
   replicaCount: 1
   image:
     repository: zpikam/backend
     pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
-
-  env:
-    KEYCLOAK_URL: ""
-    KEYCLOAK_CLIENTNAME: ""
-    ROLEMAP_NAMESPACE: ""
-    ROLEMAP_NAME: ""
 
   serviceAccount:
     create: true
@@ -28,17 +33,8 @@ backend:
     name: ""
 
   service:
-    type: ClusterIP
-    port: 8080
-
-  livenessProbe:
-    httpGet:
-      path: /live
-      port: 8082
-  readinessProbe:
-    httpGet:
-      path: /ready
-      port: 8082
+    type: LoadBalancer
+    port: 9000
 
   autoscaling:
     enabled: false
@@ -64,8 +60,8 @@ frontend:
     tag: ""
 
   service:
-    type: ClusterIP
-    port: 80
+    type: LoadBalancer
+    port: 8000
 
   autoscaling:
     enabled: false
@@ -75,7 +71,7 @@ frontend:
     # targetMemoryUtilizationPercentage: 80
 
 ingress:
-  enabled: true
+  enabled: false
   className: "nginx"
   annotations:
 #     kubernetes.io/ingress.class: nginx
@@ -85,7 +81,7 @@ ingress:
     - host: "kam.local"
       paths:
         - backend:
-            - path: /api
+            - path: /
               pathType: Prefix
         - frontend:
             - path: /

@@ -43,10 +43,7 @@ var (
 
 func GetRoleMapInstance() (*RoleMapRepository, error) {
 	once.Do(func() {
-		roleMapNamespace := common.GetOrDefaultEnv("ROLEMAP_NAMESPACE", common.DEFAULT_ROLEMAP_NAMESPACE)
-		roleMapName := common.GetOrDefaultEnv("ROLEMAP_NAME", common.DEFAULT_ROLEMAP_NAME)
-
-		roleMap, subroleMap := GetRoleMapConfig(roleMapNamespace, roleMapName)
+		roleMap, subroleMap := GetRoleMapConfig(common.RoleMapNamespace, common.RoleMapName)
 		if roleMap == nil {
 			return
 		}
@@ -252,9 +249,7 @@ func fromOperationConfigList(operations []operationConfig) []models.Operation {
 }
 
 func WatchForRolemapChanges() {
-	roleMapNamespace := common.GetOrDefaultEnv("ROLEMAP_NAMESPACE", common.DEFAULT_ROLEMAP_NAMESPACE)
-	roleMapName := common.GetOrDefaultEnv("ROLEMAP_NAME", common.DEFAULT_ROLEMAP_NAME)
-	cluster.WatchForChanges(roleMapNamespace, roleMapName, &mutex, updateRoleMapRepo)
+	cluster.WatchForChanges(common.RoleMapNamespace, common.RoleMapName, &mutex, updateRoleMapRepo)
 }
 
 func updateRoleMapRepo(eventChannel <-chan watch.Event, mutex *sync.Mutex, namespace, resourceName string) {

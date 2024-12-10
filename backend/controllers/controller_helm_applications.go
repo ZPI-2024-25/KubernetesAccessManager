@@ -9,7 +9,6 @@ import (
 	"github.com/ZPI-2024-25/KubernetesAccessManager/common"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/helm"
 	"github.com/ZPI-2024-25/KubernetesAccessManager/models"
-	"k8s.io/utils/env"
 )
 
 const (
@@ -34,10 +33,6 @@ func ListHelmReleasesController(w http.ResponseWriter, r *http.Request) {
 			return helm.ListHelmReleases(namespace, helm.PrepareActionConfig)
 		}
 
-		// temporary solution to disable auth if we don't have keycloak running
-		if env.GetString("VITE_KEYCLOAK_URL", "") == "" {
-			return helm.ListHelmReleases(namespace, helm.PrepareActionConfig)
-		}
 		token, err2 := auth.GetJWTTokenFromHeader(r)
 		isValid, claims := auth.IsTokenValid(token)
 
