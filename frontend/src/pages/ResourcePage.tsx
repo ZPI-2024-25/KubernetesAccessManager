@@ -31,9 +31,16 @@ const ResourcePage = () => {
         title: 'Actions',
         key: 'actions',
         render: (_, record: ResourceDataSourceItem) => {
-            const editDisabled = permissions !== null && typeof resourceType === "string" && !hasPermission(permissions, record.namespace as string, resourceType, "r")
-                && !hasPermission(permissions, record.namespace as string, resourceType, "u");
-            const deleteDisabled = permissions !== null && typeof resourceType === "string" && !hasPermission(permissions, record.namespace as string, resourceType, "d");
+            const editDisabled = !(
+                permissions !== null && typeof resourceType === "string" &&
+                hasPermission(permissions, record.namespace as string, resourceType, "r") &&
+                hasPermission(permissions, record.namespace as string, resourceType, "u")
+            );
+
+            const deleteDisabled = !(
+                permissions !== null && typeof resourceType === "string" &&
+                hasPermission(permissions, record.namespace as string, resourceType, "d")
+            );
             return (
                 <div
                     onClick={e => {
@@ -87,7 +94,7 @@ const ResourcePage = () => {
         });
     }
 
-    const addDisallowed = permissions !== null && typeof resourceType === "string" && !hasPermissionInAnyNamespace(permissions, resourceType, "c");
+    const addDisallowed = permissions === null || typeof resourceType !== "string" || !hasPermissionInAnyNamespace(permissions, resourceType, "c");
     return (
         <>
             <div>

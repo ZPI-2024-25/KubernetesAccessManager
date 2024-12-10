@@ -15,7 +15,7 @@ export const useListResource = (resourcelabel: string, namespace: string) => {
     useEffect(() => {
         if (!resourcelabel) return;
 
-        if (permissions && !hasPermissionInAnyNamespace(permissions, resourcelabel, "l")) {
+        if (permissions === null || !hasPermissionInAnyNamespace(permissions, resourcelabel, "l")) {
             setColumns([]);
             setDataSource([]);
             return;

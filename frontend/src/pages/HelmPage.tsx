@@ -26,8 +26,8 @@ const HelmPage = () => {
         key: 'actions',
         width: 150,
         render: (_: ReactNode, record: HelmDataSourceItem): ReactNode => {
-            const rollbackDisabled = permissions !== null && !hasPermission(permissions, record.namespace as string, helmResourceLabel, "u");
-            const deleteDisabled = permissions !== null && !hasPermission(permissions, record.namespace as string, helmResourceLabel, "d");
+            const rollbackDisabled = !(permissions !== null && hasPermission(permissions, record.namespace as string, helmResourceLabel, "u"));
+            const deleteDisabled = !(permissions !== null && hasPermission(permissions, record.namespace as string, helmResourceLabel, "d"));
             return (
                 <div
                     onClick={e => {

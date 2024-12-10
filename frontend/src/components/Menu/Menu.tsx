@@ -25,8 +25,8 @@ const LeftMenu: React.FC = () => {
                     children: generateMenuItems(item.children),
                 };
             }
-            const disabled = item.label !== 'Roles' ? (permissions !== null && !hasAnyPermissionInAnyNamespace(permissions, item.resourcelabel)) :
-                (permissions !== null && !hasPermission(permissions, ROLEMAP_NAMESPACE, 'ConfigMap', 'r'));
+            const disabled = item.label !== 'Roles' ? (permissions === null || !hasAnyPermissionInAnyNamespace(permissions, item.resourcelabel)) :
+                (permissions === null || !hasPermission(permissions, ROLEMAP_NAMESPACE, 'ConfigMap', 'r'));
             return {
                 ...item,
                 label: (
