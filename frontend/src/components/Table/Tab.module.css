@@ -1,5 +1,12 @@
-.tab {
+.tabContainer {
     margin-top: 48px;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 100px);
+    gap: 16px;
+}
+
+.tab {
     max-height: calc(100vh - 80px);
     overflow-y: auto;
 }
@@ -14,6 +21,21 @@
 
 .tab .selectedRow:hover {
     background-color: #bae7ff !important;
+}
+
+.controlSection {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    gap: 10px;
+}
+
+.namespaceSelect {
+    min-width: 200px;
+}
+
+.searchInput {
+    width: 200px;
 }
 
 

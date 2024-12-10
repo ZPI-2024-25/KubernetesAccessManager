@@ -13,7 +13,7 @@ export const useListReleases = (namespace: string) => {
     const { permissions } = useAuth();
 
     useEffect(() => {
-        if (permissions && !hasPermissionInAnyNamespace(permissions, helmResourceLabel, "l")) {
+        if (permissions === null || !hasPermissionInAnyNamespace(permissions, helmResourceLabel, "l")) {
             setDataSource([]);
             return;
         }

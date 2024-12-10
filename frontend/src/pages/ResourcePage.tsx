@@ -16,22 +16,31 @@ const ResourcePage = () => {
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState<ResourceDataSourceItem>();
 
+    const {permissions} = useAuth();
+
     const navigate = useNavigate();
     const {
         columns,
         dataSource,
         setDataSource,
         wasSuccessful
-    } = useListResource(typeof resourceType === "string" ? resourceType : "", "");
-    const {permissions} = useAuth();
+    } = useListResource(typeof resourceType === "string" ? resourceType : "", '');
+
     const columnsWithActions = columns.concat({
         dataIndex: "",
         title: 'Actions',
         key: 'actions',
         render: (_, record: ResourceDataSourceItem) => {
-            const editDisabled = permissions !== null && typeof resourceType === "string" && !hasPermission(permissions, record.namespace as string, resourceType, "r")
-                && !hasPermission(permissions, record.namespace as string, resourceType, "u");
-            const deleteDisabled = permissions !== null && typeof resourceType === "string" && !hasPermission(permissions, record.namespace as string, resourceType, "d");
+            const editDisabled = !(
+                permissions !== null && typeof resourceType === "string" &&
+                hasPermission(permissions, record.namespace as string, resourceType, "r") &&
+                hasPermission(permissions, record.namespace as string, resourceType, "u")
+            );
+
+            const deleteDisabled = !(
+                permissions !== null && typeof resourceType === "string" &&
+                hasPermission(permissions, record.namespace as string, resourceType, "d")
+            );
             return (
                 <div
                     onClick={e => {
@@ -78,12 +87,14 @@ const ResourcePage = () => {
     }
 
     function handleAdd() {
+        const namespaced = dataSource.length > 0 && 'namespace' in dataSource[0];
+
         navigate(`/create`, {
-            state: {resourceType},
+            state: {resourceType, namespaced: namespaced},
         });
     }
 
-    const addDisallowed = permissions !== null && typeof resourceType === "string" && !hasPermissionInAnyNamespace(permissions, resourceType, "c");
+    const addDisallowed = permissions === null || typeof resourceType !== "string" || !hasPermissionInAnyNamespace(permissions, resourceType, "c");
     return (
         <>
             <div>
@@ -104,9 +115,11 @@ const ResourcePage = () => {
                 >
                     Add
                 </Button>
-                {wasSuccessful ? <Tab columns={columnsWithActions} dataSource={dataSource}
-                                      resourceType={typeof resourceType === "string" ? resourceType : ""}/> :
-                    <Tab columns={[]} dataSource={[]} resourceType={""}/>}
+                {wasSuccessful ?
+                    <Tab columns={columnsWithActions} dataSource={dataSource}
+                         resourceType={typeof resourceType === "string" ? resourceType : ""}/>
+                    : <Tab columns={[]} dataSource={[]} resourceType={""}/>}
+
             </div>
             <DeleteModal open={openDeleteModal} setOpen={setOpenDeleteModal}
                          resourceType={typeof resourceType === "string" ? resourceType : ""}
