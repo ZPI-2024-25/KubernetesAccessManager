@@ -1,7 +1,7 @@
 import {Button, Card, message} from "antd";
 import style from "./Editor.module.css";
 import {Editor as MonacoEditor} from "@monaco-editor/react";
-import {useCallback, useEffect, useState} from "react";
+import {ReactNode, useCallback, useEffect, useState} from "react";
 import LanguageSelector from "./LanguageSelector.tsx";
 import {stringifyJson, parseJson, parseYaml, stringifyYaml} from "../../functions/jsonYamlFunctions.ts";
 import {ResourceDetails} from "../../types";
@@ -11,7 +11,7 @@ const Editor = ({name, text, endpoint, namespaceSelector}: {
     name: string,
     text: string,
     endpoint: (data: ResourceDetails) => Promise<ResourceDetails>
-    namespaceSelector?: React.ReactNode
+    namespaceSelector?: ReactNode
 }) => {
     const [value, setValue] = useState<string>(text);
     const [language, setLanguage] = useState<string>("yaml");
