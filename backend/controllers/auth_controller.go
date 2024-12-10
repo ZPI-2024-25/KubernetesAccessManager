@@ -1,3 +1,8 @@
+/*
+  While adding a new environment variable to this file, also add this variable to .env_temp, _helpers.tpl and
+  values.yaml files according to the scheme.
+*/
+
 package controllers
 
 import (
