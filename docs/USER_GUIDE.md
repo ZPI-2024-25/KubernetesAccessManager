@@ -1,4 +1,4 @@
-## For English Press Here
+## For English Press [Here](#user-guide)
 
 # Podręcznik użytkownika
 
@@ -222,4 +222,107 @@ Kategorie nie są wyświetlane, jeżeli nie zawierają żadnych operacji.
 ![Rola zawierająca tylko sekcje "Permitted Operations"](images/user_guide/user_guide_24.png)
 
 Kliknięcie jednej z podroli w sekcji "Subroles" spowoduje rozwinięcie szczegółów tej podroli i przejście do niej.
+Pomiędzy kliknięciem a rozwinięciem podroli może nastąpić opóźnienie.
 
+Uprawnienia w kategoriach "Permitted Operations" oraz "Denied Operations" mogą być sortowane według namespace oraz typu zasobu.
+
+![Sortowanie uprawnień](images/user_guide/user_guide_25.png)
+
+Możliwe jest również filtrowanie uprawnień na podstawie operacji. 
+Po kliknięciu ikony po prawej stronie kolumny "Operations" zostanie wyświetlone pole do wybrania operacji. Po wybraniu zostaną wyświetlone tylko te uprawnienia, które zawierają wybraną operację.
+
+![Filtrowanie uprawnień](images/user_guide/user_guide_26.png)
+![Wyświetlenie tylko uprawnień z operacją "Update"](images/user_guide/user_guide_27.png)
+
+---
+
+### 5.3. Edycja ról
+Aby przejść do edycji roli, należy kliknąć przycisk "Edit Roles". Po kliknięciu zostaniemy przekierowani do formularza edycji ról.
+
+W formularzu edycji ról możliwe jest dodawanie nowych ról, usuwanie oraz edycja istniejących ról.
+
+Zmiany zapisać można klikając przycisk "Save". Aby porzucić zmiany, należy kliknąć przycisk "Cancel" i potwierdzić.
+
+![Formularz edycji ról](images/user_guide/user_guide_28.png)
+
+---
+
+#### Dodawanie, usuwanie i edycja ról
+
+Aby dodać nową rolę, należy kliknąć przycisk "Add Role". Po kliknięciu zostanie dodana nowa, pusta rola.
+Jeżeli rola nie posiada nazwy, nie zostanie zapisana.
+
+W ten sam sposób można dodawać nowe podrole. Wystarczy kliknąć "Add Subrole".
+
+![Dodawanie nowej roli](images/user_guide/user_guide_29.png)
+
+---
+
+#### Usuwanie ról
+
+Aby usunąć rolę, należy kliknąć czerwony przycisk "X" po prawej stronie nazwy roli.
+
+![Usuwanie roli](images/user_guide/user_guide_30.png)
+
+---
+
+#### Zmiana nazwy roli
+
+Aby zmienić nazwę roli, wystarczy kliknąć w pole tekstowe i wpisać nową nazwę.
+
+![Zmiana nazwy roli](images/user_guide/user_guide_31.png)
+
+---
+
+#### Dodawanie uprawnień do roli
+
+Aby dodać uprawnienie do roli, należy kliknąć przycisk "+" w sekcji "Permitted Operations" lub "Denied Operations". Po kliknięciu zostanie dodane nowe pole do wpisania uprawnienia.
+
+Domyślnie wprowadzone są puste pola. Odpowiada to przyznaniu wszystkich uprawnień dla wszystkich typów zasobów we wszystkich namespace'ach.
+
+![Dodawanie uprawnienia](images/user_guide/user_guide_32.png)
+
+---
+
+#### Modyfikoanie uprawnień
+
+Namespace wybrać można za pomocą pola tekstowego. Wpisanie "*" lub pozostawienie pustego pola oznacza wszystkie namespace'y.
+
+Typ zasobu wybrać można za pomocą rozwijanej listy. Możliwe do wybrania są wszystkie typy zasobów dostępne w aplikacji oraz "Helm".
+
+![Ustawienie Namespace'u i typu zasobu](images/user_guide/user_guide_33.png)
+
+Operację wybrać można za pomocą rozwijanej listy. Możliwe do wybrania są wszystkie operacje dostępne dla danego typu zasobu.
+
+W przypadku wybrania wszystkich operacji po kolei wybór zostanie zmieniony na "All".
+
+![Wybór operacji](images/user_guide/user_guide_34.png)
+
+---
+
+#### Usuwanie uprawnień
+
+Aby usunąć uprawnienie, należy kliknąć czerwony przycisk "X" po lewej stronie uprawnienia.
+
+![Usuwanie uprawnienia](images/user_guide/user_guide_35.png)
+
+---
+
+#### Przypisywanie podroli
+
+Aby przypisać podrole do roli, należy kliknąć pole "Select subroles" w sekcji "Subroles". Po kliknięciu zostanie wyświetlone rozwijane pole z dostępnymi podrolami.
+
+![Przypisanie podroli](images/user_guide/user_guide_36.png)
+
+Możliwe jest również ręczne wpisanie nazwy podroli. Wpisanie nazwy, która nie istnieje, przypiszę ją do roli. Będzie jednak oznaczona kolorem czerwonym i nie będzie miała znaczenia dla uprawnień.
+
+![Wpisanie nazwy podroli](images/user_guide/user_guide_37.png)
+
+---
+
+<h1 id="user-guide">User Guide</h1>
+
+---
+
+## Prerequisites
+1. Installed and configured application
