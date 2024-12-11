@@ -1,7 +1,7 @@
 import {Input, Select, Table} from 'antd';
 import styles from './Tab.module.css';
 import ResourceDetailsDrawer from "../DrawerDetails/ResourceDetailsDrawer.tsx";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {HelmDataSourceItem, ResourceDataSourceItem} from "../../types";
 import {extractCRDname} from "../../functions/extractCRDname.ts";
 
@@ -16,6 +16,11 @@ const Tab = ({columns, dataSource, resourceType}: {
     const [isDrawerVisible, setDrawerVisible] = useState(false);
     const [query, setQuery] = useState<string>('');
     const [selectedNamespace, setSelectedNamespace] = useState<string>('');
+
+    useEffect(() => {
+        setSelectedNamespace('');
+        setQuery('');
+    }, [resourceType]);
 
     const extractNamespaces = () => {
         const namespaces = new Set<string>();
@@ -64,6 +69,7 @@ const Tab = ({columns, dataSource, resourceType}: {
                             showSearch
                             placeholder="Select namespace"
                             optionFilterProp="label"
+                            value={selectedNamespace}
                             onChange={(value) => setSelectedNamespace(value)}
                             options={namespaces.map((namespace) => ({
                                     value: namespace,
