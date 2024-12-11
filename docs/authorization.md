@@ -135,7 +135,7 @@ Przykład:
   role-map: |
     manager:
       deny:
-        - ["delete", "create", "update"]
+        - operations: ["delete", "create", "update"]
       subroles:
         - "team1admin"
         - "team2admin"
