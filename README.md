@@ -43,14 +43,15 @@ Zintegrowana z systemami zarządzania tożsamością, takimi jak Keycloak, aplik
 
 ## Jak zacząć?
 
-Podążaj zgodnie z instrukcją [tutaj](./path/to/quickstart.md)
+Podążaj zgodnie z instrukcją [tutaj](./docs/DEPLOYMENT.md)
 
 ---
 
 ## Dokumentacja
 *Dokumentacja jest wciąż w procesie tworzenia*
 
-- [Quickstart](./path/to/quickstart.md)
+- [Wdrażanie](./docs/DEPLOYMENT.md)
+- [Opis autoryzacji w KAM](./docs/authorization.md)
 
 ---
 
@@ -107,15 +108,15 @@ Integrated with identity management systems like Keycloak, the application utili
 
 ## Getting Started
 
-Follow the instructions [here](./path/to/quickstart.md).
+Follow the instructions [here](./docs/DEPLOYMENT.md).
 
 ---
 
 ## Documentation
 *The documentation is still in progress.*
 
-- [Quickstart](./path/to/quickstart.md)
-
+- [Deployment](./docs/DEPLOYMENT.md)
+- [Authorization description in KAM](./docs/authorization.md)
 ---
 
 ## Authors
@@ -172,14 +173,15 @@ The project is available under the MIT license. Details in the [LICENSE](./LICEN
 
 ## Как начать?
 
-Следуйте инструкциям [здесь](./path/to/quickstart.md)
+Следуйте инструкциям [здесь](./docs/DEPLOYMENT.md)
 
 ---
 
 ## Документация
 *Документация еще в процессе разработки*
 
-- [Быстрый старт](./path/to/quickstart.md)
+- [Развертывание](./docs/DEPLOYMENT.md)
+- [Описание авторизации в KAM](./docs/authorization.md)
 
 ---
 
