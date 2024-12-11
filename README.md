@@ -1,16 +1,9 @@
-<table align="center">
-  <tr>
-    <td align="center">
-      <img src="./docs/images/KAM_logo.png" alt="KAM Logo" style="height: 125px;"><br>
-      <strong>Kubernetes Access Manager (KAM)</strong>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="https://github-readme-tech-stack.vercel.app/api/cards?title=Tech+Stack&align=center&lineCount=1&width=600&hideTitle=true&bg=%230D1117&badge=%23161B22&border=%2321262D&titleColor=%2358A6FF&line1=go%2Cgo%2C2596be%3Bkubernetes%2Ckuberenetes%2C2e6ce6%3Bhelm%2Chelm%2Cffffff%3Btypescript%2Ctypescript%2C2d79c7%3Breact%2Creact%2C00d8ff%3B" alt="Tech Stack">
-    </td>
-  </tr>
-</table>
+<div align="center">
+  <img src="./docs/images/KAM_logo.png" alt="KAM Logo" style="height: 125px;"><br>
+  <h1>Kubernetes Access Manager (KAM)</h1>
+  <img src="https://github-readme-tech-stack.vercel.app/api/cards?title=Tech+Stack&align=center&lineCount=1&width=600&hideTitle=true&bg=%230D1117&badge=%23161B22&border=%2321262D&titleColor=%2358A6FF&line1=go%2Cgo%2C2596be%3Bkubernetes%2Ckuberenetes%2C2e6ce6%3Bhelm%2Chelm%2Cffffff%3Btypescript%2Ctypescript%2C2d79c7%3Breact%2Creact%2C00d8ff%3B" alt="Tech Stack">
+</div>
+
 
 
 ---
