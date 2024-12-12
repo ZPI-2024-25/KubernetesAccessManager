@@ -195,7 +195,7 @@ Dla aplikacji Helmowej szczegóły podzielone są na 2 zakładki: "Release" oraz
 ## 5. Zarządzanie uprawnieniami
 Aplikacja pozwala na zarządzanie poziomem dostępu użytkowników poprzez przypisywanie uprawnień rolom uzyskanym od dostawcy tożsamości.
 
-Służy do tego zakładka "Roles" umieszona u dołu menu. Po wybraniu zakładki, sprawdzone zostaną uprawnienia użytkownika do wyświetlania szczegółów oraz edycji ConfigMapy zawierającej mapowanie ról i uprawnień.
+Służy do tego zakładka "Roles" umieszczona u dołu menu. Po wybraniu zakładki, sprawdzone zostaną uprawnienia użytkownika do wyświetlania szczegółów oraz edycji ConfigMapy zawierającej mapowanie ról i uprawnień.
 
 ---
 
@@ -284,13 +284,13 @@ Jeżeli zmieniona zostanie nazwa podroli, to zmienione zostaną wszystkie wystą
 
 Aby dodać uprawnienie do roli, należy kliknąć przycisk "+" w sekcji "Permitted Operations" lub "Denied Operations". Po kliknięciu zostanie dodane nowe pole do wpisania uprawnienia.
 
-Domyślnie wprowadzone są puste pola. Pusty typ zasobu oznacza wszystkie typy zasobów dostępne w aplikacji oraz "Helm". Pusta namespace oznacza wszystkie namespace'y. **Pusta lista operacji oznacza brak uprawnień.**
+Domyślnie wprowadzone są puste pola. Pusty typ zasobu oznacza wszystkie typy zasobów dostępne w aplikacji oraz "Helm". Pusty namespace oznacza wszystkie namespace'y. **Pusta lista operacji oznacza brak uprawnień.**
 
 ![Dodawanie uprawnienia](images/user_guide/user_guide_33.png)
 
 ---
 
-#### Modyfikoanie uprawnień
+#### Modyfikowanie uprawnień
 
 Namespace wybrać można za pomocą pola tekstowego. Wpisanie "*" lub pozostawienie pustego pola oznacza wszystkie namespace'y.
 
@@ -335,7 +335,7 @@ Możliwe jest również ręczne wpisanie nazwy podroli. Wpisanie nazwy, która n
 
 ---
 
-## 1. Logining in
+## 1. Logging in
 Run the web application. After loading, the following screen should be visible:
 ![Login screen](images/user_guide/user_guide_1.png)
 
