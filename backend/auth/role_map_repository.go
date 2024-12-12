@@ -43,6 +43,7 @@ var (
 
 func GetRoleMapInstance() (*RoleMapRepository, error) {
 	once.Do(func() {
+		log.Printf("Initializing RoleMapRepository from ConfigMap in namespace %s and name %s", common.RoleMapNamespace, common.RoleMapName)
 		roleMap, subroleMap := GetRoleMapConfig(common.RoleMapNamespace, common.RoleMapName)
 		if roleMap == nil {
 			return
@@ -140,6 +141,7 @@ func createPermissionMatrix(
 func GetRoleMapConfig(namespace string, name string) (map[string]*models.Role, map[string]*models.Role) {
 	res, err := cluster.GetResource("ConfigMap", namespace, name, cluster.GetResourceInterface)
 	if err != nil {
+		log.Printf("Error retrieving roleMap ConfigMap from cluster: %v", err)
 		return nil, nil
 	}
 
@@ -173,7 +175,7 @@ func GetRoleMapConfig(namespace string, name string) (map[string]*models.Role, m
 		}
 		subroleMap = fromRoleMapConfig(subroleMapConfig)
 		if hasCycle(subroleMap) {
-			log.Printf("Cycle detected in subrole map")
+			log.Printf("Cycle detected in subrole map, ignoring subroles")
 			subroleMap = make(map[string]*models.Role) // clear subrole map, can't use it
 		}
 	}
