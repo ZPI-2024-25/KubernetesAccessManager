@@ -251,7 +251,7 @@ Zmiany zapisać można klikając przycisk "Save". Aby porzucić zmiany, należy 
 
 ---
 
-#### Dodawanie, usuwanie i edycja ról
+#### Dodawanie ról
 
 Aby dodać nową rolę, należy kliknąć przycisk "Add Role". Po kliknięciu zostanie dodana nowa, pusta rola.
 Jeżeli rola nie posiada nazwy, nie zostanie zapisana.
@@ -272,7 +272,9 @@ Aby usunąć rolę, należy kliknąć czerwony przycisk "X" po prawej stronie na
 
 #### Zmiana nazwy roli
 
-Aby zmienić nazwę roli, wystarczy kliknąć w pole tekstowe i wpisać nową nazwę.
+Aby zmienić nazwę roli, wystarczy kliknąć pole tekstowe i wpisać nową nazwę.
+
+Jeżeli zmieniona zostanie nazwa podroli, to zmienione zostaną wszystkie wystąpienia tej podroli w rolach.
 
 ![Zmiana nazwy roli](images/user_guide/user_guide_32.png)
 
@@ -282,7 +284,7 @@ Aby zmienić nazwę roli, wystarczy kliknąć w pole tekstowe i wpisać nową na
 
 Aby dodać uprawnienie do roli, należy kliknąć przycisk "+" w sekcji "Permitted Operations" lub "Denied Operations". Po kliknięciu zostanie dodane nowe pole do wpisania uprawnienia.
 
-Domyślnie wprowadzone są puste pola. Odpowiada to przyznaniu wszystkich uprawnień dla wszystkich typów zasobów we wszystkich namespace'ach.
+Domyślnie wprowadzone są puste pola. Pusty typ zasobu oznacza wszystkie typy zasobów dostępne w aplikacji oraz "Helm". Pusta namespace oznacza wszystkie namespace'y. **Pusta lista operacji oznacza brak uprawnień.**
 
 ![Dodawanie uprawnienia](images/user_guide/user_guide_33.png)
 
@@ -318,7 +320,7 @@ Aby przypisać podrole do roli, należy kliknąć pole "Select subroles" w sekcj
 
 ![Przypisanie podroli](images/user_guide/user_guide_37.png)
 
-Możliwe jest również ręczne wpisanie nazwy podroli. Wpisanie nazwy, która nie istnieje, przypiszę ją do roli. Będzie jednak oznaczona kolorem czerwonym i nie będzie miała znaczenia dla uprawnień.
+Możliwe jest również ręczne wpisanie nazwy podroli. Wpisanie nazwy, która nie istnieje, przypiszę ją do roli. Będzie jednak oznaczona kolorem czerwonym i nie będzie miała znaczenia dla uprawnień, dopóki nie zostanie zdefiniowana w "Subroles".
 
 ![Wpisanie nazwy podroli](images/user_guide/user_guide_38.png)
 
@@ -575,3 +577,80 @@ Clicking the icon on the right side of the "Operations" column will display a fi
 ---
 
 ### 5.3. Editing roles
+
+To edit a role, click the "Edit Roles" button. After clicking, you will be redirected to the role editing form.
+
+In the role editing form, you can add new roles, delete existing roles, and edit existing roles.
+
+You can save changes by clicking the "Save" button. To discard changes, click the "Cancel" button and confirm.
+
+![Role editing form](images/user_guide/user_guide_29.png)
+
+---
+
+#### Adding roles
+To add a new role, click the "Add Role" button. After clicking, a new, empty role will be added.
+If the role does not have a name, it will not be saved.
+
+You can add new subroles in the same way. Just click "Add Subrole".
+
+![Adding a new role](images/user_guide/user_guide_30.png)
+
+---
+
+#### Deleting roles
+
+To delete a role, click the red "X" button to the right of the role name.
+
+![Deleting a role](images/user_guide/user_guide_31.png)
+
+---
+
+#### Changing the role name
+To change the role name, click the text field and enter a new name.
+
+If the name of a subrole is changed, all occurrences of that subrole in roles will be changed.
+
+![Changing the role name](images/user_guide/user_guide_32.png)
+
+---
+
+#### Adding permissions to a role
+To add a permission to a role, click the "+" button in the "Permitted Operations" or "Denied Operations" section. After clicking, a new field for entering the permission will be added.
+
+By default, the fields are empty. An empty resource type means all resource types available in the application and "Helm". An empty namespace means all namespaces. **An empty list of operations means no permissions.**
+
+![Adding a permission](images/user_guide/user_guide_33.png)
+
+---
+
+#### Modifying permissions
+You can select the namespace using the text field. Entering "*" or leaving the field empty means all namespaces.
+
+You can select the resource type using the dropdown list. All resource types available in the application and "Helm" are available for selection.
+
+![Selecting the namespace and resource type](images/user_guide/user_guide_34.png)
+
+You can select the operation using the dropdown list. All operations available for the selected resource type are available for selection.
+
+If all operations are selected in sequence, the selection will be changed to "All".
+
+![Selecting the operation](images/user_guide/user_guide_35.png)
+
+---
+
+#### Deleting permissions
+To delete a permission, click the red "X" button to the left of the permission.
+
+![Deleting a permission](images/user_guide/user_guide_36.png)
+
+---
+
+#### Assigning subroles
+To assign a subrole to a role, click the "Select subroles" field in the "Subroles" section. After clicking, a dropdown list with available subroles will be displayed.
+
+![Assigning a subrole](images/user_guide/user_guide_37.png)
+
+You can also manually enter the name of a subrole. Entering a name that does not exist will assign it to the role. However, it will be marked in red and will not affect permissions until it is defined in "Subroles".
+
+![Entering the name of a subrole](images/user_guide/user_guide_38.png)

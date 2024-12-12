@@ -51,6 +51,7 @@ Podążaj zgodnie z instrukcją [tutaj](./docs/DEPLOYMENT.md)
 *Dokumentacja jest wciąż w procesie tworzenia*
 
 - [Wdrażanie](./docs/DEPLOYMENT.md)
+- [Podręcznik użytkownika](./docs/USER_GUIDE.md)
 - [Opis autoryzacji w KAM](./docs/authorization.md)
 
 ---
@@ -116,6 +117,7 @@ Follow the instructions [here](./docs/DEPLOYMENT.md).
 *The documentation is still in progress.*
 
 - [Deployment](./docs/DEPLOYMENT.md)
+- [User Guide](./docs/USER_GUIDE.md)
 - [Authorization description in KAM](./docs/authorization.md)
 ---
 
@@ -181,6 +183,7 @@ The project is available under the XXX license (will be chosen later). Details i
 *Документация еще в процессе разработки*
 
 - [Развертывание](./docs/DEPLOYMENT.md)
+- [Руководство пользователя](./docs/USER_GUIDE.md)
 - [Описание авторизации в KAM](./docs/authorization.md)
 
 ---
