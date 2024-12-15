@@ -51,7 +51,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const handleLogin = () => {
         const redirectUri = `${window.location.origin}/auth/callback`;
-        window.location.href = `${Constants.KEYCLOAK_LOGIN_URL}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+        const clientSecret = Constants.KEYCLOAK_CLIENT_SECRET
+            ? `&client_secret=${encodeURIComponent(Constants.KEYCLOAK_CLIENT_SECRET)}`
+            : '';
+        window.location.href = `${Constants.KEYCLOAK_LOGIN_URL}&redirect_uri=${encodeURIComponent(redirectUri)}${clientSecret}`;
     };
 
     const handleLogout = () => {
