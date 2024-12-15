@@ -6,7 +6,7 @@ Ten dokument zawiera przegląd wartości konfigurowalnych w pliku [`values.yaml`
 ## Ogólna konfiguracja
 
 - **nameOverride**: Nadpisuje nazwę chartu. Przydatne, jeśli chcesz wdrożyć wiele instancji chartu z różnymi nazwami.
-- **fullnameOverride**: Całkowicie nadpisuje wygenerowaną nazwę chartu. Przydatne do zapewnienia spójnych konwencji nazewnictwa.
+- **fullnameOverride**: Całkowicie nadpisuje wygenerowaną nazwę chartu.
 
 ## Globalna konfiguracja
 
