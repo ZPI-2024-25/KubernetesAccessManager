@@ -11,5 +11,8 @@ do
     key=$(echo $i | cut -d '=' -f 1)
     value=$(echo $i | cut -d '=' -f 2-)
     echo "Replacing ${key} with ${value}"
-    find /usr/share/nginx/html -type f \( -name '*.js' -o -name '*.css' \) -exec sed -i "s|${key}|${value}|g" '{}' +
+
+    # Szukanie i podmiana z wyświetleniem linii
+    find /usr/share/nginx/html -type f \( -name '*.js' -o -name '*.css' \) -exec \
+        sed -i.bak -n -e "s|${key}|${value}|g;w /dev/stdout" '{}' +
 done
