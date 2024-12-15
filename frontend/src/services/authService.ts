@@ -61,11 +61,12 @@ export const refreshToken = async () => {
 
     try {
         const response = await axios.post(
-            `${Constants.KEYCLOAK_TOKEN_URL}`,
+            Constants.KEYCLOAK_TOKEN_URL,
             new URLSearchParams({
                 grant_type: Constants.REFRESH_TOKEN_STR,
                 refresh_token: refreshToken,
-                client_id: `${Constants.KEYCLOAK_CLIENT}`,
+                client_id: Constants.KEYCLOAK_CLIENT_NAME,
+                ...(Constants.KEYCLOAK_CLIENT_SECRET && { client_secret: Constants.KEYCLOAK_CLIENT_SECRET }),
             }),
             {
                 headers: {

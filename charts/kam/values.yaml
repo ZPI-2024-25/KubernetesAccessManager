@@ -6,13 +6,19 @@ podLabels: {}
 
 global:
   env:
-    KEYCLOAK_JWKS_URL: ""
-    VITE_KEYCLOAK_URL: ""
+# Mandatory
     FRONTEND_KEYCLOAK_URL: ""
-    VITE_KEYCLOAK_REALMNAME: "ZPI-realm"
-    VITE_KEYCLOAK_CLIENTNAME: "ZPI-client"
+    KEYCLOAK_REALM_NAME: "ZPI-realm"
+    KEYCLOAK_CLIENT_NAME: "ZPI-client"
+# Optional
+    BACKEND_KEYCLOAK_URL: ""
+    KEYCLOAK_CLIENT_SECRET: ""
     ROLEMAP_NAMESPACE: ""
     ROLEMAP_NAME: ""
+    KEYCLOAK_JWKS_URL: ""
+    KEYCLOAK_LOGIN_URL: ""
+    KEYCLOAK_LOGOUT_URL: ""
+    KEYCLOAK_TOKEN_URL: ""
 
 backend:
   healthPort: 8082
@@ -81,7 +87,7 @@ ingress:
     - host: "kam.local"
       paths:
         - backend:
-            - path: /
+            - path: /api
               pathType: Prefix
         - frontend:
             - path: /
