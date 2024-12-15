@@ -127,7 +127,7 @@ Define backend enviromental values
   value: "{{ .Values.global.env.KEYCLOAK_JWKS_URL }}"
 {{- end }}
 {{- if .Values.global.env.BACKEND_KEYCLOAK_URL }}
-- name: VITE_KEYCLOAK_URL
+- name: BACKEND_KEYCLOAK_URL
   value: "{{ .Values.global.env.BACKEND_KEYCLOAK_URL }}"
 {{- end }}
 {{- if .Values.global.env.KEYCLOAK_REALM_NAME }}

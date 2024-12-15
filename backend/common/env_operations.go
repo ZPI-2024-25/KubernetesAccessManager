@@ -30,7 +30,7 @@ func InitEnv() {
 		log.Println("Using KEYCLOAK_JWKS_URL environment variable.")
 	} else {
 		log.Println("KEYCLOAK_JWKS_URL environment variable not set, setting default JWKS URL.")
-		KeycloakURL = getEnvOrPanic("VITE_KEYCLOAK_URL")
+		KeycloakURL = getEnvOrPanic("BACKEND_KEYCLOAK_URL")
 		KeycloakRealm = getEnvOrPanic("VITE_KEYCLOAK_REALM_NAME")
 		KeycloakJwksUrl = fmt.Sprintf("%s/realms/%s/protocol/openid-connect/certs", KeycloakURL, KeycloakRealm)
 		log.Printf("Using JWKS URL: %s\n", KeycloakJwksUrl)
