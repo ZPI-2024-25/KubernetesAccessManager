@@ -50,7 +50,7 @@ Możliwe jest również podanie ścieżki do pliku.
 
 Backend komunikuje się z API klastra Kubernetes za pomocą biblioteki `client-go`, natomiast z Klientem Helmowym za pomocą biblioteki `helm`.
 
-### Konfiguracja klastra Kubernetes
+### Konfiguracja klastra
 Konfiguracja klastra Kubernetes przechowywana jest w singletonie `ClientSingleton`. Sposób pobierania konfiguracji zależy od flagi `--in-cluster`. 
 Domyślnie wartość flagi wynosi `false`, co oznacza, że konfiguracja pobierana jest z pliku `kubeconfig`.
 W przypadku, gdy flaga przyjmuje wartość `true`, konfiguracja pobierana jest bezpośrednio z klastra Kubernetes.
@@ -61,7 +61,15 @@ Lokalizacja pliku `kubeconfig` zależy od dwóch wartości:
 
 Jeżeli żadna z tych wartości nie jest podana, domyślnie aplikacja korzysta z pliku `~/.kube/config`.
 
-### Funkcje create, get, update, delete klastra Kubernetes
+### Funkcje pomocnicze
+- **GetResourceGroupVersion**- na podstawie typu zasobu zwraca informacje potrzebne do generycznego wywołania funkcji `client-go`.
+  Dodatkowo zwraca informacje o tym, czy zasób jest namespace'owany, czy nie.
+- **GetResourceInterface**- dodatkowy poziom abstrakcji umożliwiający wstrzykiwanie zależności (dependency injection) w testach jednostkowych.
+  Równocześnie upraszcza i ujednolica wywołanie funkcji `client-go`.
+- **WatchForChanges**- funkcja umożliwiająca obserwowanie zmian w zasobie opisującym role wykorzystywane w autoryzacji.
+- **transposeResourceListColumns**- funkcja pomocnicza, która zamienia listę zasobów i ich pól (postaci mapy nazwa_zasobu -> jej_pola) na listę pól i do jakich typów zasobów należą (postaci mapy nazwa_pola -> lista_typów).
+
+### Funkcje CreateResource, GetResource, UpdateResource, DeleteResource
 Funkcje te wykorzystują bibliotekę `client-go` do komunikacji z API klastra Kubernetes. Jako argumenty przyjmują kolejno:
 - GetResource- typ zasobu (resourceType), namespace, nazwę zasobu (resourceName).
 - CreateResource- typ zasobu (resourceType), namespace, zasób (ResourceDetails).
@@ -76,7 +84,7 @@ Funkcje create, get i update zwracają zasób w postaci struktury `ResourceDetai
 
 Funkcje te są w stanie obsłużyć wszystkie typy zasobów, jednak ze względu na funkcje listowania zakres został ograniczony do 20 typów wymienionych w części `Funkcja list`.
 
-### Funkcja list klastra Kubernetes
+### Funkcja ListResources
 Funkcja ta wykorzystuje bibliotekę `client-go` do komunikacji z API klastra Kubernetes. 
 Jako argumenty przyjmuje: typ zasobu (resourceType), namespace.
 
@@ -104,21 +112,91 @@ Funkcja dla każdego typu zasobu zwraca określoną listę wartości oraz listę
 - Dla zasobów typu `ClusterRole` zwracane są wartości `name`, `age`.
 - Dla zasobów typu `ClusterRoleBinding` zwracane są wartości `name`, `bindings`, `age`.
 
-### Funkcje pomocnicze klastra Kubernetes
-- **GetResourceGroupVersion**- na podstawie typu zasobu zwraca informacje potrzebne do generycznego wywołania funkcji `client-go`.
-Dodatkowo zwraca informacje o tym, czy zasób jest namespace'owany, czy nie.
-- **GetResourceInterface**- dodatkowy poziom abstrakcji umożliwiający wstrzykiwanie zależności (dependency injection) w testach jednostkowych.
-Równocześnie upraszcza i ujednolica wywołanie funkcji `client-go`.
-- **WatchForChanges**- funkcja umożliwiająca obserwowanie zmian w zasobie opisującym role wykorzystywane w autoryzacji.
-- **transposeResourceListColumns**- funkcja pomocnicza, która zamienia listę zasobów i ich pól (postaci mapy nazwa_zasobu -> jej_pola) na listę pól i do jakich typów zasobów należą (postaci mapy nazwa_pola -> lista_typów).
+Każda z wartości pól wydobywana jest w sposób unikalny, w wielu przypadkach nawet te same pola mogą być różnie wyliczane w zależności od typu zasobu.
 
 ### Konfiguracja Akcji Helm
-Konfiguracja ta twożona jest za pomocą funkcji `getActionConfig` na podstawie konfiguracji klastra Kubernetes oraz namespace'a, w którym ma zostać wykonana akcja.
+Konfiguracja ta tworzona jest za pomocą funkcji `getActionConfig` na podstawie konfiguracji klastra Kubernetes oraz namespace'a, w którym ma zostać wykonana akcja.
 
-### Funkcje get, rollback, uninstall, getHistory Helm
+Ze względu na testowanie kodu, funkcja `getActionConfig` zwraca strukturę `ActionConfig` zawierającą konfigurację `action.Configuration`.
+Zdefiniowany został interfejs `ActionConfigInterface`, który umożliwia wstrzykiwanie zależności (dependency injection) w testach jednostkowych.
+Składa się na niego pięć funkcji: `getRelease`, `rollbackRelease`, `uninstallRelease`, `getReleaseHistory`, `listReleases`.
+
+### Funkcje pomocnicze
+- **PrepareActionConfig**- przygotowuje `ActionConfig` na podstawie konfiguracji konfiguracji klastra zawartej w `ClientSingleton`.
+
+### Funkcje getRelease, rollbackRelease, uninstallRelease, getReleaseHistory
 Funkcje te wykorzystują bibliotekę `helm` do komunikacji z Klientem Helmowym. Jako argumenty przyjmują kolejno:
 - GetRelease- nazwę releasu (releaseName).
 - RollbackRelease- nazwę releasu (releaseName), numer wersji (revision).
 - UninstallRelease- nazwę releasu (releaseName).
 - GetReleaseHistory- nazwę releasu (releaseName), ilość wersji (max).
 
+Ze względu na specyfikę języka Go, funkcje te zachowują się jak metody operujące na obiekcie `ActionConfig`.
+Dzięki interfejsowi `ActionConfigInterface` możliwe jest wstrzykiwanie zależności (dependency injection) w testach jednostkowych.
+
+### Funkcja listReleases
+Funkcja ta wykorzystuje bibliotekę `helm` do komunikacji z Klientem Helmowym. Jako argumenty przyjmuje: allNamespaces (określa, czy zwrócić releasy z wszystkich namespace'ów).
+
+Funkcja ta zwraca listę releasów (Release) lub błąd w przypadku niepowodzenia.
+
+### Zarządzanie uprawnieniami
+Tutaj nie czuję się na siłach by to opisać sensownie
+
+## Część frontendowa
+Aplikacja webowa napisana w języku Typescript i wykorzystująca framework React, która pozwala na zarządzanie zasobami w klastrze Kubernetes.
+Komunikuje się z backendem za pomocą REST API.
+
+### Nawigacja
+Aplikacja wykorzystuje model jednostronicowej strony internetowej (SPA). Do nawigacji wykorzystywana jest biblioteka `react-router-dom`.
+
+Komponentem zarządzającym nawigacją jest `Menu`, który pozwala na nawigację pomiędzy poszczególnymi podstronami aplikacji.
+Na podstawie obecnie wybranej podstrony aktualizuje on stan aplikacji, a także wyświetla odpowiedni nagłówek.
+
+### Stałe
+W celu ułatwienia zarządzania stałymi stworzony został plik `consts.ts`, w którym przechowywane są wszystkie stałe wykorzystywane w aplikacji.
+Wartości tam się znajdujące mogą zostać określone za pomocą plików `.env` lub zmiennych środowiskowych.
+
+Do znajdujących się tam wartości należą:
+- **API_PREFIX**- prefiks adresu URL, pod którym dostępne jest REST API.
+- **K8S_API_URL**- adres URL, pod którym dostępna jest sekcja API klastra Kubernetes.
+- **HELM_API_URL**- adres URL, pod którym dostępne jest sekcja API Klienta Helmowego.
+- **AUTH_URL**- adres URL, pod którym dostępna jest sekcja autoryzacji.
+- **KEYCLOAK_URL**- adres URL, pod którym dostępny jest dostawca tożsamości (Keycloak).
+- **KEYCLOAK_CLIENT**- nazwa klienta w dostawcy tożsamości (Keycloak).
+- **KEYCLOAK_REALM**- nazwa rzeczywistości w dostawcy tożsamości (Keycloak).
+- **KEYCLOAK_LOGIN_URL**- adres URL, pod którym dostępna jest strona logowania dostawcy tożsamości (Keycloak).
+W przypadku, gdy wartość ta nie zostanie podana, wyliczana jest na podstawie wartości `KEYCLOAK_URL`, `KEYCLOAK_REALM` oraz `KEYCLOAK_CLIENT`.
+- **KEYCLOAK_LOGOUT_URL**- adres URL, pod którym dostępna jest strona wylogowania dostawcy tożsamości (Keycloak).
+W przypadku, gdy wartość ta nie zostanie podana, wyliczana jest na podstawie wartości `KEYCLOAK_URL`, `KEYCLOAK_REALM`.
+- **KEYCLOAK_TOKEN_URL**- adres URL, pod którym dostępna jest strona pobierania tokenów dostawcy tożsamości (Keycloak).
+W przypadku, gdy wartość ta nie zostanie podana, wyliczana jest na podstawie wartości `KEYCLOAK_URL`, `KEYCLOAK_REALM`.
+- **ROLEMAP_NAME**- nazwa ConfigMapy, w której przechowywane są mapowania pomiędzy uprawnieniami a rolami uzyskanymi z dostawcy tożsamości.
+- **ROLEMAP_NAMESPACE**- namespace, w którym przechowywana jest ConfigMapa `ROLEMAP_NAME`.
+
+Wszystkie stałe posiadają wartości domyślne, które są wykorzystywane w przypadku, gdy wartość nie zostanie podana.
+
+### Autentykacja
+Aplikacja wykorzystuje tokeny JWT do uwierzytelniania użytkowników. Tokeny są przechowywane w pamięci przeglądarki, dokładniej w `localStorage`.
+
+Aby umożliwić łatwy dostęp do danych użytkownika, stworzony został kontekst `AuthProvider`, który przechowuje informacje o zalogowanym użytkowniku.
+Zawiera on:
+- **user**- obiekt przechowujący informacje o zalogowanym użytkowniku.
+- **isLoggedIn**- wartość logiczna określająca, czy użytkownik jest zalogowany.
+- **handleLogin**- funkcja, która pozwala na zalogowanie użytkownika.
+- **handleLogout**- funkcja, która pozwala na wylogowanie użytkownika.
+- **permissions**- obiekt reprezentujący uprawnienia użytkownika.
+- **setPermissions**- funkcja, która pozwala na ustawienie uprawnień użytkownika.
+
+W celu logowania aplikacja przekierowuje użytkownika na stronę logowania dostarczoną przez dostawcę tożsamości (Keycloak).
+Adres tej strony dostępny jest w pliku stałych.
+
+Po zalogowaniu użytkownik otrzymuje token JWT, który jest przechowywany w pamięci przeglądarki.
+Dodatkowo uruchomiony zostaje serwis, który na podstawie czasu życia tokena dostępu (access token) odświeża go dzięki tokenowi odświeżania (refresh token).
+
+Przy logowaniu wykonywane jest również zapytanie do API w celu pobrania uprawnień użytkownika.
+Uprawnienia te przechowywane są w `localStorage` i aktualizowane przy każdym odświerzeniu tokena dostępu.
+
+### Autoryzacja
+Aplikacja wykorzystuje mapę uprawnień postaci namespace -> typ zasobu -> operacje. Struktura ta umożliwia szybkie sprawdzenie, czy użytkownik ma dostęp do danej operacji na danym zasobie.
+
+Struktura ta wykorzystywana jest przez następujące funkcje:
