@@ -131,7 +131,7 @@ Ten dokument zawiera przegląd wartości konfigurowalnych w pliku [`values.yaml`
 - **ingress.enabled**: Czy włączyć ingress dla aplikacji.
 - **ingress.className**: Nazwa klasy kontrolera ingress do użycia.
 - **ingress.annotations**: Adnotacje do dodania do zasobu ingress.
-- **ingress.hosts**: Lista hostów dla zasobu ingress. Każdy host powinien zawierać oddzielną listę ścieżek dla backendu i frontendu.
+- **ingress.hosts**: Lista hostów dla zasobu ingress. Każdy host powinien zawierać oddzielną listę ścieżek dla backendu i frontendu. Ścieżki dla backendu i frontendu mogą określać path i pathType.
 - **ingress.tls**: Lista konfiguracji TLS dla zasobu ingress. Każda konfiguracja określa nazwę sekretu i listę hostów.
 
 # Configuration
@@ -266,5 +266,5 @@ This document provides an overview of the configurable values in the [values.yam
 - **ingress.enabled**: Whether to enable ingress for the application.
 - **ingress.className**: The class name of the ingress controller to use.
 - **ingress.annotations**: Annotations to add to the ingress resource.
-- **ingress.hosts**: A list of hosts for the ingress resource. Each host should contain a separate list of paths for backend and frontend. 
+- **ingress.hosts**: A list of hosts for the ingress resource. Each host should contain a separate list of paths for backend and frontend. Backend and frontend paths can specify path and pathType.
 - **ingress.tls**: A list of TLS configurations for the ingress resource. Each configuration specifies a secret name and a list of hosts.
