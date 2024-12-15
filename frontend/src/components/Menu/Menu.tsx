@@ -6,7 +6,7 @@ import {MenuItem} from '../../types';
 import {Link, Outlet, useLocation} from "react-router-dom";
 import {useAuth} from '../AuthProvider/AuthProvider';
 import {hasAnyPermissionInAnyNamespace, hasPermission} from '../../functions/authorization';
-import {ROLEMAP_NAMESPACE} from "../../consts/roleMap.ts";
+import {ROLEMAP_NAMESPACE} from "../../consts/consts.ts";
 
 
 const {Header, Content, Sider} = Layout;
@@ -25,8 +25,8 @@ const LeftMenu: React.FC = () => {
                     children: generateMenuItems(item.children),
                 };
             }
-            const disabled = item.label !== 'Roles' ? (permissions !== null && !hasAnyPermissionInAnyNamespace(permissions, item.resourcelabel)) :
-                (permissions !== null && !hasPermission(permissions, ROLEMAP_NAMESPACE, 'ConfigMap', 'r'));
+            const disabled = item.label !== 'Roles' ? (permissions === null || !hasAnyPermissionInAnyNamespace(permissions, item.resourcelabel)) :
+                (permissions === null || !hasPermission(permissions, ROLEMAP_NAMESPACE, 'ConfigMap', 'r'));
             return {
                 ...item,
                 label: (

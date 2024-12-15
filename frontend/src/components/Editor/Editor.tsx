@@ -1,16 +1,17 @@
 import {Button, Card, message} from "antd";
 import style from "./Editor.module.css";
 import {Editor as MonacoEditor} from "@monaco-editor/react";
-import {useCallback, useEffect, useState} from "react";
+import {ReactNode, useCallback, useEffect, useState} from "react";
 import LanguageSelector from "./LanguageSelector.tsx";
 import {stringifyJson, parseJson, parseYaml, stringifyYaml} from "../../functions/jsonYamlFunctions.ts";
 import {ResourceDetails} from "../../types";
 import {useNavigate} from "react-router-dom";
 
-const Editor = ({name, text, endpoint}: {
+const Editor = ({name, text, endpoint, namespaceSelector}: {
     name: string,
     text: string,
     endpoint: (data: ResourceDetails) => Promise<ResourceDetails>
+    namespaceSelector?: ReactNode
 }) => {
     const [value, setValue] = useState<string>(text);
     const [language, setLanguage] = useState<string>("yaml");
@@ -96,7 +97,12 @@ const Editor = ({name, text, endpoint}: {
     return (
         <Card className={style.content} style={{marginTop: '64px',}} title={name}>
             <div className={style.editorOptionsPanel}>
-                <LanguageSelector language={language} onSelect={onLanguageChange}/>
+                <div className={style.selectors}>
+                    <LanguageSelector language={language} onSelect={onLanguageChange}/>
+
+                    {namespaceSelector}
+                </div>
+
                 <div style={{display: 'flex', gap: '8px'}}>
                     <Button type="default" onClick={() => navigate(-1)}>Back</Button>
                     <Button type="primary" onClick={onSave}>Save</Button>

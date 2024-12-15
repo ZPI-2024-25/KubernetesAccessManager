@@ -126,17 +126,17 @@ Define backend enviromental values
 - name: KEYCLOAK_JWKS_URL
   value: "{{ .Values.global.env.KEYCLOAK_JWKS_URL }}"
 {{- end }}
-{{- if .Values.global.env.VITE_KEYCLOAK_URL }}
-- name: VITE_KEYCLOAK_URL
-  value: "{{ .Values.global.env.VITE_KEYCLOAK_URL }}"
+{{- if .Values.global.env.BACKEND_KEYCLOAK_URL }}
+- name: BACKEND_KEYCLOAK_URL
+  value: "{{ .Values.global.env.BACKEND_KEYCLOAK_URL }}"
 {{- end }}
-{{- if .Values.global.env.VITE_KEYCLOAK_REALMNAME }}
-- name: VITE_KEYCLOAK_REALMNAME
-  value: "{{ .Values.global.env.VITE_KEYCLOAK_REALMNAME }}"
+{{- if .Values.global.env.KEYCLOAK_REALM_NAME }}
+- name: VITE_KEYCLOAK_REALM_NAME
+  value: "{{ .Values.global.env.KEYCLOAK_REALM_NAME }}"
 {{- end }}
-{{- if .Values.global.env.VITE_KEYCLOAK_CLIENTNAME }}
-- name: VITE_KEYCLOAK_CLIENTNAME
-  value: "{{ .Values.global.env.VITE_KEYCLOAK_CLIENTNAME }}"
+{{- if .Values.global.env.KEYCLOAK_CLIENT_NAME }}
+- name: VITE_KEYCLOAK_CLIENT_NAME
+  value: "{{ .Values.global.env.KEYCLOAK_CLIENT_NAME }}"
 {{- end }}
 {{- if .Values.backend.healthPort }}
 - name: HEALTH_PORT
@@ -164,28 +164,40 @@ Define frontend environmental values
 {{- define "charts.frontendEnvVars" }}
 - name: API_URL
   value: "{{ include "charts.fullnameBackend" . }}:{{ .Values.backend.service.port }}"
-{{- if .Values.global.env.VITE_KEYCLOAK_URL }}
+{{- if .Values.global.env.FRONTEND_KEYCLOAK_URL }}
 - name: KAM_KEYCLOAK_URL
   value: "{{ .Values.global.env.FRONTEND_KEYCLOAK_URL }}"
 {{- end }}
-{{- if .Values.global.env.VITE_KEYCLOAK_CLIENTNAME }}
-- name: KAM_KEYCLOAK_CLIENTNAME
-  value: "{{ .Values.global.env.VITE_KEYCLOAK_CLIENTNAME }}"
+{{- if .Values.global.env.KEYCLOAK_CLIENT_NAME }}
+- name: KAM_KEYCLOAK_CLIENT_NAME
+  value: "{{ .Values.global.env.KEYCLOAK_CLIENT_NAME }}"
 {{- end }}
-{{- if .Values.global.env.VITE_KEYCLOAK_REALMNAME }}
-- name: KAM_KEYCLOAK_REALMNAME
-  value: "{{ .Values.global.env.VITE_KEYCLOAK_REALMNAME }}"
+{{- if .Values.global.env.KEYCLOAK_CLIENT_SECRET }}
+- name: KAM_KEYCLOAK_CLIENT_SECRET
+  value: "{{ .Values.global.env.KEYCLOAK_CLIENT_SECRET }}"
 {{- end }}
-{{- if .Values.global.env.KAM_KEYCLOAK_LOGIN_URL }}
+{{- if .Values.global.env.KEYCLOAK_REALM_NAME }}
+- name: KAM_KEYCLOAK_REALM_NAME
+  value: "{{ .Values.global.env.KEYCLOAK_REALM_NAME }}"
+{{- end }}
+{{- if .Values.global.env.KEYCLOAK_LOGIN_URL }}
 - name: KAM_KEYCLOAK_LOGIN_URL
-  value: "{{ .Values.global.env.KAM_KEYCLOAK_LOGIN_URL }}"
+  value: "{{ .Values.global.env.KEYCLOAK_LOGIN_URL }}"
 {{- end }}
-{{- if .Values.global.env.KAM_KEYCLOAK_LOGOUT_URL }}
+{{- if .Values.global.env.KEYCLOAK_LOGOUT_URL }}
 - name: KAM_KEYCLOAK_LOGOUT_URL
-  value: "{{ .Values.global.env.KAM_KEYCLOAK_LOGOUT_URL }}"
+  value: "{{ .Values.global.env.KEYCLOAK_LOGOUT_URL }}"
 {{- end }}
-{{- if .Values.global.env.KAM_KEYCLOAK_TOKEN_URL }}
+{{- if .Values.global.env.KEYCLOAK_TOKEN_URL }}
 - name: KAM_KEYCLOAK_TOKEN_URL
-  value: "{{ .Values.global.env.KAM_KEYCLOAK_TOKEN_URL }}"
+  value: "{{ .Values.global.env.KEYCLOAK_TOKEN_URL }}"
+{{- end }}
+{{- if .Values.global.env.ROLEMAP_NAMESPACE }}
+- name: KAM_ROLEMAP_NAMESPACE
+  value: "{{ .Values.global.env.ROLEMAP_NAMESPACE }}"
+{{- end }}
+{{- if .Values.global.env.ROLEMAP_NAME }}
+- name: KAM_ROLEMAP_FULL_NAME
+  value: "{{ .Values.global.env.ROLEMAP_NAME }}"
 {{- end }}
 {{- end }}

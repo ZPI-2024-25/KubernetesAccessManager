@@ -3,7 +3,7 @@ import {decodeToken, scheduleTokenRefresh} from '../../services/authService';
 import {useNavigate} from 'react-router-dom';
 import {message} from 'antd';
 import * as Constants from "../../consts/consts.ts";
-import { getAuthStatus } from "../../api/auth/authStatus.ts";
+import { getAuthStatus } from "../../api";
 import { Permissions } from "../../types/authTypes.ts";
 
 type AuthContextType = {

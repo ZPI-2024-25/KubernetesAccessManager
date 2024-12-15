@@ -17,12 +17,14 @@ var jwks *keyfunc.JWKS
 
 func InitializeAuth() {
 	var err error
+	log.Println("Connecting to auth provider on URL:", common.KeycloakJwksUrl)
 	jwks, err = keyfunc.Get(common.KeycloakJwksUrl, keyfunc.Options{
 		RefreshInterval: time.Hour,
 	})
 	if err != nil {
-		log.Printf("Failed to create JWKS: %s", err)
+		log.Printf("Failed to connect to auth provider: %s", err)
 	}
+	log.Println("Connected successfully to auth provider on URL:", common.KeycloakJwksUrl)
 }
 
 func GetJWTTokenFromHeader(r *http.Request) (string, error) {
@@ -41,7 +43,7 @@ func GetJWTTokenFromHeader(r *http.Request) (string, error) {
 func IsTokenValid(tokenStr string) (bool, *jwt.MapClaims) {
 	claims := jwt.MapClaims{}
 	if jwks == nil {
-		log.Printf("JWKS not initialized")
+		log.Printf("Authentication service not initialized\n")
 		return false, nil
 	}
 	token, err := jwt.ParseWithClaims(tokenStr, &claims, jwks.Keyfunc)
@@ -71,7 +73,7 @@ func IsTokenValid(tokenStr string) (bool, *jwt.MapClaims) {
 func IsUserAuthorized(operation models.Operation, roles []string) (bool, error) {
 	authService, err := GetRoleMapInstance()
 	if err != nil {
-		log.Printf("Error when loading auth service: %v\n", err)
+		log.Printf("Error while getting Rolemap instance: %v\n", err)
 		return false, err
 	}
 
