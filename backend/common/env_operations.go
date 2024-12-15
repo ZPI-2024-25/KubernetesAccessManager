@@ -36,10 +36,15 @@ func InitEnv() {
 		log.Printf("Using JWKS URL: %s\n", KeycloakJwksUrl)
 	}
 	KeycloakClient = getEnvOrPanic("VITE_KEYCLOAK_CLIENTNAME")
+	log.Printf("Using Keycloak client: %s\n", KeycloakClient)
 	HealthPort = getEnvAsInt("HEALTH_PORT", 8082)
+	log.Printf("Using health port: %d\n", HealthPort)
 	AppPort = getEnvAsInt("BACKEND_PORT", 8080)
+	log.Printf("Using application port: %d\n", AppPort)
 	RoleMapNamespace = getEnvOrDefault("ROLEMAP_NAMESPACE", DEFAULT_ROLEMAP_NAMESPACE)
+	log.Printf("Using role map namespace: %s\n", RoleMapNamespace)
 	RoleMapName = getEnvOrDefault("ROLEMAP_NAME", DEFAULT_ROLEMAP_NAME)
+	log.Printf("Using role map name: %s\n", RoleMapName)
 }
 
 func getEnvOrDefault(key, defaultValue string) string {
