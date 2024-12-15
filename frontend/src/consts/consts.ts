@@ -14,9 +14,9 @@ export const KEYCLOAK_URL = import.meta.env.VITE_KEYCLOAK_URL || 'http://localho
 export const KEYCLOAK_CLIENT_NAME = import.meta.env.VITE_KEYCLOAK_CLIENT_NAME || 'ZPI-client'
 export const KEYCLOAK_CLIENT_SECRET = import.meta.env.VITE_KEYCLOAK_CLIENT_SECRET || ''
 export const KEYCLOAK_REALM = import.meta.env.VITE_KEYCLOAK_REALM_NAME || 'ZPI-realm'
-export const KEYCLOAK_LOGIN_URL = import.meta.env.KEYCLOAK_LOGIN_URL || `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth?client_id=${KEYCLOAK_CLIENT_NAME}&response_type=code&scope=openid`
-export const KEYCLOAK_LOGOUT_URL = import.meta.env.KEYCLOAK_LOGOUT_URL || `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/logout`
-export const KEYCLOAK_TOKEN_URL = import.meta.env.KEYCLOAK_TOKEN_URL || `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`
+export const KEYCLOAK_LOGIN_URL = import.meta.env.VITE_KEYCLOAK_LOGIN_URL || `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth?client_id=${KEYCLOAK_CLIENT_NAME}&response_type=code&scope=openid`
+export const KEYCLOAK_LOGOUT_URL = import.meta.env.VITE_KEYCLOAK_LOGOUT_URL || `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/logout`
+export const KEYCLOAK_TOKEN_URL = import.meta.env.VITE_KEYCLOAK_TOKEN_URL || `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`
 
 export const ROLEMAP_NAME = import.meta.env.VITE_ROLEMAP_NAME || 'role-map';
 export const ROLEMAP_NAMESPACE = import.meta.env.VITE_ROLEMAP_NAMESPACE || 'default';

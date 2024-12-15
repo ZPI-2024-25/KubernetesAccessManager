@@ -24,6 +24,7 @@ func InitializeAuth() {
 	if err != nil {
 		log.Printf("Failed to connect to auth provider: %s", err)
 	}
+	log.Println("Connected successfully to auth provider on URL:", common.KeycloakJwksUrl)
 }
 
 func GetJWTTokenFromHeader(r *http.Request) (string, error) {

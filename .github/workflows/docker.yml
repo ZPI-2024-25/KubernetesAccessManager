@@ -5,6 +5,8 @@ on:
     branches: [ "main" ]
     paths:
       - 'charts/kam/Chart.yaml'
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   validate-and-build:
