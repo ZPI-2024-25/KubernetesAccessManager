@@ -4,10 +4,10 @@
 
 KAM zakłada połączenie z dostarczycielem tożsamości Keycloak lub innym spełniającym wymagania protokołu OpenIdConnect i dostarczającego role. Autoryzacja oparta jest na ekstrakcji ról użytkownika z tokena JWT wysyłanego z każdym zapytaniem do serwera backend. KAM odczytuje role zdefiniowane w dwóch miejscach tokena:
 
-- resource_access → `VITE_KEYCLOAK_CLIENTNAME` → roles: Lista ról przypisanych w kontekście konkretnego klienta.
+- resource_access → `VITE_KEYCLOAK_CLIENT_NAME` → roles: Lista ról przypisanych w kontekście konkretnego klienta.
 - realm_access → roles: Lista ról przypisanych globalnie w ramach danego realm.
 
-Zmienna środowiskowa `VITE_KEYCLOAK_CLIENTNAME` odpowiada nazwie klienta dodanego w Keycloak dla KAM. Zmienna ta wskazuje na sekcję tokena odpowiadającą KAM. Przykład:
+Zmienna środowiskowa `VITE_KEYCLOAK_CLIENT_NAME` odpowiada nazwie klienta dodanego w Keycloak dla KAM. Zmienna ta wskazuje na sekcję tokena odpowiadającą KAM. Przykład:
 ```json
 {
   ...
@@ -34,7 +34,7 @@ Zmienna środowiskowa `VITE_KEYCLOAK_CLIENTNAME` odpowiada nazwie klienta dodane
   ...
 }
 ```
-W tym wypadku dla `VITE_KEYCLOAK_CLIENTNAME` równego `ZPI-client` KAM autoryzowałby żądanie na podstawie ról `zpi-role`, `default-roles-zpi-realm`, `realm-zpi-role`. Jeśli przynajmniej jedna z wczytanych ról daje użytkownikowi dostęp do określonego zapytania, to użytkownik jest pomyślnie autoryzowany. W przeciwnym wypadku zwracany jest błąd zgodnie z definicją [API](./api-swagger.yaml).
+W tym wypadku dla `VITE_KEYCLOAK_CLIENT_NAME` równego `ZPI-client` KAM autoryzowałby żądanie na podstawie ról `zpi-role`, `default-roles-zpi-realm`, `realm-zpi-role`. Jeśli przynajmniej jedna z wczytanych ról daje użytkownikowi dostęp do określonego zapytania, to użytkownik jest pomyślnie autoryzowany. W przeciwnym wypadku zwracany jest błąd zgodnie z definicją [API](./api-swagger.yaml).
 
 ### Możliwe uprawnienia w KAM
 W KAM wyróżniamy akcje create, read, update, delete, list. Każde z uprawnień akcji musi być nadane osobno, w szczególności uprawnienie do listowania zasobów nie daje automatycznie możliwości przeglądania ich szczegółów. Uprawnienia można definiować dla konkretnej przestrzeni nazw i typu zasobu, np. Pod, ConfigMap.
@@ -230,10 +230,10 @@ data:
 
 KAM assumes a connection with an identity provider such as Keycloak or another provider that complies with the OpenIdConnect protocol and provides roles. Authorization is based on extracting user roles from the JWT token sent with each request to the backend server. KAM reads roles defined in two sections of the token:
 
-- `resource_access` → `VITE_KEYCLOAK_CLIENTNAME` → roles: A list of roles assigned in the context of a specific client.
+- `resource_access` → `VITE_KEYCLOAK_CLIENT_NAME` → roles: A list of roles assigned in the context of a specific client.
 - `realm_access` → roles: A list of roles assigned globally within a given realm.
 
-The environment variable `VITE_KEYCLOAK_CLIENTNAME` corresponds to the name of the client added in Keycloak for KAM. This variable points to the token section associated with KAM. Example:
+The environment variable `VITE_KEYCLOAK_CLIENT_NAME` corresponds to the name of the client added in Keycloak for KAM. This variable points to the token section associated with KAM. Example:
 
 ```json
 {
@@ -261,7 +261,7 @@ The environment variable `VITE_KEYCLOAK_CLIENTNAME` corresponds to the name of t
   ...
 }
 ```
-In this case, for `VITE_KEYCLOAK_CLIENTNAME` equal to `ZPI-client`, KAM would authorize the request based on the roles `zpi-role`, `default-roles-zpi-realm`, and `realm-zpi-role`. If at least one of the loaded roles grants the user access to a specific request, the user is successfully authorized. Otherwise, an error is returned according to the [API definition](./api-swagger.yaml).
+In this case, for `VITE_KEYCLOAK_CLIENT_NAME` equal to `ZPI-client`, KAM would authorize the request based on the roles `zpi-role`, `default-roles-zpi-realm`, and `realm-zpi-role`. If at least one of the loaded roles grants the user access to a specific request, the user is successfully authorized. Otherwise, an error is returned according to the [API definition](./api-swagger.yaml).
 
 ### Possible permissions in KAM
 

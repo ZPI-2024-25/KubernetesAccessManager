@@ -33,12 +33,13 @@ const AuthCallbackPage: React.FC = () => {
                 console.log('Redirect URI:', `${window.location.origin}/auth/callback`);
 
                 const response = await axios.post(
-                    `${Constants.KEYCLOAK_TOKEN_URL}`,
+                    Constants.KEYCLOAK_TOKEN_URL,
                     new URLSearchParams({
                         grant_type: 'authorization_code',
                         code: code,
                         redirect_uri: `${window.location.origin}/auth/callback`,
-                        client_id: `${Constants.KEYCLOAK_CLIENT}`,
+                        client_id: Constants.KEYCLOAK_CLIENT_NAME,
+                        ...(Constants.KEYCLOAK_CLIENT_SECRET && { client_secret: Constants.KEYCLOAK_CLIENT_SECRET }),
                     }),
                     {
                         headers: {
