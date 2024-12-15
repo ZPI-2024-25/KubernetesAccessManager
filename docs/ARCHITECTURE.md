@@ -3,7 +3,7 @@
 # Architektura
 
 ## Ogólna struktura projektu
-![Diagram komponentów](images/component_diagram.png)
+![Diagram komponentów](images/architecture/component_diagram.png)
 
 Kubernetes Access Manager (KAM) składa się z trzech głównych komponentów:
 - **Frontend**- aplikacja webowa, która pozwala na zarządzanie zasobami w klastrze Kubernetes. 
@@ -20,7 +20,7 @@ Kam komunikuje się z API klastra Kubernetes za pomocą biblioteki `client-go`, 
 ## Helm chart
 Aplikacja uruchamiana jest w klastrze Kubernetes. W celu łatwej instalacji i zarządzania aplikacją wykorzystany został Helm.
 
-![Diagram Helm Chart](images/helm_chart.png)
+![Diagram Helm Chart](images/architecture/helm_chart.png)
 
 Helm chart aplikacji składa się z czterech głównych komponentów:
 - **Backend**- serwer aplikacyjny, który zarządza zasobami w klastrze Kubernetes. Składają się na niego:
@@ -40,6 +40,8 @@ Helm chart aplikacji składa się z czterech głównych komponentów:
 - **Ingress**- definiuje reguły zarządzania ruchem przychodzącym do klastra Kubernetes.
 
 Część **Access Control** jest wymagana tylko w przypadku, gdy na klastrze włączony jest mechanizm RBAC.
+
+Pełna lista parametrów oraz ich opis znajduje się [tutaj](CONFIGURATION.md).
 
 ## Część backendowa
 REST API napisane w języku Go, które pozwala na zarządzanie zasobami w klastrze Kubernetes.
@@ -224,14 +226,26 @@ W celu ułatwienia pobierania ról z ConfigMapy stworzone zostały specjalne fun
 - **getRoles**- funkcja, która wykonuje zapytanie do API w celu pobrania ConfigMapy z mapowaniem ról w postaci RoleConfigMap.
 - **updateRoles**- funkcja, która wykonuje zapytanie do API w celu zapisania zmian w mapowaniu ról.
 
+## Dostawca tożsamości
+Aplikacja przygotowana została tak, aby nie była zależna od konkretnego dostawcy tożsamości. 
+W celu uwierzytelniania i autoryzacji użytkowników wykorzystany został protokół OpenID Connect.
+
+Opis jak skonfigurować podstawową wersję dostawcy tożsamości (w tym przypadku Keycloak) znajduje się [tutaj](keycloak-install&config.md).
+
 ## Struktura ConfigMapy z mapowaniem ról
-Opis struktury ConfigMapy wraz z przykładami znajduje się [tutaj](authorization.md).
+Aplikacja wykorzystuje ConfigMapę znajdującą się w klastrze Kubernetes do przechowywania mapowania pomiędzy uprawnieniami a rolami uzyskanymi z dostawcy tożsamości.
+
+Struktura ConfigMapy składa się z dwóch kluczy:
+- **role-map**- klucz zawierający mapowanie pomiędzy uprawnieniami a rolami.
+- **subrole-map**- klucz zawierający mapowanie pomiędzy rolami a subrolami.
+
+Dokładniejszy opis można znaleźć [tutaj](authorization.md).
 
 ## Diagram przepływu uwierzytelniania i autoryzacji
 Przepływ autoryzacji w części backendowej aplikacji podzielić należy na dwie kategorie: dla funkcji CRUD oraz dla funkcji List.
 
 ### Funkcje CRUD
-![Diagram przepływu uwierzytelniania i autoryzacji dla funkcji CRUD](images/CRUD_authentication_and_authorization.png)
+![Diagram przepływu uwierzytelniania i autoryzacji dla funkcji CRUD](images/architecture/CRUD_authentication_and_authorization.png)
 
 Żądanie HTTP z API przekierowywane jest do odpowiedniego kontrolera. Następuje przetworzenie żądania i jego obsługa.
 Na podstawie tokena JWT, który znajduje się w nagłówku żądania, serwer uwierzytelnia użytkownika.
@@ -245,3 +259,14 @@ Jeżeli użytkownik ma uprawnienia, serwer wykonuje żądaną operację. W przyp
 W przypadkue aplikacji helmowych, przebieg jest podobny, z tą różnicą, że zamiast odwoływać się do Kubernetes API, odwołuje się do Klienta Helmowego.
 
 ### Funkcja List
+![Diagram przepływu uwierzytelniania i autoryzacji dla funkcji List](images/architecture/List_authentication_and_authorization.png)
+
+Przepływ autoryzacji dla funkcji List jest podobny do przepływu dla funkcji CRUD kiedy określony jest namespace.
+
+W przypadku, gdy namespace nie jest określony, najpierw następuje uwierzytelnienie użytkownika. Następnie pobierane są zasoby z klastra.
+Na podstawie ról z tokena JWT oraz mapowania ról z ConfigMapy sprawdzane są uprawnienia użytkownika do każdego namespace'u.
+
+Jeżeli użytkownik ma uprawnienia do listowania zasobów w danym namespace'sie, dodawane są one do listy zasobów zwracanej przez serwer.
+W przeciwnym wypadku zasoby nie są dodawane do listy.
+
+Jeżeli uwierzytelnienie użytkownika nie powiedzie się, serwer zwraca błąd 401.
