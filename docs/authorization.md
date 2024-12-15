@@ -75,7 +75,7 @@ np. dla `TOKEN_ROLE_PATHS="custom_claim.kam_roles,other_custom_claim.object_role
 }
 ```
 
-Dla takiej konfiguracji, z tokena zostaną wczytane tylko role `custom-role`, `role1`, `role2`, `non-list-role`. Parser przechodzi przez kolejne segmenty ścieżki po kluczach w tokenie, aż dojdzie do końca ścieżki. W przypadku, gdy wartość klucza jest tablicą, parser przechodzi przez każdy element tablicy. W przypadku, gdy wartość klucza jest obiektem, parser przechodzi przez każdy klucz obiektu. Końcowa wartość musi być listą ról `([]string)` lub pojedynczą rolą(`string`).
+Dla takiej konfiguracji, z tokena zostaną wczytane tylko role `custom-role`, `role1`, `role2`, `non-list-role`. Parser przechodzi przez kolejne segmenty ścieżki po kluczach w tokenie, aż dojdzie do końca ścieżki. W przypadku, gdy wartość klucza jest tablicą, parser przechodzi przez każdy element tablicy. W przypadku, gdy wartość klucza jest obiektem, parser przechodzi przez każdy klucz obiektu. Końcowa wartość musi być listą ról `([]string)` lub pojedynczą rolą(`string`). Domyślny separator segmentów ścieżki `.` można nadpisać zmienną środowiskową `TOKEN_PATH_SEGMENT_SEP`.
 
 ### Możliwe uprawnienia w KAM
 W KAM wyróżniamy akcje create, read, update, delete, list. Każde z uprawnień akcji musi być nadane osobno, w szczególności uprawnienie do listowania zasobów nie daje automatycznie możliwości przeglądania ich szczegółów. Uprawnienia można definiować dla konkretnej przestrzeni nazw i typu zasobu, np. Pod, ConfigMap.
