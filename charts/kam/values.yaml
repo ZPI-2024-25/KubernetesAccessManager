@@ -7,11 +7,11 @@ podLabels: {}
 global:
   env:
 # Mandatory
-    BACKEND_KEYCLOAK_URL: ""
     FRONTEND_KEYCLOAK_URL: ""
     KEYCLOAK_REALM_NAME: "ZPI-realm"
     KEYCLOAK_CLIENT_NAME: "ZPI-client"
 # Optional
+    BACKEND_KEYCLOAK_URL: ""
     KEYCLOAK_CLIENT_SECRET: ""
     ROLEMAP_NAMESPACE: ""
     ROLEMAP_NAME: ""

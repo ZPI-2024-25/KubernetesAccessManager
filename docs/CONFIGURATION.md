@@ -12,12 +12,26 @@ Ten dokument zawiera przegląd wartości konfigurowalnych w pliku [`values.yaml`
 
 ## Globalna konfiguracja
 
-### **global.env.KEYCLOAK_JWKS_URL**
-- **Opis**: URL do zestawu JSON Web Key Set (JWKS) w Keycloak. Ten URL jest używany do pobierania kluczy publicznych w celu weryfikacji tokenów JWT wydanych przez Keycloak.
-- **Wymagane**: Jeśli `BACKEND_KEYCLOAK_URL`, `VITE_KEYCLOAK_REALM_NAME` i `VITE_KEYCLOAK_CLIENT_NAME` nie są podane.
-- **Domyślne**: Generowane na podstawie `BACKEND_KEYCLOAK_URL`, `VITE_KEYCLOAK_REALM_NAME` i `VITE_KEYCLOAK_CLIENT_NAME`.
-- **Używane przez**: Backend
-- **Przykład**: `https://keycloak.example.com/realms/myrealm/protocol/openid-connect/certs`
+### **global.env.FRONTEND_KEYCLOAK_URL**
+- **Opis**: URL do serwera Keycloak używanego przez frontend. Jest wykorzystywany przez frontend do celów uwierzytelniania. Powinien być publicznie dostępny.
+- **Wymagane**: Tak
+- **Domyślne**: Brak
+- **Używane przez**: Frontend
+- **Przykład**: `https://keycloak.example.com`
+
+### **global.env.KEYCLOAK_REALM_NAME**
+- **Opis**: Nazwa realm w Keycloak. Realm w Keycloak to przestrzeń, w której zarządzasz obiektami, takimi jak użytkownicy, role i klienci.
+- **Wymagane**: Tak
+- **Domyślne**: Brak
+- **Używane przez**: Frontend i Backend
+- **Przykład**: `myrealm`
+
+### **global.env.KEYCLOAK_CLIENT_NAME**
+- **Opis**: Nazwa klienta w Keycloak. Klient w Keycloak to podmiot, który może poprosić o uwierzytelnienie użytkownika. Należy utworzyć klienta w Keycloak dla naszej aplikacji.
+- **Wymagane**: Tak
+- **Domyślne**: Brak
+- **Używane przez**: Frontend i Backend
+- **Przykład**: `myclient`
 
 ### **global.env.BACKEND_KEYCLOAK_URL**
 - **Opis**: Bazowy URL dla serwera Keycloak. Jest używany przez backend do interakcji z Keycloak w celu uwierzytelniania i autoryzacji. Powinien być dostępny z backendu.
@@ -26,26 +40,11 @@ Ten dokument zawiera przegląd wartości konfigurowalnych w pliku [`values.yaml`
 - **Używane przez**: Backend
 - **Przykład**: `https://keycloak.example.com`
 
-### **global.env.FRONTEND_KEYCLOAK_URL**
-- **Opis**: URL do serwera Keycloak używanego przez frontend. Jest wykorzystywany przez frontend do celów uwierzytelniania. Powinien być publicznie dostępny.
-- **Wymagane**: Tak
+### **global.env.KEYCLOAK_CLIENT_SECRET**
+- **Opis**: Sekret klienta dla Keycloak. Ten sekret jest używany przez frontend do uwierzytelniania z Keycloak. Możesz znaleźć sekret klienta w konsoli administracyjnej Keycloak w zakładce credentials klienta.
+- **Wymagane**: Nie
 - **Domyślne**: Brak
 - **Używane przez**: Frontend
-- **Przykład**: `https://keycloak.example.com`
-
-### **global.env.VITE_KEYCLOAK_REALM_NAME**
-- **Opis**: Nazwa realm w Keycloak. Realm w Keycloak to przestrzeń, w której zarządzasz obiektami, takimi jak użytkownicy, role i klienci.
-- **Wymagane**: Tak
-- **Domyślne**: Brak
-- **Używane przez**: Frontend i Backend
-- **Przykład**: `myrealm`
-
-### **global.env.VITE_KEYCLOAK_CLIENT_NAME**
-- **Opis**: Nazwa klienta w Keycloak. Klient w Keycloak to podmiot, który może poprosić o uwierzytelnienie użytkownika. Należy utworzyć klienta w Keycloak dla naszej aplikacji.
-- **Wymagane**: Tak
-- **Domyślne**: Brak
-- **Używane przez**: Frontend i Backend
-- **Przykład**: `myclient`
 
 ### **global.env.ROLEMAP_NAMESPACE**
 - **Opis**: Namespace, w którym jest przechowywana mapa ról. Służy do określenia namespace w Kubernetes, gdzie znajduje się ConfigMap z mapą ról.
@@ -60,6 +59,34 @@ Ten dokument zawiera przegląd wartości konfigurowalnych w pliku [`values.yaml`
 - **Domyślne**: `role-map`
 - **Używane przez**: Frontend i Backend
 - **Przykład**: `myrolemap`
+
+### **global.env.KEYCLOAK_JWKS_URL**
+- **Opis**: URL do zestawu JSON Web Key Set (JWKS) w Keycloak. Ten URL jest używany do pobierania kluczy publicznych w celu weryfikacji tokenów JWT wydanych przez Keycloak.
+- **Wymagane**: Jeśli `BACKEND_KEYCLOAK_URL`, `KEYCLOAK_REALM_NAME` lub `KEYCLOAK_CLIENT_NAME` nie są podane.
+- **Domyślne**: Generowane na podstawie `BACKEND_KEYCLOAK_URL`, `KEYCLOAK_REALM_NAME` i `KEYCLOAK_CLIENT_NAME`.
+- **Używane przez**: Backend
+- **Przykład**: `https://keycloak.example.com/realms/myrealm/protocol/openid-connect/certs`
+
+### **global.env.KEYCLOAK_LOGIN_URL**
+- **Opis**: URL do strony logowania Keycloak. Jest używany do przekierowania użytkowników do strony logowania i zastąpienia domyślnej strony logowania Keycloak.
+- **Wymagane**: Nie
+- **Domyślne**: Brak
+- **Używane przez**: Frontend
+- **Przykład**: `https://keycloak.example.com/realms/myrealm/protocol/openid-connect/auth`
+
+### **global.env.KEYCLOAK_LOGOUT_URL**
+- **Opis**: URL do strony wylogowania Keycloak. Jest używany do przekierowania użytkowników do strony wylogowania i zastąpienia domyślnej strony wylogowania Keycloak.
+- **Wymagane**: Nie
+- **Domyślne**: Brak
+- **Używane przez**: Frontend
+- **Przykład**: `https://keycloak.example.com/realms/myrealm/protocol/openid-connect/logout`
+
+### **global.env.KEYCLOAK_TOKEN_URL**
+- **Opis**: URL do punktu końcowego tokena Keycloak. Jest używany do zastąpienia domyślnego punktu końcowego tokena Keycloak.
+- **Wymagane**: Nie
+- **Domyślne**: Brak
+- **Używane przez**: Frontend
+- **Przykład**: `https://keycloak.example.com/realms/myrealm/protocol/openid-connect/token`
 
 ## Konfiguracja Backend
 
@@ -123,12 +150,26 @@ This document provides an overview of the configurable values in the [values.yam
 
 ## Global Configuration
 
-### **global.env.KEYCLOAK_JWKS_URL**
-- **Description**: The URL for the Keycloak JSON Web Key Set (JWKS). This URL is used to retrieve the public keys for verifying JWT tokens issued by Keycloak.
-- **Required**: If `BACKEND_KEYCLOAK_URL`, `VITE_KEYCLOAK_REALM_NAME`, and `VITE_KEYCLOAK_CLIENT_NAME` are not provided.
-- **Default**: Built from `BACKEND_KEYCLOAK_URL`, `VITE_KEYCLOAK_REALM_NAME`, and `VITE_KEYCLOAK_CLIENT_NAME`.
-- **Used By**: Backend
-- **Example**: `https://keycloak.example.com/realms/myrealm/protocol/openid-connect/certs`
+### **global.env.FRONTEND_KEYCLOAK_URL**
+- **Description**: The URL for the Keycloak server used by the frontend. This URL is specifically used by the frontend for authentication purposes. It should be publicly accesible address.
+- **Required**: Yes
+- **Default**: None
+- **Used By**: Frontend
+- **Example**: `https://keycloak.example.com`
+
+### **global.env.KEYCLOAK_REALM_NAME**
+- **Description**: The name of the Keycloak realm. A realm in Keycloak is a space where you manage objects such as users, roles, and clients.
+- **Required**: Yes
+- **Default**: None
+- **Used By**: Both Frontend and Backend
+- **Example**: `myrealm`
+
+### **global.env.KEYCLOAK_CLIENT_NAME**
+- **Description**: The name of the Keycloak client. A client in Keycloak is an entity that can request Keycloak to authenticate a user. You should create a client in Keycloak for our application.
+- **Required**: Yes
+- **Default**: None
+- **Used By**: Both Frontend and Backend
+- **Example**: `myclient`
 
 ### **global.env.BACKEND_KEYCLOAK_URL**
 - **Description**: The base URL for the Keycloak server. This URL is used by backend to interact with Keycloak for authentication and authorization purposes. It should be accesible from the backend.
@@ -137,26 +178,11 @@ This document provides an overview of the configurable values in the [values.yam
 - **Used By**: Backend
 - **Example**: `https://keycloak.example.com`
 
-### **global.env.FRONTEND_KEYCLOAK_URL**
-- **Description**: The URL for the Keycloak server used by the frontend. This URL is specifically used by the frontend for authentication purposes. It should be publicly accesible address.
-- **Required**: Yes
+### **global.env.KEYCLOAK_CLIENT_SECRET**
+- **Description**: The client secret for Keycloak. This secret is used by frontend to authenticate with Keycloak. You can find the client secret in the Keycloak admin console. in the client credentials tab.
+- **Required**: No
 - **Default**: None
 - **Used By**: Frontend
-- **Example**: `https://keycloak.example.com`
-
-### **global.env.VITE_KEYCLOAK_REALM_NAME**
-- **Description**: The name of the Keycloak realm. A realm in Keycloak is a space where you manage objects such as users, roles, and clients.
-- **Required**: Yes
-- **Default**: None
-- **Used By**: Both Frontend and Backend
-- **Example**: `myrealm`
-
-### **global.env.VITE_KEYCLOAK_CLIENT_NAME**
-- **Description**: The name of the Keycloak client. A client in Keycloak is an entity that can request Keycloak to authenticate a user. You should create a client in Keycloak for our application.
-- **Required**: Yes
-- **Default**: None
-- **Used By**: Both Frontend and Backend
-- **Example**: `myclient`
 
 ### **global.env.ROLEMAP_NAMESPACE**
 - **Description**: The namespace where the role map is stored. This is used to specify the Kubernetes namespace where the role map ConfigMap is located.
@@ -171,6 +197,34 @@ This document provides an overview of the configurable values in the [values.yam
 - **Default**: `role-map`
 - **Used By**: Both Frontend and Backend
 - **Example**: `myrolemap`
+
+### **global.env.KEYCLOAK_JWKS_URL**
+- **Description**: The URL for the Keycloak JSON Web Key Set (JWKS). This URL is used to retrieve the public keys for verifying JWT tokens issued by Keycloak.
+- **Required**: If `BACKEND_KEYCLOAK_URL`, `KEYCLOAK_REALM_NAME`, and `KEYCLOAK_CLIENT_NAME` are not provided.
+- **Default**: Built from `BACKEND_KEYCLOAK_URL`, `KEYCLOAK_REALM_NAME`, and `KEYCLOAK_CLIENT_NAME`.
+- **Used By**: Backend
+- **Example**: `https://keycloak.example.com/realms/myrealm/protocol/openid-connect/certs`
+
+### **global.env.KEYCLOAK_LOGIN_URL**
+- **Description**: The URL for the Keycloak login page. It is used to redirect users to the login page and override the default Keycloak login page.
+- **Required**: No
+- **Default**: None
+- **Used By**: Frontend
+- **Example**: `https://keycloak.example.com/realms/myrealm/protocol/openid-connect/auth`
+
+### **global.env.KEYCLOAK_LOGOUT_URL**
+- **Description**: The URL for the Keycloak logout page. It is used to redirect users to the logout page and override the default Keycloak logout page.
+- **Required**: No
+- **Default**: None
+- **Used By**: Frontend
+- **Example**: `https://keycloak.example.com/realms/myrealm/protocol/openid-connect/logout`
+
+### **global.env.KEYCLOAK_TOKEN_URL**
+- **Description**: The URL for the Keycloak token endpoint. It is used to override the default Keycloak token endpoint.
+- **Required**: No
+- **Default**: None
+- **Used By**: Frontend
+- **Example**: `https://keycloak.example.com/realms/myrealm/protocol/openid-connect/token`
 
 ## Backend Configuration
 
