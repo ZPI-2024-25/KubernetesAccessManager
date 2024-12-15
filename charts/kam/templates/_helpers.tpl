@@ -164,7 +164,7 @@ Define frontend environmental values
 {{- define "charts.frontendEnvVars" }}
 - name: API_URL
   value: "{{ include "charts.fullnameBackend" . }}:{{ .Values.backend.service.port }}"
-{{- if .Values.global.env.VITE_KEYCLOAK_URL }}
+{{- if .Values.global.env.FRONTEND_KEYCLOAK_URL }}
 - name: KAM_KEYCLOAK_URL
   value: "{{ .Values.global.env.FRONTEND_KEYCLOAK_URL }}"
 {{- end }}
