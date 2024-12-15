@@ -51,6 +51,8 @@ func InitEnv() {
 		for _, path := range strings.Split(TOKEN_ROLE_PATHS, TOKEN_PATHS_SEP) {
 			log.Printf("\t%s\n", path)
 		}
+		log.Printf("Using token paths separator: %s\n", TOKEN_PATHS_SEP)
+		log.Printf("Using token path segment separator: %s\n", TOKEN_PATH_SEGMENT_SEP)
 	}
 	KeycloakClient = getEnvOrPanic("VITE_KEYCLOAK_CLIENT_NAME")
 	log.Printf("Using Keycloak client: %s\n", KeycloakClient)
