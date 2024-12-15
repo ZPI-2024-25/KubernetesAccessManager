@@ -109,6 +109,8 @@ Ten dokument zawiera przegląd wartości konfigurowalnych w pliku [`values.yaml`
 - **backend.autoscaling.maxReplicas**: Maksymalna liczba replik dla backendu.
 - **backend.autoscaling.targetCPUUtilizationPercentage**: Docelowe zużycie CPU dla autoskalowania.
 - **backend.autoscaling.targetMemoryUtilizationPercentage**: Docelowe zużycie pamięci dla autoskalowania.
+- **backend.rbac.create**: Czy utworzyć ClusterRole i ClusterRoleBinding dla backendu. Może być ustawione na false, jeśli chcesz użyć istniejącego ClusterRole.
+- **backend.rbac.rules**: Lista reguł RBAC do zastosowania do ClusterRole.
 
 ## Konfiguracja Frontend
 
@@ -129,13 +131,8 @@ Ten dokument zawiera przegląd wartości konfigurowalnych w pliku [`values.yaml`
 - **ingress.enabled**: Czy włączyć ingress dla aplikacji.
 - **ingress.className**: Nazwa klasy kontrolera ingress do użycia.
 - **ingress.annotations**: Adnotacje do dodania do zasobu ingress.
-- **ingress.hosts**: Lista hostów dla zasobu ingress. Każdy host może mieć własny zestaw ścieżek.
+- **ingress.hosts**: Lista hostów dla zasobu ingress. Każdy host powinien zawierać oddzielną listę ścieżek dla backendu i frontendu.
 - **ingress.tls**: Lista konfiguracji TLS dla zasobu ingress. Każda konfiguracja określa nazwę sekretu i listę hostów.
-
-## Konfiguracja RBAC
-
-- **rbac.create**: Czy utworzyć zasoby RBAC dla aplikacji.
-- **rbac.rules**: Lista reguł RBAC do zastosowania. Każda reguła określa grupy API, zasoby i działania (verbs).
 
 # Configuration
 
@@ -247,6 +244,8 @@ This document provides an overview of the configurable values in the [values.yam
 - **backend.autoscaling.maxReplicas**: The maximum number of replicas for the backend.
 - **backend.autoscaling.targetCPUUtilizationPercentage**: The target CPU utilization percentage for autoscaling.
 - **backend.autoscaling.targetMemoryUtilizationPercentage**: The target memory utilization percentage for autoscaling.
+- **backend.rbac.create**: Whether to create ClusterRole and ClusterRoleBinding for the backend. Can be set to false if you want to use an existing ClusterRole.
+- **backend.rbac.rules**: A list of RBAC rules to apply to the ClusterRole.
 
 ## Frontend Configuration
 
@@ -267,10 +266,5 @@ This document provides an overview of the configurable values in the [values.yam
 - **ingress.enabled**: Whether to enable ingress for the application.
 - **ingress.className**: The class name of the ingress controller to use.
 - **ingress.annotations**: Annotations to add to the ingress resource.
-- **ingress.hosts**: A list of hosts for the ingress resource. Each host can have its own set of paths.
+- **ingress.hosts**: A list of hosts for the ingress resource. Each host should contain a separate list of paths for backend and frontend. 
 - **ingress.tls**: A list of TLS configurations for the ingress resource. Each configuration specifies a secret name and a list of hosts.
-
-## RBAC Configuration
-
-- **rbac.create**: Whether to create RBAC resources for the application.
-- **rbac.rules**: A list of RBAC rules to apply. Each rule specifies API groups, resources, and verbs.
