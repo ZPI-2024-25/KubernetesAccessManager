@@ -38,7 +38,7 @@ W tym wypadku dla `VITE_KEYCLOAK_CLIENT_NAME` równego `ZPI-client` KAM autoryzo
 
 Można też zdefiniować własne ścieżki do ról w tokenie JWT. W tym celu należy ustawić zmienną środowiskową `USE_JWT_TOKEN_PATH` na wartość `true` oraz zdefiniować zmienną środowiskową `TOKEN_ROLE_PATHS` w której znajdować będą się ścieżki rozdzielone przy pomocy zmiennej środowiskowej `TOKEN_PATHS_SEP` domyślnie `,`.
 
-np. dla `TOKEN_ROLE_PATHS="custom_claim.kam_roles,other_custom_claim.kam_roles"`:
+np. dla `TOKEN_ROLE_PATHS="custom_claim.kam_roles,other_custom_claim.object_roles"`:
 ```json
 {
   ...
@@ -47,8 +47,7 @@ np. dla `TOKEN_ROLE_PATHS="custom_claim.kam_roles,other_custom_claim.kam_roles"`
       "custom-role"
     ]
   },
-  "other_custom_claim": 
-    [
+  "object_roles": [
       {
         "value": "value",
         "kam_roles": [
@@ -60,31 +59,17 @@ np. dla `TOKEN_ROLE_PATHS="custom_claim.kam_roles,other_custom_claim.kam_roles"`
         "kam_roles": [
           "role2"
           ]
-      }
+      },
       {
         "value": "value3",
         "kam_roles": "non-list-role"
       }
-    ]
+  ],
   "realm_access": {
     "roles": [
       "default-roles-zpi-realm",
       "realm-zpi-role",
     ]
-  },
-  "resource_access": {
-    "ZPI-client": {
-      "roles": [
-        "zpi-role"
-      ]
-    },
-    "account": {
-      "roles": [
-        "manage-account",
-        "manage-account-links",
-        "view-profile"
-      ]
-    }
   },
   ...
 }
