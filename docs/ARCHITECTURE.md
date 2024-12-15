@@ -175,7 +175,7 @@ W przypadku, gdy wartość ta nie zostanie podana, wyliczana jest na podstawie w
 
 Wszystkie stałe posiadają wartości domyślne, które są wykorzystywane w przypadku, gdy wartość nie zostanie podana.
 
-### Autentykacja
+### Uwierzytelnianie
 Aplikacja wykorzystuje tokeny JWT do uwierzytelniania użytkowników. Tokeny są przechowywane w pamięci przeglądarki, dokładniej w `localStorage`.
 
 Aby umożliwić łatwy dostęp do danych użytkownika, stworzony został kontekst `AuthProvider`, który przechowuje informacje o zalogowanym użytkowniku.
@@ -194,9 +194,54 @@ Po zalogowaniu użytkownik otrzymuje token JWT, który jest przechowywany w pami
 Dodatkowo uruchomiony zostaje serwis, który na podstawie czasu życia tokena dostępu (access token) odświeża go dzięki tokenowi odświeżania (refresh token).
 
 Przy logowaniu wykonywane jest również zapytanie do API w celu pobrania uprawnień użytkownika.
-Uprawnienia te przechowywane są w `localStorage` i aktualizowane przy każdym odświerzeniu tokena dostępu.
+Uprawnienia te przechowywane są w `localStorage` i aktualizowane przy każdym odświeżeniu tokena dostępu.
 
 ### Autoryzacja
-Aplikacja wykorzystuje mapę uprawnień postaci namespace -> typ zasobu -> operacje. Struktura ta umożliwia szybkie sprawdzenie, czy użytkownik ma dostęp do danej operacji na danym zasobie.
+Aplikacja wykorzystuje mapę uprawnień postaci namespace -> typ zasobu -> operacje. Struktura ta nazwana została `permissions`.
 
-Struktura ta wykorzystywana jest przez następujące funkcje:
+Struktura ta otrzymywana jest z API i przechowywana w `localStorage`. Dostęp do niej możliwy jest dzięki kontekstowi `AuthProvider`.
+
+W celu ułatwienia i standaryzacji sprawdzania uprawnień stworzone zostały następujące funkcje przyjmujące `permissions`:
+- **hasPermission**- przyjmuje namespace, typ zasobu i operację. Zwraca wartość logiczną, określającą czy użytkownik ma uprawnienia.
+- **hasPermissionInAnyNamespace**- przyjmuje typ zasobu i operację. Zwraca wartość logiczną, określającą czy użytkownik ma uprawnienia w dowolnym namespace'u.
+- **hasAnyPermissionInAnyNamespace**- przyjmuje typ zasobu. Zwraca wartość logiczną, określającą czy użytkownik ma uprawnienia w dowolnym namespace'sie do dowolnej operacji.
+- **hasPermissionInAnyResource**- przyjmuje namespace i operację. Zwraca wartość logiczną, określającą czy użytkownik ma uprawnienia w dowolnym typie zasobu.
+- **allowedNamespaces**- przyjmuje typ zasobu i operację. Zwraca listę namespace'ów, do których użytkownik ma uprawnienia.
+- **allowedResources**- przyjmuje namespace i operację. Zwraca listę typów zasobów, do których użytkownik ma uprawnienia.
+
+### Zarządzanie rolami
+Zarządzanie rolami odbywa się za pomocą formularza dostępnego w aplikacji. Formularz ten pozwala na:
+- **Dodanie roli**- dodanie nowej roli do mapowania.
+- **Edycję roli**- edycję istniejącej roli w mapowaniu.
+- **Usunięcie roli**- usunięcie istniejącej roli z mapowania.
+- **Zapisanie zmian**- zapisanie zmian w mapowaniu.
+
+W celu ułatwienia pobierania ról z ConfigMapy stworzone zostały specjalne funkcje i struktury danych:
+- **RoleConfigMap**- strukture reprezentująca ConfigMapę na poziomie definicji zasobu. Role reprezentowane są jako łańcuch znaków.
+- **RoleMap**- przetworzona struktura, reprezentująca role jako obiekty.
+- **convertRoleConfigMapToRoleMap**- funkcja, która przetwarza RoleConfigMap na RoleMap.
+- **convertRoleMapToRoleConfigMap**- funkcja, która przetwarza RoleMap na RoleConfigMap.
+- **getRoles**- funkcja, która wykonuje zapytanie do API w celu pobrania ConfigMapy z mapowaniem ról w postaci RoleConfigMap.
+- **updateRoles**- funkcja, która wykonuje zapytanie do API w celu zapisania zmian w mapowaniu ról.
+
+## Struktura ConfigMapy z mapowaniem ról
+Opis struktury ConfigMapy wraz z przykładami znajduje się [tutaj](authorization.md).
+
+## Diagram przepływu uwierzytelniania i autoryzacji
+Przepływ autoryzacji w części backendowej aplikacji podzielić należy na dwie kategorie: dla funkcji CRUD oraz dla funkcji List.
+
+### Funkcje CRUD
+![Diagram przepływu uwierzytelniania i autoryzacji dla funkcji CRUD](images/CRUD_authentication_and_authorization.png)
+
+Żądanie HTTP z API przekierowywane jest do odpowiedniego kontrolera. Następuje przetworzenie żądania i jego obsługa.
+Na podstawie tokena JWT, który znajduje się w nagłówku żądania, serwer uwierzytelnia użytkownika.
+Jeżeli użytkownik nie jest zalogowany, serwer zwraca błąd 401.
+
+Po uwierzytelnieniu serwer pobiera role użytkownika zawarte w tokenie JWT. Następnie na podstawie tych ról oraz mapowania ról z ConfigMapy sprawdzane są uprawnienia użytkownika.
+Jeżeli użytkownik nie ma uprawnień do wykonania danej operacji, serwer zwraca błąd 403.
+
+Jeżeli użytkownik ma uprawnienia, serwer wykonuje żądaną operację. W przypadku powodzenia zwraca kod 200, w przeciwnym wypadku zwraca odpowiedź json z błędem.
+
+W przypadkue aplikacji helmowych, przebieg jest podobny, z tą różnicą, że zamiast odwoływać się do Kubernetes API, odwołuje się do Klienta Helmowego.
+
+### Funkcja List
