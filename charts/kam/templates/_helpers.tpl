@@ -130,13 +130,13 @@ Define backend enviromental values
 - name: VITE_KEYCLOAK_URL
   value: "{{ .Values.global.env.VITE_KEYCLOAK_URL }}"
 {{- end }}
-{{- if .Values.global.env.VITE_KEYCLOAK_REALMNAME }}
-- name: VITE_KEYCLOAK_REALMNAME
-  value: "{{ .Values.global.env.VITE_KEYCLOAK_REALMNAME }}"
+{{- if .Values.global.env.VITE_KEYCLOAK_REALM_NAME }}
+- name: VITE_KEYCLOAK_REALM_NAME
+  value: "{{ .Values.global.env.VITE_KEYCLOAK_REALM_NAME }}"
 {{- end }}
-{{- if .Values.global.env.VITE_KEYCLOAK_CLIENTNAME }}
-- name: VITE_KEYCLOAK_CLIENTNAME
-  value: "{{ .Values.global.env.VITE_KEYCLOAK_CLIENTNAME }}"
+{{- if .Values.global.env.VITE_KEYCLOAK_CLIENT_NAME }}
+- name: VITE_KEYCLOAK_CLIENT_NAME
+  value: "{{ .Values.global.env.VITE_KEYCLOAK_CLIENT_NAME }}"
 {{- end }}
 {{- if .Values.backend.healthPort }}
 - name: HEALTH_PORT
@@ -168,13 +168,17 @@ Define frontend environmental values
 - name: KAM_KEYCLOAK_URL
   value: "{{ .Values.global.env.FRONTEND_KEYCLOAK_URL }}"
 {{- end }}
-{{- if .Values.global.env.VITE_KEYCLOAK_CLIENTNAME }}
-- name: KAM_KEYCLOAK_CLIENTNAME
-  value: "{{ .Values.global.env.VITE_KEYCLOAK_CLIENTNAME }}"
+{{- if .Values.global.env.VITE_KEYCLOAK_CLIENT_NAME }}
+- name: KAM_KEYCLOAK_CLIENT_NAME
+  value: "{{ .Values.global.env.VITE_KEYCLOAK_CLIENT_NAME }}"
 {{- end }}
-{{- if .Values.global.env.VITE_KEYCLOAK_REALMNAME }}
-- name: KAM_KEYCLOAK_REALMNAME
-  value: "{{ .Values.global.env.VITE_KEYCLOAK_REALMNAME }}"
+{{- if .Values.global.env.VITE_KEYCLOAK_CLIENT_SECRET }}
+- name: KAM_KEYCLOAK_CLIENT_SECRET
+  value: "{{ .Values.global.env.VITE_KEYCLOAK_CLIENT_SECRET }}"
+{{- end }}
+{{- if .Values.global.env.VITE_KEYCLOAK_REALM_NAME }}
+- name: KAM_KEYCLOAK_REALM_NAME
+  value: "{{ .Values.global.env.VITE_KEYCLOAK_REALM_NAME }}"
 {{- end }}
 {{- if .Values.global.env.KAM_KEYCLOAK_LOGIN_URL }}
 - name: KAM_KEYCLOAK_LOGIN_URL
