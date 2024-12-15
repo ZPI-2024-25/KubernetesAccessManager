@@ -7,17 +7,19 @@ Ten dokument zawiera przegląd wartości konfigurowalnych w pliku [`values.yaml`
 
 - **nameOverride**: Nadpisuje nazwę chartu. Przydatne, jeśli chcesz wdrożyć wiele instancji chartu z różnymi nazwami.
 - **fullnameOverride**: Całkowicie nadpisuje wygenerowaną nazwę chartu.
+- **podAnnotations**: Adnotacje do dodania do zasobów pod.
+- **podLabels**: Etykiety do dodania do zasobów pod.
 
 ## Globalna konfiguracja
 
 ### **global.env.KEYCLOAK_JWKS_URL**
 - **Opis**: URL do zestawu JSON Web Key Set (JWKS) w Keycloak. Ten URL jest używany do pobierania kluczy publicznych w celu weryfikacji tokenów JWT wydanych przez Keycloak.
-- **Wymagane**: Jeśli `VITE_KEYCLOAK_URL`, `VITE_KEYCLOAK_REALMNAME` i `VITE_KEYCLOAK_CLIENTNAME` nie są podane.
-- **Domyślne**: Generowane na podstawie `VITE_KEYCLOAK_URL`, `VITE_KEYCLOAK_REALMNAME` i `VITE_KEYCLOAK_CLIENTNAME`.
+- **Wymagane**: Jeśli `BACKEND_KEYCLOAK_URL`, `VITE_KEYCLOAK_REALM_NAME` i `VITE_KEYCLOAK_CLIENT_NAME` nie są podane.
+- **Domyślne**: Generowane na podstawie `BACKEND_KEYCLOAK_URL`, `VITE_KEYCLOAK_REALM_NAME` i `VITE_KEYCLOAK_CLIENT_NAME`.
 - **Używane przez**: Backend
 - **Przykład**: `https://keycloak.example.com/realms/myrealm/protocol/openid-connect/certs`
 
-### **global.env.VITE_KEYCLOAK_URL**
+### **global.env.BACKEND_KEYCLOAK_URL**
 - **Opis**: Bazowy URL dla serwera Keycloak. Jest używany przez backend do interakcji z Keycloak w celu uwierzytelniania i autoryzacji. Powinien być dostępny z backendu.
 - **Wymagane**: Jeśli `KEYCLOAK_JWKS_URL` nie jest podany.
 - **Domyślne**: Brak
@@ -31,14 +33,14 @@ Ten dokument zawiera przegląd wartości konfigurowalnych w pliku [`values.yaml`
 - **Używane przez**: Frontend
 - **Przykład**: `https://keycloak.example.com`
 
-### **global.env.VITE_KEYCLOAK_REALMNAME**
+### **global.env.VITE_KEYCLOAK_REALM_NAME**
 - **Opis**: Nazwa realm w Keycloak. Realm w Keycloak to przestrzeń, w której zarządzasz obiektami, takimi jak użytkownicy, role i klienci.
 - **Wymagane**: Tak
 - **Domyślne**: Brak
 - **Używane przez**: Frontend i Backend
 - **Przykład**: `myrealm`
 
-### **global.env.VITE_KEYCLOAK_CLIENTNAME**
+### **global.env.VITE_KEYCLOAK_CLIENT_NAME**
 - **Opis**: Nazwa klienta w Keycloak. Klient w Keycloak to podmiot, który może poprosić o uwierzytelnienie użytkownika. Należy utworzyć klienta w Keycloak dla naszej aplikacji.
 - **Wymagane**: Tak
 - **Domyślne**: Brak
@@ -49,14 +51,14 @@ Ten dokument zawiera przegląd wartości konfigurowalnych w pliku [`values.yaml`
 - **Opis**: Namespace, w którym jest przechowywana mapa ról. Służy do określenia namespace w Kubernetes, gdzie znajduje się ConfigMap z mapą ról.
 - **Wymagane**: Nie
 - **Domyślne**: `default`
-- **Używane przez**: Backend
+- **Używane przez**: Frontend i Backend
 - **Przykład**: `mynamespace`
 
 ### **global.env.ROLEMAP_NAME**
 - **Opis**: Nazwa mapy ról. Służy do określenia nazwy ConfigMap, która zawiera mapę ról.
 - **Wymagane**: Nie
 - **Domyślne**: `role-map`
-- **Używane przez**: Backend
+- **Używane przez**: Frontend i Backend
 - **Przykład**: `myrolemap`
 
 ## Konfiguracja Backend
@@ -114,19 +116,21 @@ This document provides an overview of the configurable values in the [values.yam
 
 ## General Configuration
 
-- **nameOverride**: Overrides the name of the chart. This is useful if you want to deploy multiple instances of the chart with different names.
-- **fullnameOverride**: Completely overrides the generated name for the chart. This is useful for ensuring consistent naming conventions.
+- **nameOverride**: Overrides the name of the chart.
+- **fullnameOverride**: Completely overrides the generated name for the chart.
+- **podAnnotations**: Annotations to add to pod resources.
+- **podLabels**: Labels to add to pod resources.
 
 ## Global Configuration
 
 ### **global.env.KEYCLOAK_JWKS_URL**
 - **Description**: The URL for the Keycloak JSON Web Key Set (JWKS). This URL is used to retrieve the public keys for verifying JWT tokens issued by Keycloak.
-- **Required**: If `VITE_KEYCLOAK_URL`, `VITE_KEYCLOAK_REALMNAME`, and `VITE_KEYCLOAK_CLIENTNAME` are not provided.
-- **Default**: Built from `VITE_KEYCLOAK_URL`, `VITE_KEYCLOAK_REALMNAME`, and `VITE_KEYCLOAK_CLIENTNAME`.
+- **Required**: If `BACKEND_KEYCLOAK_URL`, `VITE_KEYCLOAK_REALM_NAME`, and `VITE_KEYCLOAK_CLIENT_NAME` are not provided.
+- **Default**: Built from `BACKEND_KEYCLOAK_URL`, `VITE_KEYCLOAK_REALM_NAME`, and `VITE_KEYCLOAK_CLIENT_NAME`.
 - **Used By**: Backend
 - **Example**: `https://keycloak.example.com/realms/myrealm/protocol/openid-connect/certs`
 
-### **global.env.VITE_KEYCLOAK_URL**
+### **global.env.BACKEND_KEYCLOAK_URL**
 - **Description**: The base URL for the Keycloak server. This URL is used by backend to interact with Keycloak for authentication and authorization purposes. It should be accesible from the backend.
 - **Required**: If `KEYCLOAK_JWKS_URL` is not provided.
 - **Default**: None
@@ -140,14 +144,14 @@ This document provides an overview of the configurable values in the [values.yam
 - **Used By**: Frontend
 - **Example**: `https://keycloak.example.com`
 
-### **global.env.VITE_KEYCLOAK_REALMNAME**
+### **global.env.VITE_KEYCLOAK_REALM_NAME**
 - **Description**: The name of the Keycloak realm. A realm in Keycloak is a space where you manage objects such as users, roles, and clients.
 - **Required**: Yes
 - **Default**: None
 - **Used By**: Both Frontend and Backend
 - **Example**: `myrealm`
 
-### **global.env.VITE_KEYCLOAK_CLIENTNAME**
+### **global.env.VITE_KEYCLOAK_CLIENT_NAME**
 - **Description**: The name of the Keycloak client. A client in Keycloak is an entity that can request Keycloak to authenticate a user. You should create a client in Keycloak for our application.
 - **Required**: Yes
 - **Default**: None
@@ -158,14 +162,14 @@ This document provides an overview of the configurable values in the [values.yam
 - **Description**: The namespace where the role map is stored. This is used to specify the Kubernetes namespace where the role map ConfigMap is located.
 - **Required**: No
 - **Default**: `default`
-- **Used By**: Backend
+- **Used By**: Both Frontend and Backend
 - **Example**: `mynamespace`
 
 ### **global.env.ROLEMAP_NAME**
 - **Description**: The name of the role map. This is used to specify the name of the ConfigMap that contains the role map.
 - **Required**: No
 - **Default**: `role-map`
-- **Used By**: Backend
+- **Used By**: Both Frontend and Backend
 - **Example**: `myrolemap`
 
 ## Backend Configuration
