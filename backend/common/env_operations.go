@@ -41,9 +41,8 @@ func InitEnv() {
 		KeycloakJwksUrl = fmt.Sprintf("%s/realms/%s/protocol/openid-connect/certs", KeycloakURL, KeycloakRealm)
 		log.Printf("Using JWKS URL: %s\n", KeycloakJwksUrl)
 	}
-	usePaths := getEnvOrDefault("USE_JWT_TOKEN_PATHS", "false")
-	if usePaths == "true" {
-		USE_JWT_TOKEN_PATHS = true
+	USE_JWT_TOKEN_PATHS = getEnvOrDefault("USE_JWT_TOKEN_PATHS", "false") == "true"
+	if USE_JWT_TOKEN_PATHS {
 		TOKEN_ROLE_PATHS = getEnvOrDefault("TOKEN_ROLE_PATHS", DEFAULT_TOKEN_ROLE_PATHS)
 		TOKEN_PATHS_SEP = getEnvOrDefault("TOKEN_PATHS_SEP", DEFAULT_PATHS_SEP)
 		TOKEN_PATH_SEGMENT_SEP = getEnvOrDefault("TOKEN_PATH_SEGMENT_SEP", DEFAULT_PATH_SEGMENT_SEP)
