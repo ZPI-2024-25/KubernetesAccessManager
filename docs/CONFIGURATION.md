@@ -107,7 +107,7 @@ Ten dokument zawiera przegląd wartości konfigurowalnych w pliku [`values.yaml`
 - **backend.autoscaling.targetMemoryUtilizationPercentage**: Docelowe zużycie pamięci dla autoskalowania.
 - **backend.rbac.create**: Czy utworzyć ClusterRole i ClusterRoleBinding dla backendu. Może być ustawione na false, jeśli chcesz użyć istniejącego ClusterRole.
 - **backend.rbac.rules**: Lista reguł RBAC do zastosowania do ClusterRole.
-- **backend.env.USE_JWT_TOKEN_PATHS**: czy używać własnych ścieżek do ról w tokenie JWT.
+- **backend.env.USE_JWT_TOKEN_PATHS**: Czy używać własnych ścieżek do ról w tokenie JWT. Wartość "true" oznacza użycie własnych ścieżek, każda inna wartość oznacza użycie domyślnych ścieżek z Keycloak. POzwala to na zintegrowanie aplikacji z innymi dostawcami tożsamości używającymi standardu OpenID Connect. Domyślnie "false".
 - **backend.env.TOKEN_ROLE_PATHS**: ścieżki do ról w tokenie JWT.
 - **backend.env.TOKEN_PATHS_SEP**: separator ścieżek do ról w tokenie JWT.
 - **backend.env.TOKEN_PATH_SEGMENT_SEP**: separator segmentów ścieżek do ról w tokenie JWT.

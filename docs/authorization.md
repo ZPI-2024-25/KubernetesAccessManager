@@ -36,7 +36,7 @@ Zmienna środowiskowa `KEYCLOAK_CLIENT_NAME` odpowiada nazwie klienta dodanego w
 ```
 W tym wypadku dla `VITE_KEYCLOAK_CLIENT_NAME` równego `ZPI-client` KAM autoryzowałby żądanie na podstawie ról `zpi-role`, `default-roles-zpi-realm`, `realm-zpi-role`. Jeśli przynajmniej jedna z wczytanych ról daje użytkownikowi dostęp do określonego zapytania, to użytkownik jest pomyślnie autoryzowany. W przeciwnym wypadku zwracany jest błąd zgodnie z definicją [API](./api-swagger.yaml).
 
-Można też zdefiniować własne ścieżki do ról w tokenie JWT. W tym celu należy ustawić zmienną środowiskową `USE_JWT_TOKEN_PATH` na wartość `true` oraz zdefiniować zmienną środowiskową `TOKEN_ROLE_PATHS` w której znajdować będą się ścieżki rozdzielone przy pomocy zmiennej środowiskowej `TOKEN_PATHS_SEP` domyślnie `,`.
+Można też zdefiniować własne ścieżki do ról w tokenie JWT co umożliwia użycie innego dostawcy tożsamości niż Keycloak. W tym celu należy ustawić zmienną środowiskową `USE_JWT_TOKEN_PATH` na wartość `true` oraz zdefiniować zmienną środowiskową `TOKEN_ROLE_PATHS` w której znajdować będą się ścieżki rozdzielone przy pomocy zmiennej środowiskowej `TOKEN_PATHS_SEP` domyślnie `,`.
 
 np. dla `TOKEN_ROLE_PATHS="custom_claim.kam_roles,other_custom_claim.object_roles"`:
 ```json
