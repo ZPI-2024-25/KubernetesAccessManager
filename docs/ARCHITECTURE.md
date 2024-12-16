@@ -17,32 +17,6 @@ Wybrany został protokół OpenID Connect, a jako dostawca tożsamości wykorzys
 
 Kam komunikuje się z API klastra Kubernetes za pomocą biblioteki `client-go`, natomiast z Klientem Helmowym za pomocą biblioteki `helm`.
 
-## Helm chart
-Aplikacja uruchamiana jest w klastrze Kubernetes. W celu łatwej instalacji i zarządzania aplikacją wykorzystany został Helm.
-
-![Diagram Helm Chart](images/architecture/helm_chart.png)
-
-Helm chart aplikacji składa się z czterech głównych komponentów:
-- **Backend**- serwer aplikacyjny, który zarządza zasobami w klastrze Kubernetes. Składają się na niego:
-    - Pod- w nich uruchamiana jest instancja serwera backendowego.
-    - Deployment- definiuje, w jaki sposób mają być tworzone i zarządzane instancje podów.
-    - Service- umożliwia komunikację pomiędzy częścią frontendową a backendową wewnątrz klastra Kubernetes.
-    - Horizontal Pod Autoscaler- umożliwia automatyczne skalowanie liczby podów w zależności od obciążenia.
-- **Frontend**- serwer aplikacji webowej, która pozwala na zarządzanie zasobami w klastrze Kubernetes. Składają się na niego:
-    - Pod- w nich uruchamiana jest instancja serwera frontendowego.
-    - Deployment- definiuje, w jaki sposób mają być tworzone i zarządzane instancje podów.
-    - Service- umożliwia komunikację pomiędzy częścią frontendową a backendową wewnątrz klastra Kubernetes.
-    - Horizontal Pod Autoscaler- umożliwia automatyczne skalowanie liczby podów w zależności od obciążenia.
-- **Access Control**- zbiór zasobów przyznający uprawnienia wymagane w części backendowej. Składają się na niego:
-    - Service Account-umożliwia aplikacji dostęp do API klastra Kubernetes.
-    - Cluster Role- definiuje zestaw uprawnień wymaganych do zarządzania zasobami w klastrze Kubernetes.
-    - Cluster Role Binding- definiuje powiązanie pomiędzy Service Accountem a Cluster Role.
-- **Ingress**- definiuje reguły zarządzania ruchem przychodzącym do klastra Kubernetes.
-
-Część **Access Control** jest wymagana tylko w przypadku, gdy na klastrze włączony jest mechanizm RBAC.
-
-Pełna lista parametrów oraz ich opis znajduje się [tutaj](CONFIGURATION.md).
-
 ## Część backendowa
 REST API napisane w języku Go, które pozwala na zarządzanie zasobami w klastrze Kubernetes.
 Może funkcjonować w dwóch trybach:
@@ -142,7 +116,34 @@ Funkcja ta wykorzystuje bibliotekę `helm` do komunikacji z Klientem Helmowym. J
 Funkcja ta zwraca listę releasów (Release) lub błąd w przypadku niepowodzenia.
 
 ### Zarządzanie uprawnieniami
-Tutaj nie czuję się na siłach by to opisać sensownie
+Uprawnienia użytkowników przechowywane są w singletonie `RoleMapRepository`.
+Pobierane są one z ConfigMapy, której nazwę i namespace określają zmienne środowiskowe `ROLEMAP_NAME` i `ROLEMAP_NAMESPACE`.
+
+RoleMapRepository przechowuje dwa drzewa (grafy skierowane acykliczne):
+- **RoleMap**- drzewo reprezentujące mapowanie pomiędzy uprawnieniami a rolami.
+- **SubRoleMap**- drzewo reprezentujące mapowanie pomiędzy rolami a subrolami.
+
+RoleMapRepository obserwuje zmiany w ConfigMapie i aktualizuje drzewa w przypadku zmian.
+
+Role i podrole są strukturami składającymi się z następujących pól:
+- **Name**- nazwa roli.
+- **Permit**- zestaw operacji, na które rola pozwala.
+- **Deny**- zestaw uprawnień, które rola zabrania.
+- **SubRoles**- lista podról, po których dziedziczy rola.
+
+Operacja składa się z następujących pól:
+- **Resource**- typ zasobu.
+- **Namespace**- namespace.
+- **Type**- typ operacji (Create, Read, Update, Delete, List).
+
+RoleMapRepository udostępnia funkcje umożliwiające sprawdzanie uprawnień użytkownika.
+
+RoleMapRepository udostępnia również inną reprezentację mapowania ról.
+Zamiast drzewa, uprawnienia reprezentowane są przez mapę następującej postaci:
+namespace (klucz typu string) -> typ zasobu (klucz typu string) -> operacje (zbiór typu string).
+
+Implementacja ta pozwala na szybsze sprawdzanie uprawnień użytkownika i jest wykorzystywana w funkcjach autoryzacyjnych.
+Po dodatkowej obróbce zwracana jest poprzez API.
 
 ## Część frontendowa
 Aplikacja webowa napisana w języku Typescript i wykorzystująca framework React, która pozwala na zarządzanie zasobami w klastrze Kubernetes.
@@ -155,27 +156,11 @@ Komponentem zarządzającym nawigacją jest `Menu`, który pozwala na nawigację
 Na podstawie obecnie wybranej podstrony aktualizuje on stan aplikacji, a także wyświetla odpowiedni nagłówek.
 
 ### Stałe
-W celu ułatwienia zarządzania stałymi stworzony został plik `consts.ts`, w którym przechowywane są wszystkie stałe wykorzystywane w aplikacji.
+W celu ułatwienia zarządzania stałymi stworzony został plik `consts.ts`, w którym przechowywane są wszystkie stałe konfiguracyjne wykorzystywane w aplikacji.
 Wartości tam się znajdujące mogą zostać określone za pomocą plików `.env` lub zmiennych środowiskowych.
 
-Do znajdujących się tam wartości należą:
-- **API_PREFIX**- prefiks adresu URL, pod którym dostępne jest REST API.
-- **K8S_API_URL**- adres URL, pod którym dostępna jest sekcja API klastra Kubernetes.
-- **HELM_API_URL**- adres URL, pod którym dostępne jest sekcja API Klienta Helmowego.
-- **AUTH_URL**- adres URL, pod którym dostępna jest sekcja autoryzacji.
-- **KEYCLOAK_URL**- adres URL, pod którym dostępny jest dostawca tożsamości (Keycloak).
-- **KEYCLOAK_CLIENT**- nazwa klienta w dostawcy tożsamości (Keycloak).
-- **KEYCLOAK_REALM**- nazwa rzeczywistości w dostawcy tożsamości (Keycloak).
-- **KEYCLOAK_LOGIN_URL**- adres URL, pod którym dostępna jest strona logowania dostawcy tożsamości (Keycloak).
-W przypadku, gdy wartość ta nie zostanie podana, wyliczana jest na podstawie wartości `KEYCLOAK_URL`, `KEYCLOAK_REALM` oraz `KEYCLOAK_CLIENT`.
-- **KEYCLOAK_LOGOUT_URL**- adres URL, pod którym dostępna jest strona wylogowania dostawcy tożsamości (Keycloak).
-W przypadku, gdy wartość ta nie zostanie podana, wyliczana jest na podstawie wartości `KEYCLOAK_URL`, `KEYCLOAK_REALM`.
-- **KEYCLOAK_TOKEN_URL**- adres URL, pod którym dostępna jest strona pobierania tokenów dostawcy tożsamości (Keycloak).
-W przypadku, gdy wartość ta nie zostanie podana, wyliczana jest na podstawie wartości `KEYCLOAK_URL`, `KEYCLOAK_REALM`.
-- **ROLEMAP_NAME**- nazwa ConfigMapy, w której przechowywane są mapowania pomiędzy uprawnieniami a rolami uzyskanymi z dostawcy tożsamości.
-- **ROLEMAP_NAMESPACE**- namespace, w którym przechowywana jest ConfigMapa `ROLEMAP_NAME`.
-
 Wszystkie stałe posiadają wartości domyślne, które są wykorzystywane w przypadku, gdy wartość nie zostanie podana.
+Wartości te przystosowane są do uruchomienia aplikacji lokalnie.
 
 ### Uwierzytelnianie
 Aplikacja wykorzystuje tokeny JWT do uwierzytelniania użytkowników. Tokeny są przechowywane w pamięci przeglądarki, dokładniej w `localStorage`.
@@ -240,6 +225,32 @@ Struktura ConfigMapy składa się z dwóch kluczy:
 - **subrole-map**- klucz zawierający mapowanie pomiędzy rolami a subrolami.
 
 Dokładniejszy opis można znaleźć [tutaj](authorization.md).
+
+## Helm chart
+Aplikacja uruchamiana jest w klastrze Kubernetes. W celu łatwej instalacji i zarządzania aplikacją wykorzystany został Helm.
+
+![Diagram Helm Chart](images/architecture/helm_chart.png)
+
+Helm chart aplikacji składa się z czterech głównych komponentów:
+- **Backend**- serwer aplikacyjny, który zarządza zasobami w klastrze Kubernetes. Składają się na niego:
+  - Pod- w nich uruchamiana jest instancja serwera backendowego.
+  - Deployment- definiuje, w jaki sposób mają być tworzone i zarządzane instancje podów.
+  - Service- umożliwia komunikację pomiędzy częścią frontendową a backendową wewnątrz klastra Kubernetes.
+  - Horizontal Pod Autoscaler- umożliwia automatyczne skalowanie liczby podów w zależności od obciążenia.
+- **Frontend**- serwer aplikacji webowej, która pozwala na zarządzanie zasobami w klastrze Kubernetes. Składają się na niego:
+  - Pod- w nich uruchamiana jest instancja serwera frontendowego.
+  - Deployment- definiuje, w jaki sposób mają być tworzone i zarządzane instancje podów.
+  - Service- umożliwia komunikację pomiędzy częścią frontendową a backendową wewnątrz klastra Kubernetes.
+  - Horizontal Pod Autoscaler- umożliwia automatyczne skalowanie liczby podów w zależności od obciążenia.
+- **Access Control**- zbiór zasobów przyznający uprawnienia wymagane w części backendowej. Składają się na niego:
+  - Service Account-umożliwia aplikacji dostęp do API klastra Kubernetes.
+  - Cluster Role- definiuje zestaw uprawnień wymaganych do zarządzania zasobami w klastrze Kubernetes.
+  - Cluster Role Binding- definiuje powiązanie pomiędzy Service Accountem a Cluster Role.
+- **Ingress**- definiuje reguły zarządzania ruchem przychodzącym do klastra Kubernetes.
+
+Część **Access Control** jest wymagana tylko w przypadku, gdy na klastrze włączony jest mechanizm RBAC.
+
+Pełna lista parametrów oraz ich opis znajduje się [tutaj](CONFIGURATION.md).
 
 ## Diagram przepływu uwierzytelniania i autoryzacji
 Przepływ autoryzacji w części backendowej aplikacji podzielić należy na dwie kategorie: dla funkcji CRUD oraz dla funkcji List.
