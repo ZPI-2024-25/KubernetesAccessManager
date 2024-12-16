@@ -36,7 +36,7 @@ func InitEnv() {
 		log.Println("Using KEYCLOAK_JWKS_URL environment variable.")
 	} else {
 		log.Println("KEYCLOAK_JWKS_URL environment variable not set, setting default JWKS URL.")
-		KeycloakURL = getEnvOrPanic("BACKEND_KEYCLOAK_URL")
+		KeycloakURL = getEnvOrPanic("VITE_KEYCLOAK_URL")
 		KeycloakRealm = getEnvOrPanic("VITE_KEYCLOAK_REALM_NAME")
 		KeycloakJwksUrl = fmt.Sprintf("%s/realms/%s/protocol/openid-connect/certs", KeycloakURL, KeycloakRealm)
 		log.Printf("Using JWKS URL: %s\n", KeycloakJwksUrl)
@@ -54,7 +54,7 @@ func InitEnv() {
 		log.Printf("Using token paths separator: %s\n", TOKEN_PATHS_SEP)
 		log.Printf("Using token path segment separator: %s\n", TOKEN_PATH_SEGMENT_SEP)
 	}
-	KeycloakClient = getEnvOrPanic("VITE_KEYCLOAK_CLIENT_NAME")
+	KeycloakClient = getEnvOrDefault("VITE_KEYCLOAK_CLIENT_NAME", "")
 	log.Printf("Using Keycloak client: %s\n", KeycloakClient)
 	HealthPort = getEnvAsInt("HEALTH_PORT", 8082)
 	log.Printf("Using health port: %d\n", HealthPort)
@@ -76,7 +76,7 @@ func getEnvOrDefault(key, defaultValue string) string {
 
 func getEnvOrPanic(key string) string {
 	value, exists := os.LookupEnv(key)
-	if !exists {
+	if !exists || value == "" {
 		log.Fatalf("Environment variable %s is not set. Exiting...", key)
 	}
 	return value

@@ -1,34 +1,34 @@
 ## For English press [here](#configuration)
 # Konfiguracja
 
-Ten dokument zawiera przegląd wartości konfigurowalnych w pliku [`values.yaml`](../charts/kam/values.yaml) dla chartu Helm. Te wartości mogą być dostosowywane w celu skonfigurowania wdrożenia aplikacji. W celu uzyskania szczegółowych informacji jak wdrożyć aplikację, odwołaj się do pliku [DEPLOYMENT.md](./DEPLOYMENT.md).
+Ten dokument zawiera przegląd wartości konfigurowalnych w pliku [`values.yaml`](../charts/kam/values.yaml) dla chartu Helm. Te wartości mogą być dostosowywane w celu skonfigurowania wdrożenia aplikacji. W celu uzyskania szczegółowych informacji jak wdrożyć aplikację, odwołaj się do pliku [DEPLOYMENT.md](./DEPLOYMENT.md). Dla szczegółów instalacji i konfiguracji Keycloak odwołaj się do pliku [keycloak-install&config.md](keycloak-install&config.md).
 
 ## Ogólna konfiguracja
 
 - **nameOverride**: Nadpisuje nazwę chartu.
 - **fullnameOverride**: Całkowicie nadpisuje wygenerowaną nazwę chartu.
-- **podAnnotations**: Adnotacje do dodania do zasobów pod.
-- **podLabels**: Etykiety do dodania do zasobów pod.
+- **podAnnotations**: Adnotacje dodawane do zasobów pod.
+- **podLabels**: Etykiety dodawane do zasobów pod.
 
 ## Globalna konfiguracja
 
 ### **global.env.FRONTEND_KEYCLOAK_URL**
 - **Opis**: URL do serwera Keycloak używanego przez frontend. Jest wykorzystywany przez frontend do celów uwierzytelniania. Powinien być publicznie dostępny.
-- **Wymagane**: Tak
+- **Wymagane**: Tak, chyba że KEYCLOAK_LOGIN_URL, KEYCLOAK_LOGOUT_URL i KEYCLOAK_TOKEN_URL są ustawione
 - **Domyślne**: Brak
 - **Używane przez**: Frontend
 - **Przykład**: `https://keycloak.example.com`
 
 ### **global.env.KEYCLOAK_REALM_NAME**
 - **Opis**: Nazwa realm w Keycloak. Realm w Keycloak to przestrzeń, w której zarządzasz obiektami, takimi jak użytkownicy, role i klienci.
-- **Wymagane**: Tak
+- **Wymagane**: Tak, chyba że KEYCLOAK_JWKS_URL, KEYCLOAK_LOGIN_URL, KEYCLOAK_LOGOUT_URL i KEYCLOAK_TOKEN_URL są ustawione
 - **Domyślne**: Brak
 - **Używane przez**: Frontend i Backend
 - **Przykład**: `myrealm`
 
 ### **global.env.KEYCLOAK_CLIENT_NAME**
-- **Opis**: Nazwa klienta w Keycloak. Klient w Keycloak to podmiot, który może poprosić o uwierzytelnienie użytkownika. Należy utworzyć klienta w Keycloak dla naszej aplikacji.
-- **Wymagane**: Tak
+- **Opis**: Nazwa klienta w Keycloak. Klient w Keycloak to podmiot, który może poprosić o uwierzytelnienie użytkownika. Na podstawie tej zmiennej w backendzie wczytywane są role klienta użytkownika, a na frontendzie służy do tworzenia linków do autentykacji w keycloak.
+- **Wymagane**: Tak, chyba że KEYCLOAK_LOGIN_URL, KEYCLOAK_LOGOUT_URL i KEYCLOAK_TOKEN_URL są ustawione
 - **Domyślne**: Brak
 - **Używane przez**: Frontend i Backend
 - **Przykład**: `myclient`
@@ -42,7 +42,7 @@ Ten dokument zawiera przegląd wartości konfigurowalnych w pliku [`values.yaml`
 
 ### **global.env.KEYCLOAK_CLIENT_SECRET**
 - **Opis**: Sekret klienta dla Keycloak. Ten sekret jest używany przez frontend do uwierzytelniania z Keycloak. Możesz znaleźć sekret klienta w konsoli administracyjnej Keycloak w zakładce credentials klienta.
-- **Wymagane**: Nie
+- **Wymagane**: Nie, chyba że autentykacja clienta jest włączona
 - **Domyślne**: Brak
 - **Używane przez**: Frontend
 
@@ -62,8 +62,8 @@ Ten dokument zawiera przegląd wartości konfigurowalnych w pliku [`values.yaml`
 
 ### **global.env.KEYCLOAK_JWKS_URL**
 - **Opis**: URL do zestawu JSON Web Key Set (JWKS) w Keycloak. Ten URL jest używany do pobierania kluczy publicznych w celu weryfikacji tokenów JWT wydanych przez Keycloak.
-- **Wymagane**: Jeśli `BACKEND_KEYCLOAK_URL`, `KEYCLOAK_REALM_NAME` lub `KEYCLOAK_CLIENT_NAME` nie są podane.
-- **Domyślne**: Generowane na podstawie `BACKEND_KEYCLOAK_URL`, `KEYCLOAK_REALM_NAME` i `KEYCLOAK_CLIENT_NAME`.
+- **Wymagane**: Jeśli `BACKEND_KEYCLOAK_URL` lub `KEYCLOAK_REALM_NAME` nie są podane.
+- **Domyślne**: Generowane na podstawie `BACKEND_KEYCLOAK_URL`, `KEYCLOAK_REALM_NAME`.
 - **Używane przez**: Backend
 - **Przykład**: `https://keycloak.example.com/realms/myrealm/protocol/openid-connect/certs`
 
@@ -100,10 +100,6 @@ Ten dokument zawiera przegląd wartości konfigurowalnych w pliku [`values.yaml`
 - **backend.serviceAccount.name**: Nazwa konta serwisowego do użycia. Jeśli nie ustawiono i `create` jest ustawione na true, nazwa jest generowana przy użyciu szablonu fullname.
 - **backend.service.type**: Typ usługi do utworzenia dla backendu. Opcje: `ClusterIP`, `NodePort`, `LoadBalancer`.
 - **backend.service.port**: Port, na którym usługa backendu będzie dostępna.
-- **backend.livenessProbe.httpGet.path**: Ścieżka HTTP używana w liveness probe.
-- **backend.livenessProbe.httpGet.port**: Port używany w liveness probe.
-- **backend.readinessProbe.httpGet.path**: Ścieżka HTTP używana w readiness probe.
-- **backend.readinessProbe.httpGet.port**: Port używany w readiness probe.
 - **backend.autoscaling.enabled**: Czy włączyć autoskalowanie dla backendu.
 - **backend.autoscaling.minReplicas**: Minimalna liczba replik dla backendu.
 - **backend.autoscaling.maxReplicas**: Maksymalna liczba replik dla backendu.
@@ -140,7 +136,7 @@ Ten dokument zawiera przegląd wartości konfigurowalnych w pliku [`values.yaml`
 
 # Configuration
 
-This document provides an overview of the configurable values in the [values.yaml](../charts/kam/values.yaml) file for the Helm chart. These values can be customized to configure the deployment of the application. For details how to deploy app refer to [DEPLOYMENT.md](./DEPLOYMENT.md).
+This document provides an overview of the configurable values in the [values.yaml](../charts/kam/values.yaml) file for the Helm chart. These values can be customized to configure the deployment of the application. For details how to deploy app refer to [DEPLOYMENT.md](./DEPLOYMENT.md). For details of Keycloak installation and configuration refer to [keycloak-install&config.md](keycloak-install&config.md).
 
 ## General Configuration
 
@@ -153,21 +149,21 @@ This document provides an overview of the configurable values in the [values.yam
 
 ### **global.env.FRONTEND_KEYCLOAK_URL**
 - **Description**: The URL for the Keycloak server used by the frontend. This URL is specifically used by the frontend for authentication purposes. It should be publicly accesible address.
-- **Required**: Yes
+- **Required**: Yes, unless `KEYCLOAK_LOGIN_URL`, `KEYCLOAK_LOGOUT_URL`, `KEYCLOAK_TOKEN_URL` are provided.
 - **Default**: None
 - **Used By**: Frontend
 - **Example**: `https://keycloak.example.com`
 
 ### **global.env.KEYCLOAK_REALM_NAME**
 - **Description**: The name of the Keycloak realm. A realm in Keycloak is a space where you manage objects such as users, roles, and clients.
-- **Required**: Yes
+- **Required**: Yes, unless `KEYCLOAK_JWKS_URL`, `KEYCLOAK_LOGIN_URL`, `KEYCLOAK_LOGOUT_URL`, `KEYCLOAK_TOKEN_URL` are provided.
 - **Default**: None
 - **Used By**: Both Frontend and Backend
 - **Example**: `myrealm`
 
 ### **global.env.KEYCLOAK_CLIENT_NAME**
-- **Description**: The name of the Keycloak client. A client in Keycloak is an entity that can request Keycloak to authenticate a user. You should create a client in Keycloak for our application.
-- **Required**: Yes
+- **Description**: The name of the Keycloak client. A client in Keycloak is an entity that can request Keycloak to authenticate a user. This variable is used by the backend to load user client roles and by the frontend to create links for Keycloak authentication.
+- **Required**: Yes, unless `KEYCLOAK_LOGIN_URL`, `KEYCLOAK_LOGOUT_URL`, `KEYCLOAK_TOKEN_URL` are provided.
 - **Default**: None
 - **Used By**: Both Frontend and Backend
 - **Example**: `myclient`
@@ -180,8 +176,8 @@ This document provides an overview of the configurable values in the [values.yam
 - **Example**: `https://keycloak.example.com`
 
 ### **global.env.KEYCLOAK_CLIENT_SECRET**
-- **Description**: The client secret for Keycloak. This secret is used by frontend to authenticate with Keycloak. You can find the client secret in the Keycloak admin console. in the client credentials tab.
-- **Required**: No
+- **Description**: The client secret for Keycloak. This secret is used by frontend to authenticate with Keycloak. You can find the client secret in the Keycloak admin console in the client credentials tab.
+- **Required**: No, unless client authentication is enabled.
 - **Default**: None
 - **Used By**: Frontend
 
@@ -201,8 +197,8 @@ This document provides an overview of the configurable values in the [values.yam
 
 ### **global.env.KEYCLOAK_JWKS_URL**
 - **Description**: The URL for the Keycloak JSON Web Key Set (JWKS). This URL is used to retrieve the public keys for verifying JWT tokens issued by Keycloak.
-- **Required**: If `BACKEND_KEYCLOAK_URL`, `KEYCLOAK_REALM_NAME`, and `KEYCLOAK_CLIENT_NAME` are not provided.
-- **Default**: Built from `BACKEND_KEYCLOAK_URL`, `KEYCLOAK_REALM_NAME`, and `KEYCLOAK_CLIENT_NAME`.
+- **Required**: If `BACKEND_KEYCLOAK_URL`, `KEYCLOAK_REALM_NAME` are not provided.
+- **Default**: Built from `BACKEND_KEYCLOAK_URL`, `KEYCLOAK_REALM_NAME`.
 - **Used By**: Backend
 - **Example**: `https://keycloak.example.com/realms/myrealm/protocol/openid-connect/certs`
 
@@ -239,10 +235,6 @@ This document provides an overview of the configurable values in the [values.yam
 - **backend.serviceAccount.name**: The name of the service account to use. If not set and `create` is true, a name is generated using the fullname template.
 - **backend.service.type**: The type of service to create for the backend. Options are `ClusterIP`, `NodePort`, and `LoadBalancer`.
 - **backend.service.port**: The port on which the backend service will be exposed.
-- **backend.livenessProbe.httpGet.path**: The HTTP path to use for the liveness probe.
-- **backend.livenessProbe.httpGet.port**: The port to use for the liveness probe.
-- **backend.readinessProbe.httpGet.path**: The HTTP path to use for the readiness probe.
-- **backend.readinessProbe.httpGet.port**: The port to use for the readiness probe.
 - **backend.autoscaling.enabled**: Whether to enable autoscaling for the backend.
 - **backend.autoscaling.minReplicas**: The minimum number of replicas for the backend.
 - **backend.autoscaling.maxReplicas**: The maximum number of replicas for the backend.

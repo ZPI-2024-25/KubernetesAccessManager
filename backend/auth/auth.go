@@ -93,7 +93,7 @@ func ExtractRoles(claims *jwt.MapClaims) ([]string, *models.ModelError) {
 	if realmAccess, ok := (*claims)["realm_access"].(map[string]interface{}); ok {
 		extractRolesFromMapInterface(realmAccess, "roles", &roles)
 	}
-	if resourceAccess, ok := (*claims)["resource_access"].(map[string]interface{}); ok {
+	if resourceAccess, ok := (*claims)["resource_access"].(map[string]interface{}); common.KeycloakClient != "" && ok {
 		if resource, ok := resourceAccess[common.KeycloakClient]; ok {
 			if resourceMap, ok := resource.(map[string]interface{}); ok {
 				extractRolesFromMapInterface(resourceMap, "roles", &roles)
