@@ -56,6 +56,12 @@ backend:
         resources: [ "*" ]
         verbs: [ "get", "list", "create", "update", "delete", "patch", "watch" ]
 
+  env:
+    USE_JWT_TOKEN_PATHS: "false"
+    TOKEN_ROLE_PATHS: ""
+    TOKEN_PATHS_SEP: ","
+    TOKEN_PATH_SEGMENT_SEP: "."
+
 
 frontend:
   replicaCount: 1

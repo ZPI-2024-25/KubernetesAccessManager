@@ -2,21 +2,27 @@ package common
 
 import (
 	"fmt"
-	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"strconv"
+	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 var (
-	HealthPort       int
-	AppPort          int
-	KeycloakURL      string
-	KeycloakClient   string
-	KeycloakRealm    string
-	KeycloakJwksUrl  string
-	RoleMapNamespace string
-	RoleMapName      string
+	HealthPort             int
+	AppPort                int
+	KeycloakURL            string
+	KeycloakClient         string
+	KeycloakRealm          string
+	KeycloakJwksUrl        string
+	RoleMapNamespace       string
+	RoleMapName            string
+	USE_JWT_TOKEN_PATHS    bool
+	TOKEN_ROLE_PATHS       string
+	TOKEN_PATHS_SEP        string
+	TOKEN_PATH_SEGMENT_SEP string
 )
 
 func InitEnv() {
@@ -30,12 +36,24 @@ func InitEnv() {
 		log.Println("Using KEYCLOAK_JWKS_URL environment variable.")
 	} else {
 		log.Println("KEYCLOAK_JWKS_URL environment variable not set, setting default JWKS URL.")
-		KeycloakURL = getEnvOrPanic("BACKEND_KEYCLOAK_URL")
+		KeycloakURL = getEnvOrPanic("VITE_KEYCLOAK_URL")
 		KeycloakRealm = getEnvOrPanic("VITE_KEYCLOAK_REALM_NAME")
 		KeycloakJwksUrl = fmt.Sprintf("%s/realms/%s/protocol/openid-connect/certs", KeycloakURL, KeycloakRealm)
 		log.Printf("Using JWKS URL: %s\n", KeycloakJwksUrl)
 	}
-	KeycloakClient = getEnvOrPanic("VITE_KEYCLOAK_CLIENT_NAME")
+	USE_JWT_TOKEN_PATHS = getEnvOrDefault("USE_JWT_TOKEN_PATHS", "false") == "true"
+	if USE_JWT_TOKEN_PATHS {
+		TOKEN_ROLE_PATHS = getEnvOrDefault("TOKEN_ROLE_PATHS", DEFAULT_TOKEN_ROLE_PATHS)
+		TOKEN_PATHS_SEP = getEnvOrDefault("TOKEN_PATHS_SEP", DEFAULT_PATHS_SEP)
+		TOKEN_PATH_SEGMENT_SEP = getEnvOrDefault("TOKEN_PATH_SEGMENT_SEP", DEFAULT_PATH_SEGMENT_SEP)
+		log.Printf("Using JWT token paths: \n")
+		for _, path := range strings.Split(TOKEN_ROLE_PATHS, TOKEN_PATHS_SEP) {
+			log.Printf("\t%s\n", path)
+		}
+		log.Printf("Using token paths separator: %s\n", TOKEN_PATHS_SEP)
+		log.Printf("Using token path segment separator: %s\n", TOKEN_PATH_SEGMENT_SEP)
+	}
+	KeycloakClient = getEnvOrDefault("VITE_KEYCLOAK_CLIENT_NAME", "")
 	log.Printf("Using Keycloak client: %s\n", KeycloakClient)
 	HealthPort = getEnvAsInt("HEALTH_PORT", 8082)
 	log.Printf("Using health port: %d\n", HealthPort)
@@ -48,7 +66,7 @@ func InitEnv() {
 }
 
 func getEnvOrDefault(key, defaultValue string) string {
-	if value, exists := os.LookupEnv(key); exists {
+	if value, exists := os.LookupEnv(key); exists && value != "" {
 		return value
 	}
 	log.Printf("Environment variable %s not set, using default value %s", key, defaultValue)
@@ -57,7 +75,7 @@ func getEnvOrDefault(key, defaultValue string) string {
 
 func getEnvOrPanic(key string) string {
 	value, exists := os.LookupEnv(key)
-	if !exists {
+	if !exists || value == "" {
 		log.Fatalf("Environment variable %s is not set. Exiting...", key)
 	}
 	return value

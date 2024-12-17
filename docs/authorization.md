@@ -2,12 +2,12 @@
 ## Opis autoryzacji w Kubernetes Access Manager
 ### Token JWT
 
-KAM zakłada połączenie z dostarczycielem tożsamości Keycloak lub innym spełniającym wymagania protokołu OpenIdConnect i dostarczającego role. Autoryzacja oparta jest na ekstrakcji ról użytkownika z tokena JWT wysyłanego z każdym zapytaniem do serwera backend. KAM odczytuje role zdefiniowane w dwóch miejscach tokena:
+KAM zakłada połączenie z dostarczycielem tożsamości Keycloak lub innym spełniającym wymagania protokołu OpenIdConnect i dostarczającego role. Autoryzacja oparta jest na ekstrakcji ról użytkownika z tokena JWT wysyłanego z każdym zapytaniem do serwera backend. KAM domyślnie odczytuje role zdefiniowane w dwóch miejscach tokena:
 
-- resource_access → `VITE_KEYCLOAK_CLIENT_NAME` → roles: Lista ról przypisanych w kontekście konkretnego klienta.
+- resource_access → `KEYCLOAK_CLIENT_NAME` → roles: Lista ról przypisanych w kontekście konkretnego klienta.
 - realm_access → roles: Lista ról przypisanych globalnie w ramach danego realm.
 
-Zmienna środowiskowa `VITE_KEYCLOAK_CLIENT_NAME` odpowiada nazwie klienta dodanego w Keycloak dla KAM. Zmienna ta wskazuje na sekcję tokena odpowiadającą KAM. Przykład:
+Zmienna środowiskowa `KEYCLOAK_CLIENT_NAME` odpowiada nazwie klienta dodanego w Keycloak dla KAM. Zmienna ta wskazuje na sekcję tokena odpowiadającą KAM. Przykład:
 ```json
 {
   ...
@@ -35,6 +35,47 @@ Zmienna środowiskowa `VITE_KEYCLOAK_CLIENT_NAME` odpowiada nazwie klienta dodan
 }
 ```
 W tym wypadku dla `VITE_KEYCLOAK_CLIENT_NAME` równego `ZPI-client` KAM autoryzowałby żądanie na podstawie ról `zpi-role`, `default-roles-zpi-realm`, `realm-zpi-role`. Jeśli przynajmniej jedna z wczytanych ról daje użytkownikowi dostęp do określonego zapytania, to użytkownik jest pomyślnie autoryzowany. W przeciwnym wypadku zwracany jest błąd zgodnie z definicją [API](./api-swagger.yaml).
+
+Można też zdefiniować własne ścieżki do ról w tokenie JWT co umożliwia użycie innego dostawcy tożsamości niż Keycloak. W tym celu należy ustawić zmienną środowiskową `USE_JWT_TOKEN_PATH` na wartość `true` oraz zdefiniować zmienną środowiskową `TOKEN_ROLE_PATHS` w której znajdować będą się ścieżki rozdzielone przy pomocy zmiennej środowiskowej `TOKEN_PATHS_SEP` domyślnie `,`.
+
+np. dla `TOKEN_ROLE_PATHS="custom_claim.kam_roles,other_custom_claim.object_roles"`:
+```json
+{
+  ...
+  "custom_claim": {
+    "kam_roles": [
+      "custom-role"
+    ]
+  },
+  "object_roles": [
+      {
+        "value": "value",
+        "kam_roles": [
+          "role1"
+          ]
+      },
+      {
+        "value": "value2",
+        "kam_roles": [
+          "role2"
+          ]
+      },
+      {
+        "value": "value3",
+        "kam_roles": "non-list-role"
+      }
+  ],
+  "realm_access": {
+    "roles": [
+      "default-roles-zpi-realm",
+      "realm-zpi-role",
+    ]
+  },
+  ...
+}
+```
+
+Dla takiej konfiguracji, z tokena zostaną wczytane tylko role `custom-role`, `role1`, `role2`, `non-list-role`. Parser przechodzi przez kolejne segmenty ścieżki po kluczach w tokenie, aż dojdzie do końca ścieżki. W przypadku, gdy wartość klucza jest tablicą, parser przechodzi przez każdy element tablicy. W przypadku, gdy wartość klucza jest obiektem, parser przechodzi przez każdy klucz obiektu. Końcowa wartość musi być listą ról `([]string)` lub pojedynczą rolą(`string`). Domyślny separator segmentów ścieżki `.` można nadpisać zmienną środowiskową `TOKEN_PATH_SEGMENT_SEP`.
 
 ### Możliwe uprawnienia w KAM
 W KAM wyróżniamy akcje create, read, update, delete, list. Każde z uprawnień akcji musi być nadane osobno, w szczególności uprawnienie do listowania zasobów nie daje automatycznie możliwości przeglądania ich szczegółów. Uprawnienia można definiować dla konkretnej przestrzeni nazw i typu zasobu, np. Pod, ConfigMap.
