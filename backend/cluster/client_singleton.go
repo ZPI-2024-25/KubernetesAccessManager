@@ -14,13 +14,13 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-type DynamicClientSingleton struct {
+type ClientSingleton struct {
 	config        *rest.Config
 	dynamicClient *dynamic.DynamicClient
 }
 
 var (
-	instance      *DynamicClientSingleton
+	instance      *ClientSingleton
 	once          sync.Once
 	kubeconfig    string
 	inClusterAuth bool
@@ -31,7 +31,7 @@ func init() {
 	flag.BoolVar(&inClusterAuth, "in-cluster", false, "Use in-cluster authentication")
 }
 
-func GetInstance() (*DynamicClientSingleton, error) {
+func GetInstance() (*ClientSingleton, error) {
 	var err error
 	once.Do(func() {
 		var config *rest.Config
@@ -74,7 +74,7 @@ func GetInstance() (*DynamicClientSingleton, error) {
 			return
 		}
 
-		instance = &DynamicClientSingleton{
+		instance = &ClientSingleton{
 			config:        config,
 			dynamicClient: dynamicClient,
 		}
@@ -105,7 +105,7 @@ func GetConfig() (*rest.Config, error) {
 	return singleton.config, nil
 }
 
-func (c *DynamicClientSingleton) GetAuthenticationMethod() string {
+func (c *ClientSingleton) GetAuthenticationMethod() string {
 	if inClusterAuth {
 		return "in-cluster"
 	} else {

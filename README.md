@@ -53,6 +53,7 @@ Podążaj zgodnie z instrukcją [tutaj](./docs/DEPLOYMENT.md)
 - [Wdrażanie](./docs/DEPLOYMENT.md)
 - [Podręcznik użytkownika](./docs/USER_GUIDE.md)
 - [Opis autoryzacji w KAM](./docs/authorization.md)
+- [Opis architektury](./docs/ARCHITECTURE.md)
 
 ---
 
@@ -119,6 +120,7 @@ Follow the instructions [here](./docs/DEPLOYMENT.md).
 - [Deployment](./docs/DEPLOYMENT.md)
 - [User Guide](./docs/USER_GUIDE.md)
 - [Authorization description in KAM](./docs/authorization.md)
+- [Architecture description](./docs/ARCHITECTURE.md)
 ---
 
 ## Authors
@@ -185,6 +187,7 @@ The project is available under the XXX license (will be chosen later). Details i
 - [Развертывание](./docs/DEPLOYMENT.md)
 - [Руководство пользователя](./docs/USER_GUIDE.md)
 - [Описание авторизации в KAM](./docs/authorization.md)
+- [Описание архитектуры](./docs/ARCHITECTURE.md)
 
 ---
 
