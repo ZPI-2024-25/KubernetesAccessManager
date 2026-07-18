@@ -127,7 +127,7 @@ Define backend enviromental values
   value: "{{ .Values.global.env.KEYCLOAK_JWKS_URL }}"
 {{- end }}
 {{- if .Values.global.env.BACKEND_KEYCLOAK_URL }}
-- name: BACKEND_KEYCLOAK_URL
+- name: VITE_KEYCLOAK_URL
   value: "{{ .Values.global.env.BACKEND_KEYCLOAK_URL }}"
 {{- end }}
 {{- if .Values.global.env.KEYCLOAK_REALM_NAME }}
@@ -156,6 +156,22 @@ Define backend enviromental values
 {{- end }}
 - name: IN_CLUSTER_MODE
   value: "true"
+{{- end }}
+{{- if .Values.backend.env.USE_JWT_TOKEN_PATHS }}
+- name: USE_JWT_TOKEN_PATHS
+  value: "{{ .Values.backend.env.USE_JWT_TOKEN_PATHS }}"
+{{- end }}
+{{- if .Values.backend.env.TOKEN_ROLE_PATHS }}
+- name: TOKEN_ROLE_PATHS
+  value: "{{ .Values.backend.env.TOKEN_ROLE_PATHS }}"
+{{- end }}
+{{- if .Values.backend.env.TOKEN_PATHS_SEP }}
+- name: TOKEN_PATHS_SEP
+  value: "{{ .Values.backend.env.TOKEN_PATHS_SEP }}"
+{{- end }}
+{{- if .Values.backend.env.TOKEN_PATH_SEGMENT_SEP }}
+- name: TOKEN_PATH_SEGMENT_SEP
+  value: "{{ .Values.backend.env.TOKEN_PATH_SEGMENT_SEP }}"
 {{- end }}
 
 {{/*
